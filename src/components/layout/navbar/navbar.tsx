@@ -9,9 +9,7 @@ interface NavbarProps {
 
 const Navbar: Component<NavbarProps> = (props) => {
   return (
-    <nav
-      class={twMerge("bg-white border-gray-200 dark:bg-gray-900", props.class)}
-    >
+    <nav class={twMerge("border-b border-gray-700  bg-gray-800", props.class)}>
       <div class="flex items-center justify-start h-full px-4">
         <a href="/" class="flex items-center space-x-3">
           <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white w-48">
