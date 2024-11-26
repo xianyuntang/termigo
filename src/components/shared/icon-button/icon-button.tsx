@@ -1,32 +1,53 @@
+import { initTooltips } from "flowbite";
 import { nanoid } from "nanoid";
-import { Component, JSX, Show } from "solid-js";
+import { mergeProps, onMount, ParentComponent } from "solid-js";
+import { twMerge } from "tailwind-merge";
 
 interface IconButtonProps {
-  icon: JSX.Element;
   tooltip: string;
+  size?: "small" | "medium" | "large";
+  class?: string;
+  onClick?: (evt: MouseEvent) => void;
 }
 
-const IconButton: Component<IconButtonProps> = (props) => {
-  const id = `tooltip-${nanoid()}`;
+const IconButton: ParentComponent<IconButtonProps> = (props) => {
+  const mergedProps = mergeProps({ size: "medium" }, props);
+  const id = nanoid();
+
+  onMount(() => {
+    initTooltips();
+  });
+
+  const handleButtonClick = (evt: MouseEvent) => {
+    if (typeof mergedProps.onClick === "function") {
+      mergedProps.onClick(evt);
+    }
+  };
+
   return (
     <>
       <button
         data-tooltip-target={id}
-        type="button"
-        class="rounded-lg bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-800"
+        class={twMerge(
+          "rounded-lg bg-blue-600 p-1.5 text-center text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-800",
+          mergedProps.size === "small" && "size-6",
+          mergedProps.size === "medium" && "size-8",
+          mergedProps.size === "large" && "size-10",
+          mergedProps.class,
+        )}
+        onClick={handleButtonClick}
       >
-        {props.icon}
+        {mergedProps.children}
       </button>
-      <Show when={props.tooltip}>
-        <div
-          id={id}
-          role="tooltip"
-          class="tooltip invisible absolute z-10 inline-block rounded-lg bg-gray-700 px-3 py-2 text-sm font-medium text-white opacity-0 shadow-sm transition-opacity duration-300"
-        >
-          {props.tooltip}
-          <div class="tooltip-arrow" />
-        </div>
-      </Show>
+      <div
+        id={id}
+        class={twMerge(
+          "tooltip invisible absolute z-10 inline-block rounded-lg bg-gray-700 px-3 py-2 text-sm font-medium text-white opacity-0 shadow-sm transition-opacity duration-300",
+        )}
+      >
+        {mergedProps.tooltip}
+        <div class="tooltip-arrow" />
+      </div>
     </>
   );
 };

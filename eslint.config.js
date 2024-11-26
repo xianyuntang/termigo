@@ -2,6 +2,7 @@ import pluginJs from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import solidRecommended from "eslint-plugin-solid/configs/recommended";
+import tailwind from "eslint-plugin-tailwindcss";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -12,6 +13,7 @@ export default [
   ...tseslint.configs.recommended,
   eslintConfigPrettier,
   solidRecommended,
+  ...tailwind.configs["flat/recommended"],
   {
     plugins: {
       "simple-import-sort": simpleImportSort,

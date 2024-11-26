@@ -6,18 +6,18 @@ interface SidebarProps {
 }
 
 const Sidebar: Component<SidebarProps> = (props) => {
-  const items = [{ text: "Workspace", url: "/workspace" }];
+  const items = [{ text: "Hosts", url: "/hosts" }];
 
   return (
     <aside class={twMerge(props.class)}>
-      <div class="h-full px-3 py-4 overflow-y-auto bg-gray-800">
+      <div class="h-full overflow-y-auto bg-gray-800 px-3 py-4">
         <ul class="space-y-2 font-medium">
           <For each={items}>
             {(item) => (
               <li>
                 <a
                   href={item.url}
-                  class="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
+                  class="group flex items-center rounded-lg p-2 text-white hover:bg-gray-700"
                 >
                   <span class="ms-3">{item.text}</span>
                 </a>

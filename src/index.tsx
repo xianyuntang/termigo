@@ -3,12 +3,16 @@ import { Route, Router } from "@solidjs/router";
 import { render } from "solid-js/web";
 
 import App from "./App";
-import WorkspacePage from "./pages/workspace-page";
+import HostsPage from "./pages/hosts-page";
+import TerminalSwitch from "./pages/terminal-switch";
 
 render(
   () => (
     <Router root={App}>
-      <Route path="/workspace" component={WorkspacePage} />
+      <Route component={TerminalSwitch}>
+        <Route path="/terminals/:hostId" />
+        <Route path="/hosts" component={HostsPage} />
+      </Route>
     </Router>
   ),
   document.getElementById("root") as HTMLElement,
