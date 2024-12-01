@@ -1,16 +1,34 @@
-import { Component } from "solid-js";
+import { Component, createEffect, createSignal, Show } from "solid-js";
 
-import { Host } from "../../../services/host.service.ts";
+import { useActiveTerminal } from "../../../stores";
 import Terminal from "./terminal";
 
 interface TerminalPageContainerProps {
-  host: Host & { futureId: string };
+  terminalId: string;
 }
 
 const TerminalPageContainer: Component<TerminalPageContainerProps> = (
   props,
 ) => {
-  return <Terminal host={props.host} />;
+  const [hostId, setHostId] = createSignal<string>();
+
+  const { findOne } = useActiveTerminal();
+
+  createEffect(() => {
+    const activeTerminal = findOne(props.terminalId);
+    setHostId(activeTerminal?.hostId);
+  });
+
+  return (
+    <div class="size-full">
+      <Show when={hostId()}>
+        {(hostId) => (
+          <Terminal hostId={hostId()} terminalId={props.terminalId} />
+        )}
+      </Show>
+      ;
+    </div>
+  );
 };
 
 export default TerminalPageContainer;

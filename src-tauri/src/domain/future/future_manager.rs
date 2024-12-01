@@ -27,4 +27,8 @@ impl FutureManager {
             handle.abort();
         }
     }
+
+    pub fn exist(&self, id: &str) -> bool {
+        self.handles.contains_key(id)
+    }
 }

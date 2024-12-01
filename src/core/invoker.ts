@@ -15,7 +15,7 @@ export const isInvokerError = (error: unknown): error is InvokerError => {
 
 export const invoker = async <T>(
   command: string,
-  args?: InvokeArgs
+  args?: InvokeArgs,
 ): Promise<T> => {
   try {
     const { data } = await invoke<{ data: T }>(command, args);

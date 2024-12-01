@@ -1,24 +1,25 @@
 import "flowbite";
 import "./index.css";
+import "overlayscrollbars/styles/overlayscrollbars.css";
 
 import { MultiProvider } from "@solid-primitives/context";
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
-import { ParentComponent } from "solid-js";
+import { Route, Router } from "@solidjs/router";
 
 import Layout from "./components/layout";
-import { HostProvider } from "./stores";
+import HostsPage from "./pages/hosts-page";
+import IdentitiesPage from "./pages/identities-page";
+import TerminalsPage from "./pages/terminals-page";
+import { ActiveTerminalProvider, TerminalHistoryProvider } from "./stores";
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { refetchOnWindowFocus: false } },
-});
-
-const App: ParentComponent = (props) => {
+const App = () => {
   return (
     <>
-      <MultiProvider values={[HostProvider]}>
-        <QueryClientProvider client={queryClient}>
-          <Layout>{props.children}</Layout>
-        </QueryClientProvider>
+      <MultiProvider values={[ActiveTerminalProvider, TerminalHistoryProvider]}>
+        <Router root={Layout}>
+          <Route path="/terminals/:terminalId" component={TerminalsPage} />
+          <Route path="/hosts" component={HostsPage} />
+          <Route path="/identities" component={IdentitiesPage} />
+        </Router>
       </MultiProvider>
     </>
   );

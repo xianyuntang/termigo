@@ -14,7 +14,5 @@ pub async fn stop_future(state: State<'_, Mutex<AppData>>, id: &str) -> Result<R
 
     app_data.future_manager.abort(id);
 
-    Ok(Response {
-        data: json!({"message":"ok"}),
-    })
+    Ok(Response::new_ok_message())
 }

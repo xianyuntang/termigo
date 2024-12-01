@@ -1,60 +1,119 @@
-import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
-import { Component, createSignal, onCleanup, onMount } from "solid-js";
+import "@xterm/xterm/css/xterm.css";
+import "./xterm.css";
 
-import { Host } from "../../../../services/host.service.ts";
-import { useXterm } from "./terminal.hook.ts";
+import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
+import { FitAddon } from "@xterm/addon-fit";
+import { WebglAddon } from "@xterm/addon-webgl";
+import { Terminal as Xterm } from "@xterm/xterm";
+import {
+  Component,
+  createEffect,
+  createResource,
+  createSignal,
+  onCleanup,
+} from "solid-js";
+
+import { uint8ArrayToString } from "../../../../core";
+import { hostService } from "../../../../services";
+import { useTerminalHistory } from "../../../../stores";
 import {
   StdoutEventData,
   WindowChangeEventData,
 } from "./terminal.interface.ts";
 
 interface TerminalProps {
-  host: Host & { futureId: string };
+  hostId: string;
+  terminalId: string;
 }
 
 const Terminal: Component<TerminalProps> = (props) => {
-  const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
+  const [ref, setRef] = createSignal<HTMLDivElement>();
+  const [xterm, setXterm] = createSignal<Xterm>();
+  const [localHistory, setLocalHistory] = createSignal<string>("");
 
-  const { xterm, fit } = useXterm({
-    ref: containerRef,
-    options: {
-      cursorBlink: true,
-      convertEol: true,
-      theme: { background: "#111827FF" },
-    },
-  });
+  const [streamResponse] = createResource(() =>
+    hostService.starTerminalStream(props.hostId, props.terminalId),
+  );
 
-  let unlistenFn: UnlistenFn | undefined;
+  const { findOne, update } = useTerminalHistory();
 
-  onMount(async () => {
-    if (xterm()) {
-      const { futureId } = props.host;
+  createEffect(() => {
+    const element = ref();
+    const terminalId = props.terminalId;
 
-      unlistenFn = await listen<StdoutEventData>(`${futureId}_out`, (evt) => {
-        xterm()?.write(evt.payload.message);
+    const fitAddon = new FitAddon();
+    const webglAddon = new WebglAddon();
+
+    if (element) {
+      const xterm = new Xterm({
+        cursorBlink: true,
+        convertEol: true,
+        theme: { background: "#111827FF" },
       });
 
-      xterm()?.onData(async (data) => {
-        await emit(`${futureId}_in`, { key: data });
+      xterm.loadAddon(fitAddon);
+      xterm.loadAddon(webglAddon);
+
+      xterm.open(element);
+      fitAddon.fit();
+
+      const handleResize = () => {
+        fitAddon.fit();
+      };
+
+      const history = findOne(props.terminalId);
+      if (history) {
+        setLocalHistory(history);
+        xterm.write(history);
+      }
+
+      xterm.onData(async (data) => {
+        await emit(`${terminalId}_in`, { key: data });
       });
-      xterm()?.onResize(async (evt) => {
-        await emit(`${futureId}_resize`, {
+      xterm.onResize(async (evt) => {
+        await emit(`${terminalId}_resize`, {
           cols: evt.cols,
           rows: evt.rows,
         } as WindowChangeEventData);
       });
 
-      xterm()?.onRender(() => {
-        fit();
+      setXterm(xterm);
+
+      window.addEventListener("resize", handleResize);
+
+      onCleanup(() => {
+        window.removeEventListener("resize", handleResize);
+        xterm.dispose();
+        webglAddon.dispose();
+        setXterm(undefined);
+        update(terminalId, localHistory());
+        setLocalHistory("");
       });
     }
   });
 
-  onCleanup(() => {
-    unlistenFn?.();
+  let unlistenFn: UnlistenFn | undefined;
+  createEffect(() => {
+    const currentXterm = xterm();
+
+    const terminalId = props.terminalId;
+    if (!currentXterm || !terminalId) return;
+
+    (async () => {
+      unlistenFn = await listen<StdoutEventData>(`${terminalId}_out`, (evt) => {
+        setLocalHistory((p) => p + uint8ArrayToString(evt.payload.message));
+        currentXterm.write(evt.payload.message);
+      });
+    })();
+
+    onCleanup(() => {
+      if (unlistenFn) {
+        unlistenFn();
+      }
+    });
   });
 
-  return <div class="size-full" ref={setContainerRef} />;
+  return <div class="size-full" ref={setRef} />;
 };
 
 export default Terminal;

@@ -6,7 +6,10 @@ interface SidebarProps {
 }
 
 const Sidebar: Component<SidebarProps> = (props) => {
-  const items = [{ text: "Hosts", url: "/hosts" }];
+  const items = [
+    { text: "Hosts", url: "/hosts" },
+    { text: "Identities", url: "/identities" },
+  ];
 
   return (
     <aside class={twMerge(props.class)}>

@@ -1,1 +1,2 @@
-export * as hostService from "./host.service.ts";
+export * as hostService from "./host";
+export * as identityService from "./identity";

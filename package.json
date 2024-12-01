@@ -14,15 +14,16 @@
   "dependencies": {
     "@solid-primitives/context": "^0.2.3",
     "@solidjs/router": "^0.15.1",
-    "@tanstack/solid-query": "^5.60.6",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-log": "^2.0.0",
     "@tauri-apps/plugin-shell": "^2",
+    "@tauri-apps/plugin-store": "^2.1.0",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/addon-webgl": "^0.18.0",
     "@xterm/xterm": "^5.5.0",
     "flowbite": "^2.5.2",
     "nanoid": "^3.3.7",
+    "overlayscrollbars-solid": "^0.5.5",
     "solid-icons": "^1.1.0",
     "solid-js": "^1.7.8",
     "tailwind-merge": "^2.5.4"
