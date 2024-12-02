@@ -2,6 +2,7 @@ use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Host {
     pub id: String,
     pub label: Option<String>,

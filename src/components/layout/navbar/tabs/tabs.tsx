@@ -27,8 +27,13 @@ const Tabs: Component<TabsProps> = (props) => {
   };
 
   return (
-    <div class={twMerge("border-gray-700", props.class)}>
-      <ul class="flex flex-wrap text-center text-sm font-medium text-gray-400">
+    <div
+      class={twMerge(
+        "border-gray-700 h-full flex items-center justify-center",
+        props.class,
+      )}
+    >
+      <ul class="flex flex-nowrap text-center text-sm font-medium text-gray-400">
         <For each={activeTerminals}>
           {(activeTerminal) => (
             <li class="me-2">

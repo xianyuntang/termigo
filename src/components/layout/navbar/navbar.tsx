@@ -1,3 +1,4 @@
+import { OverlayScrollbarsComponent } from "overlayscrollbars-solid";
 import { Component } from "solid-js";
 import { twMerge } from "tailwind-merge";
 
@@ -9,10 +10,18 @@ interface NavbarProps {
 
 const Navbar: Component<NavbarProps> = (props) => {
   return (
-    <nav class={twMerge("border-b border-gray-700  bg-gray-800", props.class)}>
-      <div class="flex h-full items-center justify-start px-4">
+    <nav
+      class={twMerge(
+        "flex items-center justify-start border-b border-gray-700 bg-gray-800 h-full px-4 overflow-x-auto",
+        props.class,
+      )}
+    >
+      <OverlayScrollbarsComponent
+        class="h-full"
+        options={{ scrollbars: { clickScroll: true } }}
+      >
         <Tabs />
-      </div>
+      </OverlayScrollbarsComponent>
     </nav>
   );
 };

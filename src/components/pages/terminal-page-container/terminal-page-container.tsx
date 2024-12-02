@@ -26,7 +26,6 @@ const TerminalPageContainer: Component<TerminalPageContainerProps> = (
           <Terminal hostId={hostId()} terminalId={props.terminalId} />
         )}
       </Show>
-      ;
     </div>
   );
 };
