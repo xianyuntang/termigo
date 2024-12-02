@@ -6,34 +6,34 @@ use serde_json::json;
 #[derive(Debug, thiserror::Error)]
 pub enum ApiError {
     #[error(transparent)]
-    TauriError(#[from] tauri::Error),
+    Tauri(#[from] tauri::Error),
 
     #[error(transparent)]
-    BoxedError(#[from] Box<dyn std::error::Error + Send + Sync>),
+    Boxed(#[from] Box<dyn std::error::Error + Send + Sync>),
 
     #[error(transparent)]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 
     #[error(transparent)]
-    AddrParseError(#[from] std::net::AddrParseError),
+    AddrParse(#[from] std::net::AddrParseError),
 
     #[error(transparent)]
-    SerdeJsonError(#[from] serde_json::Error),
+    SerdeJson(#[from] serde_json::Error),
 
     #[error(transparent)]
-    FromUtf8Error(#[from] FromUtf8Error),
+    FromUtf8(#[from] FromUtf8Error),
 
     #[error(transparent)]
-    RusshError(#[from] russh::Error),
+    Russh(#[from] russh::Error),
 
     #[error(transparent)]
-    RusshKeyError(#[from] russh::keys::Error),
+    RusshKey(#[from] russh::keys::Error),
 
     #[error("The specified {item} was not found.")]
-    NotFoundError { item: String },
+    NotFound { item: String },
 
     #[error("Error: {message}.")]
-    CustomError { message: String },
+    Custom { message: String },
 }
 
 impl serde::Serialize for ApiError {

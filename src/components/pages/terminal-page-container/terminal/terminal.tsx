@@ -31,7 +31,7 @@ const Terminal: Component<TerminalProps> = (props) => {
   const [xterm, setXterm] = createSignal<Xterm>();
   const [localHistory, setLocalHistory] = createSignal<string>("");
 
-  const [streamResponse] = createResource(() =>
+  createResource(() =>
     hostService.starTerminalStream(props.hostId, props.terminalId),
   );
 

@@ -11,7 +11,7 @@ pub struct Identity {
 }
 
 impl Identity {
-    pub(crate) fn new(
+    pub fn new(
         label: Option<String>,
         username: String,
         password: Option<String>,

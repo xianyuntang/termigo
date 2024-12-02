@@ -1,29 +1,21 @@
-use crate::domain::host::host::Host;
+use crate::domain::host::lib::Host;
 use crate::domain::host::terminal::{
     SshClient, StdinEventData, StdoutEventData, WindowChangeEventData,
 };
-use crate::domain::identity::identity::Identity;
+use crate::domain::identity::lib::Identity;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
-use async_trait::async_trait;
 use log;
-use nanoid::nanoid;
-use russh::keys::key::{KeyPair, PublicKey};
-use russh::keys::{decode_secret_key, load_public_key, load_secret_key};
+use russh::keys::decode_secret_key;
 use russh::{client, ChannelMsg};
-use serde_json::{json, Value};
-use std::convert::identity;
-use std::io::Cursor;
-use std::ptr::write;
-use std::sync::mpsc::channel;
+use serde_json::json;
 use std::sync::Arc;
 use tauri::{Emitter, Listener, State, Window};
 use tokio::io::duplex;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::{mpsc, Mutex};
 use tokio_util::bytes::Bytes;
-use url::quirks::{host, port};
 
 #[tauri::command]
 pub async fn list_hosts(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
@@ -77,7 +69,7 @@ pub async fn update_host(
         host.port = port;
         host.identity_id = identity_id
     } else {
-        return Err(ApiError::NotFoundError {
+        return Err(ApiError::NotFound {
             item: "identity".to_string(),
         });
     }
@@ -100,7 +92,7 @@ pub async fn delete_host(
     if let Some(position) = hosts.iter().position(|host| host.id == id) {
         hosts.remove(position);
     } else {
-        return Err(ApiError::NotFoundError {
+        return Err(ApiError::NotFound {
             item: "identity".to_string(),
         });
     }
@@ -154,19 +146,20 @@ pub async fn start_terminal_stream(
                 let mut session =
                     client::connect(config, format!("{}:{}", &host.address, &host.port), sh)
                         .await?;
+
                 if let Some(password) = &identity.password {
                     log::debug!("Trying authenticate password");
-                    let auth_res = session
+                    session
                         .authenticate_password(&identity.username, password)
                         .await?;
                 } else if let Some(key) = &identity.key {
                     log::debug!("Trying authenticate publickey");
                     let key_pair = decode_secret_key(key, None)?;
-                    let auth_res = session
+                    session
                         .authenticate_publickey(&identity.username, Arc::new(key_pair))
                         .await?;
                 } else {
-                    return Err(ApiError::CustomError {
+                    return Err(ApiError::Custom {
                         message: "connection failed".to_string(),
                     });
                 }
@@ -206,7 +199,7 @@ pub async fn start_terminal_stream(
                         cloned_tx
                             .send(event_data)
                             .await
-                            .map_err(|e| ApiError::CustomError {
+                            .map_err(|e| ApiError::Custom {
                                 message: e.to_string(),
                             })?;
                         Ok::<(), ApiError>(())
@@ -228,19 +221,16 @@ pub async fn start_terminal_stream(
                             };
                         },
                         Some(msg) = channel.wait() => {
-                            match msg {
-                                ChannelMsg::Data { ref data } => {
-                                    window.emit_to("main", &format!("{cloned_future_id}_out"), json!(StdoutEventData{message:Bytes::from(data.to_vec())}) )?
-                                }
-                                _ => {}
+                            if let ChannelMsg::Data { ref data } = msg {
+                                window.emit_to("main", &format!("{cloned_future_id}_out"), json!(StdoutEventData{message:Bytes::from(data.to_vec())}) )?
                             }
+
                         },
                         Some(window_event_data) = rx.recv() =>{
                             channel.window_change(window_event_data.cols,window_event_data.rows,0,0).await?
                         }
                     }
                 }
-                Ok::<_, ApiError>(())
             });
 
             {
@@ -251,7 +241,7 @@ pub async fn start_terminal_stream(
         }
     }
 
-    Err(ApiError::NotFoundError {
+    Err(ApiError::NotFound {
         item: format!("host {host_id}"),
     })
 }

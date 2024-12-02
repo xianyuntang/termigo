@@ -1,13 +1,11 @@
-use crate::domain::identity::identity::Identity;
+use crate::domain::identity::lib::Identity;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
 use serde_json::json;
-use std::convert::identity;
 use tauri;
 use tauri::State;
 use tokio::sync::Mutex;
-use url::quirks::username;
 
 #[tauri::command]
 pub async fn list_identities(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
@@ -66,7 +64,7 @@ pub async fn update_identity(
         identity.password = password;
         identity.key = key;
     } else {
-        return Err(ApiError::NotFoundError {
+        return Err(ApiError::NotFound {
             item: "identity".to_string(),
         });
     };
@@ -91,7 +89,7 @@ pub async fn delete_identity(
     if let Some(position) = identities.iter().position(|identity| identity.id == id) {
         identities.remove(position)
     } else {
-        return Err(ApiError::NotFoundError {
+        return Err(ApiError::NotFound {
             item: "identity".to_string(),
         });
     };

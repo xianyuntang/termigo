@@ -2,7 +2,6 @@ use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
 use log;
-use serde_json::json;
 use tauri::async_runtime::Mutex;
 use tauri::State;
 

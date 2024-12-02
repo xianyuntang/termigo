@@ -1,3 +1,3 @@
 pub mod commands;
-mod host;
+mod lib;
 mod terminal;
