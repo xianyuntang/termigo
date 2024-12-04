@@ -3,6 +3,7 @@ import { VsClose } from "solid-icons/vs";
 import { Component, For } from "solid-js";
 import { twMerge } from "tailwind-merge";
 
+import { futureService } from "../../../../services";
 import { useActiveTerminal } from "../../../../stores";
 import IconButton from "../../../shared/icon-button";
 
@@ -18,9 +19,10 @@ const Tabs: Component<TabsProps> = (props) => {
     navigator(`/terminals/${id}`);
   };
 
-  const handleCloseClick = (evt: MouseEvent, id: string) => {
+  const handleCloseClick = async (evt: MouseEvent, id: string) => {
     evt.stopPropagation();
     remove(id);
+    await futureService.stopFuture(id);
     if (activeTerminals.length === 0) {
       navigator(`/hosts`);
     }

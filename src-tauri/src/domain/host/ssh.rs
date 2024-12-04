@@ -18,7 +18,6 @@ impl client::Handler for SshClient {
         &mut self,
         _server_public_key: &PublicKey,
     ) -> Result<bool, Self::Error> {
-        println!("{:#?}", _server_public_key);
         Ok(true)
     }
 }
