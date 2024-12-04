@@ -17,7 +17,9 @@ import { uint8ArrayToString } from "../../../../core";
 import { hostService } from "../../../../services";
 import { useTerminalHistory } from "../../../../stores";
 import {
-  StdoutEventData,
+  InEventData,
+  isOutEventData,
+  TerminalEvent,
   WindowChangeEventData,
 } from "./terminal.interface.ts";
 
@@ -37,12 +39,12 @@ const Terminal: Component<TerminalProps> = (props) => {
 
   const { findOne, update } = useTerminalHistory();
 
+  const fitAddon = new FitAddon();
+  const webglAddon = new WebglAddon();
+
   createEffect(() => {
     const element = ref();
     const terminalId = props.terminalId;
-
-    const fitAddon = new FitAddon();
-    const webglAddon = new WebglAddon();
 
     if (element) {
       const xterm = new Xterm({
@@ -53,9 +55,7 @@ const Terminal: Component<TerminalProps> = (props) => {
 
       xterm.loadAddon(fitAddon);
       xterm.loadAddon(webglAddon);
-
       xterm.open(element);
-      fitAddon.fit();
 
       const handleResize = () => {
         fitAddon.fit();
@@ -68,13 +68,14 @@ const Terminal: Component<TerminalProps> = (props) => {
       }
 
       xterm.onData(async (data) => {
-        await emit(`${terminalId}_in`, { key: data });
+        await emit(terminalId, {
+          data: { in: data } as InEventData,
+        });
       });
       xterm.onResize(async (evt) => {
-        await emit(`${terminalId}_resize`, {
-          cols: evt.cols,
-          rows: evt.rows,
-        } as WindowChangeEventData);
+        await emit(terminalId, {
+          data: { size: [evt.cols, evt.rows] } as WindowChangeEventData,
+        });
       });
 
       setXterm(xterm);
@@ -85,6 +86,7 @@ const Terminal: Component<TerminalProps> = (props) => {
         window.removeEventListener("resize", handleResize);
         xterm.dispose();
         webglAddon.dispose();
+        fitAddon.dispose();
         setXterm(undefined);
         update(terminalId, localHistory());
         setLocalHistory("");
@@ -92,7 +94,7 @@ const Terminal: Component<TerminalProps> = (props) => {
     }
   });
 
-  let unlistenFn: UnlistenFn | undefined;
+  let unlistenOutFn: UnlistenFn | undefined;
   createEffect(() => {
     const currentXterm = xterm();
 
@@ -100,17 +102,26 @@ const Terminal: Component<TerminalProps> = (props) => {
     if (!currentXterm || !terminalId) return;
 
     (async () => {
-      unlistenFn = await listen<StdoutEventData>(`${terminalId}_out`, (evt) => {
-        setLocalHistory((p) => p + uint8ArrayToString(evt.payload.message));
-        currentXterm.write(evt.payload.message);
+      unlistenOutFn = await listen<TerminalEvent>(terminalId, ({ payload }) => {
+        if (isOutEventData(payload)) {
+          setLocalHistory((p) => p + uint8ArrayToString(payload.data.out));
+          currentXterm.write(payload.data.out);
+        }
       });
     })();
 
     onCleanup(() => {
-      if (unlistenFn) {
-        unlistenFn();
+      if (unlistenOutFn) {
+        unlistenOutFn();
       }
     });
+  });
+
+  createEffect(() => {
+    const currentXterm = xterm();
+    if (currentXterm) {
+      fitAddon.fit();
+    }
   });
 
   return <div class="size-full" ref={setRef} />;

@@ -1,19 +1,25 @@
-export interface Message {
-  text: string;
-  source: MessageSource;
+export interface TerminalEvent {
+  data: OutEventData | WindowChangeEventData;
 }
 
-export enum MessageSource {
-  Stdin = "stdin",
-  Stdout = "stdout",
-  Stderr = "stderr",
+export interface OutEventData {
+  out: Uint8Array;
 }
 
-export interface StdoutEventData {
-  message: Uint8Array;
+export interface InEventData {
+  in: string;
 }
 
 export interface WindowChangeEventData {
-  cols: number;
-  rows: number;
+  size: [number, number];
 }
+
+export interface ConnectionEventData {
+  status: "open";
+}
+
+export const isOutEventData = (
+  data: TerminalEvent,
+): data is { data: OutEventData } => {
+  return "data" in data && "out" in data.data;
+};

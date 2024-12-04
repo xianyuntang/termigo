@@ -1,3 +1,4 @@
 pub mod commands;
+mod event;
 mod lib;
-mod terminal;
+mod ssh;

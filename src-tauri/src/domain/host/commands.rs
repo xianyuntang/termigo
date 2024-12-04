@@ -1,7 +1,7 @@
+use crate::domain::host::event::Data::Out;
+use crate::domain::host::event::{Data, EventData};
 use crate::domain::host::lib::Host;
-use crate::domain::host::terminal::{
-    SshClient, StdinEventData, StdoutEventData, WindowChangeEventData,
-};
+use crate::domain::host::ssh::SshClient;
 use crate::domain::identity::lib::Identity;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
@@ -11,11 +11,14 @@ use russh::keys::decode_secret_key;
 use russh::{client, ChannelMsg};
 use serde_json::json;
 use std::sync::Arc;
-use tauri::{Emitter, Listener, State, Window};
+use tauri::{Emitter, Event, Listener, State, Window};
 use tokio::io::duplex;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::runtime;
 use tokio::sync::{mpsc, Mutex};
+use tokio::task::JoinHandle;
 use tokio_util::bytes::Bytes;
+use tokio_util::sync::CancellationToken;
 
 #[tauri::command]
 pub async fn list_hosts(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
@@ -137,15 +140,21 @@ pub async fn start_terminal_stream(
                 ..Default::default()
             });
 
-            let sh = SshClient {};
-            let future_id = terminal_id.clone();
-            let cloned_future_id = future_id.clone();
+            let ssh_client = SshClient::new();
 
-            let handler = tokio::spawn(async move {
+            let cancel_token = CancellationToken::new();
+            let cloned_cancel_token = cancel_token.clone();
+
+            let cloned_terminal_id = terminal_id.clone();
+            let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
                 log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
-                let mut session =
-                    client::connect(config, format!("{}:{}", &host.address, &host.port), sh)
-                        .await?;
+
+                let mut session = client::connect(
+                    config,
+                    format!("{}:{}", &host.address, &host.port),
+                    ssh_client,
+                )
+                .await?;
 
                 if let Some(password) = &identity.password {
                     log::debug!("Trying authenticate password");
@@ -163,55 +172,60 @@ pub async fn start_terminal_stream(
                         message: "connection failed".to_string(),
                     });
                 }
+
                 let mut channel = session.channel_open_session().await?;
 
                 channel.request_pty(true, "xterm", 0, 0, 0, 0, &[]).await?;
                 channel.request_shell(true).await?;
 
                 let (mut reader, writer) = duplex(1024);
-
                 let writer = Arc::new(Mutex::new(writer));
                 let mut buf = vec![0; 1024];
-                let mut stdin_closed = false;
 
-                window.listen(format!("{cloned_future_id}_in"), move |event| {
-                    let cloned_writer = Arc::clone(&writer);
-                    tokio::spawn(async move {
-                        let event_data = serde_json::from_str::<StdinEventData>(event.payload())?;
-                        cloned_writer
-                            .lock()
-                            .await
-                            .write_all(&event_data.key.into_bytes())
-                            .await?;
-
-                        Ok::<(), ApiError>(())
-                    });
-                });
-
+                let rt = runtime::Builder::new_multi_thread().enable_all().build()?;
                 let (tx, mut rx) = mpsc::channel(1024);
                 let cloned_tx = tx.clone();
 
-                window.listen(format!("{cloned_future_id}_resize"), move |event| {
-                    let cloned_tx = cloned_tx.clone();
-                    tokio::spawn(async move {
-                        let event_data =
-                            serde_json::from_str::<WindowChangeEventData>(event.payload())?;
-                        cloned_tx
-                            .send(event_data)
-                            .await
-                            .map_err(|e| ApiError::Custom {
-                                message: e.to_string(),
-                            })?;
-                        Ok::<(), ApiError>(())
-                    });
+                let event_id = window.listen(&cloned_terminal_id, move |event: Event| {
+                    let event_data =
+                        serde_json::from_str::<EventData>(event.payload()).expect("Invalid Event");
+                    match event_data.data {
+                        Data::In(in_data) => {
+                            let cloned_writer = Arc::clone(&writer);
+                            tokio::task::block_in_place(|| {
+                                let _ = rt.block_on(async move {
+                                    cloned_writer
+                                        .lock()
+                                        .await
+                                        .write_all(&in_data.into_bytes())
+                                        .await?;
+
+                                    Ok::<(), ApiError>(())
+                                });
+                            });
+                        }
+                        Data::Size(window_change_data) => {
+                            let cloned_tx = cloned_tx.clone();
+                            tokio::task::block_in_place(|| {
+                                let _ = rt.block_on(async move {
+                                    cloned_tx.send(window_change_data).await.map_err(|e| {
+                                        ApiError::Custom {
+                                            message: e.to_string(),
+                                        }
+                                    })?;
+                                    Ok::<(), ApiError>(())
+                                });
+                            })
+                        }
+                        _ => {}
+                    };
                 });
 
                 loop {
                     tokio::select! {
-                        res = reader.read(&mut buf), if !stdin_closed => {
+                        res = reader.read(&mut buf) => {
                             match res {
                                 Ok(0) => {
-                                    stdin_closed = true;
                                     channel.eof().await?;
                                 },
                                 Ok(n) => {
@@ -222,12 +236,15 @@ pub async fn start_terminal_stream(
                         },
                         Some(msg) = channel.wait() => {
                             if let ChannelMsg::Data { ref data } = msg {
-                                window.emit_to("main", &format!("{cloned_future_id}_out"), json!(StdoutEventData{message:Bytes::from(data.to_vec())}) )?
+                                window.emit_to("main",&cloned_terminal_id, json!(EventData {data:Out(Bytes::from(data.to_vec()))}))?;
                             }
 
                         },
-                        Some(window_event_data) = rx.recv() =>{
-                            channel.window_change(window_event_data.cols,window_event_data.rows,0,0).await?
+                        Some(window_change_event_data) = rx.recv() =>{
+                            channel.window_change(window_change_event_data.0,window_change_event_data.1,0,0).await?
+                        },
+                        _ = cloned_cancel_token.cancelled() =>{
+                            window.unlisten(event_id)
                         }
                     }
                 }
@@ -235,7 +252,7 @@ pub async fn start_terminal_stream(
 
             {
                 let future_manager = &mut state.lock().await.future_manager;
-                future_manager.add(handler, Some(future_id.clone()));
+                future_manager.add(cancel_token, Some(terminal_id.clone()));
             }
             return Ok(Response::new_ok_message());
         }

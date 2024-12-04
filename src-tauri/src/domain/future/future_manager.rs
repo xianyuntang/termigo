@@ -1,34 +1,33 @@
-use crate::infrastructure::error::ApiError;
 use nanoid::nanoid;
 use std::collections::HashMap;
-use tokio::task::JoinHandle;
+use tokio_util::sync::CancellationToken;
 
 pub struct FutureManager {
-    handles: HashMap<String, JoinHandle<Result<(), ApiError>>>,
+    cancel_tokens: HashMap<String, CancellationToken>,
 }
 
 impl FutureManager {
     pub fn new() -> Self {
         Self {
-            handles: HashMap::new(),
+            cancel_tokens: HashMap::new(),
         }
     }
 }
 
 impl FutureManager {
-    pub fn add(&mut self, handle: JoinHandle<Result<(), ApiError>>, id: Option<String>) -> String {
+    pub fn add(&mut self, cancel_token: CancellationToken, id: Option<String>) -> String {
         let id = id.unwrap_or(nanoid!());
-        self.handles.entry(id.clone()).or_insert(handle);
+        self.cancel_tokens.entry(id.clone()).or_insert(cancel_token);
         id
     }
 
     pub fn abort(&mut self, id: &str) {
-        if let Some(handle) = self.handles.remove(id) {
-            handle.abort();
+        if let Some(cancel_token) = self.cancel_tokens.remove(id) {
+            cancel_token.cancel();
         }
     }
 
     pub fn exist(&self, id: &str) -> bool {
-        self.handles.contains_key(id)
+        self.cancel_tokens.contains_key(id)
     }
 }
