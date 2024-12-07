@@ -38,13 +38,15 @@ const Terminal: Component<TerminalProps> = (props) => {
   const [ref, setRef] = createSignal<HTMLDivElement>();
   const [xterm, setXterm] = createSignal<Xterm>();
   const [localHistory, setLocalHistory] = createSignal<string>("");
-  const [status, setStatus] = createSignal<StatusType>(StatusType.Pending);
+  const [localStatus, setLocalStatus] = createSignal<StatusType>(
+    StatusType.Pending,
+  );
 
   createResource(() =>
     hostService.starTerminalStream(props.hostId, props.terminalId),
   );
 
-  const { findOne, update } = useTerminalHistory();
+  const { findOne, update, updateStatus, getStatus } = useTerminalHistory();
 
   const fitAddon = new FitAddon();
   const webglAddon = new WebglAddon();
@@ -69,9 +71,16 @@ const Terminal: Component<TerminalProps> = (props) => {
       };
 
       const history = findOne(props.terminalId);
+
       if (history) {
         setLocalHistory(history);
         xterm.write(history);
+        xterm.focus();
+      }
+
+      const status = getStatus(props.terminalId);
+      if (status) {
+        setLocalStatus(status);
       }
 
       xterm.onData(async (data) => {
@@ -96,7 +105,9 @@ const Terminal: Component<TerminalProps> = (props) => {
         fitAddon.dispose();
         setXterm(undefined);
         update(terminalId, localHistory());
+        updateStatus(terminalId, localStatus());
         setLocalHistory("");
+        setLocalStatus(StatusType.Pending);
       });
     }
   });
@@ -114,7 +125,7 @@ const Terminal: Component<TerminalProps> = (props) => {
           setLocalHistory((p) => p + uint8ArrayToString(payload.data.out));
           currentXterm.write(payload.data.out);
         } else if (isStatusEventData(payload)) {
-          setStatus(payload.data.status);
+          setLocalStatus(payload.data.status);
           if (payload.data.status === StatusType.ChannelOpened) {
             currentXterm.focus();
           } else if (
@@ -150,14 +161,14 @@ const Terminal: Component<TerminalProps> = (props) => {
       <div
         class={twMerge(
           "absolute transition-opacity opacity-100 z-10 flex h-60 w-80 max-w-sm flex-col items-center justify-center rounded-lg border border-gray-700 bg-gray-800 p-6 text-white shadow",
-          status() === StatusType.Connected && "opacity-0",
-          status() === StatusType.ChannelOpened && "hidden",
+          localStatus() === StatusType.Connected && "opacity-0",
+          localStatus() === StatusType.ChannelOpened && "hidden",
         )}
       >
         <Switch>
           <Match
             when={[StatusType.Pending, StatusType.Connecting].includes(
-              status(),
+              localStatus(),
             )}
           >
             <div class="flex w-full justify-center">
@@ -183,20 +194,20 @@ const Terminal: Component<TerminalProps> = (props) => {
             when={[
               StatusType.ConnectionTimeout,
               StatusType.AuthFailed,
-            ].includes(status())}
+            ].includes(localStatus())}
           >
             <ImCross class="size-8" />
           </Match>
           <Match
             when={[StatusType.Connected, StatusType.ChannelOpened].includes(
-              status(),
+              localStatus(),
             )}
           >
             <ImCheckmark class="size-8" />
           </Match>
         </Switch>
 
-        <div class="mt-4">{status()}</div>
+        <div class="mt-4">{localStatus()}</div>
       </div>
     </div>
   );
