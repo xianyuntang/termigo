@@ -3,9 +3,12 @@ use tokio_util::bytes::Bytes;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum StatusType {
-    Open,
-    Close,
     Pending,
+    Connecting,
+    Connected,
+    ChannelOpened,
+    AuthFailed,
+    ConnectionTimeout,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -1,20 +1,22 @@
-use crate::domain::host::event::{Data, EventData};
+use crate::domain::host::event::{Data, EventData, StatusType};
 use crate::domain::host::lib::Host;
 use crate::domain::host::ssh::SshClient;
 use crate::domain::identity::lib::Identity;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
+use crate::infrastructure::error::ApiError::Russh;
 use crate::infrastructure::response::Response;
 use log;
 use russh::keys::decode_secret_key;
-use russh::{client, ChannelMsg};
+use russh::{client, ChannelMsg, Error};
 use serde_json::json;
 use std::sync::Arc;
+use std::time::Duration;
 use tauri::{Emitter, Event, Listener, State, Window};
 use tokio::io::AsyncWriteExt;
-use tokio::runtime;
 use tokio::sync::{mpsc, Mutex};
 use tokio::task::JoinHandle;
+use tokio::time::sleep;
 use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
 
@@ -110,7 +112,10 @@ pub async fn start_terminal_stream(
     host_id: &str,
     terminal_id: String,
 ) -> Result<Response, ApiError> {
-    log::debug!("start_terminal_stream called");
+    log::debug!(
+        "start_terminal_stream called with terminalId {}",
+        terminal_id
+    );
 
     if state.lock().await.future_manager.exist(&terminal_id) {
         return Ok(Response::new_ok_message());
@@ -144,14 +149,36 @@ pub async fn start_terminal_stream(
 
         let cloned_terminal_id = terminal_id.clone();
         let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
+            sleep(Duration::from_secs(1)).await;
             log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
 
-            let mut session = client::connect(
+            window.emit_to(
+                "main",
+                &cloned_terminal_id,
+                json!(EventData {
+                    data: Data::Status(StatusType::Connecting)
+                }),
+            )?;
+
+            let mut session = match client::connect(
                 config,
                 format!("{}:{}", &host.address, &host.port),
                 ssh_client,
             )
-            .await?;
+            .await
+            {
+                Ok(session) => session,
+                Err(_) => {
+                    window.emit_to(
+                        "main",
+                        &cloned_terminal_id,
+                        json!(EventData {
+                            data: Data::Status(StatusType::ConnectionTimeout)
+                        }),
+                    )?;
+                    return Err(Russh(Error::ConnectionTimeout));
+                }
+            };
 
             if let Some(password) = &identity.password {
                 log::debug!("Trying authenticate password");
@@ -165,35 +192,43 @@ pub async fn start_terminal_stream(
                     .authenticate_publickey(&identity.username, Arc::new(key_pair))
                     .await?;
             } else {
-                return Err(ApiError::Custom {
-                    message: "connection failed".to_string(),
-                });
+                window.emit_to(
+                    "main",
+                    &cloned_terminal_id,
+                    json!(EventData {
+                        data: Data::Status(StatusType::AuthFailed)
+                    }),
+                )?;
+                return Err(Russh(Error::NoAuthMethod));
             }
+
+            window.emit_to(
+                "main",
+                &cloned_terminal_id,
+                json!(EventData {
+                    data: Data::Status(StatusType::Connected)
+                }),
+            )?;
 
             let mut channel = session.channel_open_session().await?;
 
             channel.request_pty(true, "xterm", 0, 0, 0, 0, &[]).await?;
             channel.request_shell(true).await?;
 
-            let rt = runtime::Builder::new_multi_thread().enable_all().build()?;
+            window.emit_to(
+                "main",
+                &cloned_terminal_id,
+                json!(EventData {
+                    data: Data::Status(StatusType::ChannelOpened)
+                }),
+            )?;
+
             let (tx, mut rx) = mpsc::channel::<Data>(1024);
 
             let event_id = window.listen(&cloned_terminal_id, move |event: Event| {
                 let event_data =
                     serde_json::from_str::<EventData>(event.payload()).expect("Invalid Event");
-                let cloned_tx = tx.clone();
-
-                tokio::task::block_in_place(|| {
-                    let _ = rt.block_on(async move {
-                        cloned_tx
-                            .send(event_data.data)
-                            .await
-                            .map_err(|e| ApiError::Custom {
-                                message: e.to_string(),
-                            })?;
-                        Ok::<(), ApiError>(())
-                    });
-                });
+                tx.try_send(event_data.data).unwrap();
             });
 
             loop {
@@ -216,7 +251,8 @@ pub async fn start_terminal_stream(
                         };
                     },
                     _ = cloned_cancel_token.cancelled() =>{
-                        window.unlisten(event_id)
+                        window.unlisten(event_id);
+                        return Ok(())
                     }
                 }
             }

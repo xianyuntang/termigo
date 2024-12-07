@@ -1,5 +1,14 @@
+export enum StatusType {
+  Pending = "Pending",
+  Connecting = "Connecting",
+  Connected = "Connected",
+  ChannelOpened = "ChannelOpened",
+  AuthFailed = "AuthFailed",
+  ConnectionTimeout = "ConnectionTimeout",
+}
+
 export interface TerminalEvent {
-  data: OutEventData | WindowChangeEventData;
+  data: OutEventData | WindowChangeEventData | StatusEventData;
 }
 
 export interface OutEventData {
@@ -14,12 +23,18 @@ export interface WindowChangeEventData {
   size: [number, number];
 }
 
-export interface ConnectionEventData {
-  status: "open";
+export interface StatusEventData {
+  status: StatusType;
 }
 
 export const isOutEventData = (
   data: TerminalEvent,
 ): data is { data: OutEventData } => {
   return "data" in data && "out" in data.data;
+};
+
+export const isStatusEventData = (
+  data: TerminalEvent,
+): data is { data: StatusEventData } => {
+  return "data" in data && "status" in data.data;
 };

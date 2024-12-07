@@ -31,9 +31,6 @@ pub enum ApiError {
 
     #[error("The specified {item} was not found.")]
     NotFound { item: String },
-
-    #[error("Error: {message}.")]
-    Custom { message: String },
 }
 
 impl serde::Serialize for ApiError {
