@@ -45,9 +45,7 @@ const IdentitySidebar: ParentComponent<IdentitySidebarProps> = (props) => {
       setForm("label", props.identity?.label || "");
       setForm("username", props.identity?.username || "");
       setForm("password", props.identity?.password || "");
-      if (props.identity.key) {
-        setForm("key", props.identity.key);
-      }
+      setForm("key", props.identity.key || "");
     } else {
       setForm(DEFAULT_FORM);
     }
@@ -80,15 +78,15 @@ const IdentitySidebar: ParentComponent<IdentitySidebarProps> = (props) => {
         props.identity?.id,
         form.username,
         form.label,
-        form.password,
-        form.key,
+        form.password || undefined,
+        form.key || undefined,
       );
     } else {
       await identityService.addIdentity(
         form.username,
         form.label,
-        form.password,
-        form.key,
+        form.password || undefined,
+        form.key || undefined,
       );
     }
 
