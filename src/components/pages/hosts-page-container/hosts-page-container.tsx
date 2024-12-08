@@ -1,7 +1,6 @@
 import { FiPlusCircle } from "solid-icons/fi";
 import { createResource, createSignal, For } from "solid-js";
 
-import { useOutsideClick } from "../../../hooks/utility.hooks.ts";
 import { Host } from "../../../interfaces";
 import { hostService } from "../../../services";
 import IconButton from "../../shared/icon-button";
@@ -11,18 +10,10 @@ import HostSidebar from "./host-sidebar";
 import NewConnectionField from "./new-connection-field";
 
 const HostsPageContainer = () => {
-  const [sidebarRef, setSidebarRef] = createSignal<HTMLElement>();
   const [open, setOpen] = createSignal<boolean>(false);
   const [selectedHost, setSelectedHost] = createSignal<Host>();
 
   const [hosts, { refetch }] = createResource(hostService.listHosts);
-
-  useOutsideClick({
-    ref: sidebarRef,
-    onClick: () => {
-      setOpen(false);
-    },
-  });
 
   const handleOpenAddNewHostClick = () => {
     setSelectedHost(undefined);
@@ -64,7 +55,6 @@ const HostsPageContainer = () => {
         </div>
       </div>
       <HostSidebar
-        ref={setSidebarRef}
         open={open()}
         host={selectedHost()}
         class="fixed -right-80 top-12 z-50 h-[calc(100vh-3rem)] w-80"

@@ -13,7 +13,6 @@ import IconButton from "../../../shared/icon-button";
 import PropertyCard from "../../../shared/property-card";
 import TextField from "../../../shared/text-field";
 import Textarea from "../../../shared/textarea";
-import Toggle from "../../../shared/toggle";
 
 interface IdentitySidebarProps {
   open: boolean;
@@ -29,7 +28,6 @@ interface IdentityForm {
   username: string;
   password: string;
   key: string;
-  useKey: boolean;
 }
 
 const DEFAULT_FORM = Object.freeze({
@@ -37,22 +35,21 @@ const DEFAULT_FORM = Object.freeze({
   username: "",
   password: "",
   key: "",
-  useKey: false,
 });
 
 const IdentitySidebar: ParentComponent<IdentitySidebarProps> = (props) => {
   const [form, setForm] = createStore<IdentityForm>(DEFAULT_FORM);
 
   createEffect(() => {
-    if (props.open) {
-      setForm(DEFAULT_FORM);
-    } else if (props.identity) {
+    if (props.identity) {
       setForm("label", props.identity?.label || "");
       setForm("username", props.identity?.username || "");
       setForm("password", props.identity?.password || "");
       if (props.identity.key) {
         setForm("key", props.identity.key);
       }
+    } else {
+      setForm(DEFAULT_FORM);
     }
   });
 
@@ -68,10 +65,6 @@ const IdentitySidebar: ParentComponent<IdentitySidebarProps> = (props) => {
     setForm("password", value);
   };
 
-  const handleUseKeyChange = (value: boolean) => {
-    setForm("useKey", !value);
-  };
-
   const handleUploadKey = async (file: File) => {
     const text = await readFile(file);
     setForm("key", text);
@@ -82,23 +75,20 @@ const IdentitySidebar: ParentComponent<IdentitySidebarProps> = (props) => {
   };
 
   const handleIdentitySaveClick = async () => {
-    const password = form.useKey ? undefined : form.password;
-    const key = form.useKey ? form.key : "";
-
     if (props.identity?.id) {
       await identityService.updateIdentity(
         props.identity?.id,
         form.username,
         form.label,
-        password,
-        key,
+        form.password,
+        form.key,
       );
     } else {
       await identityService.addIdentity(
         form.username,
         form.label,
-        password,
-        key,
+        form.password,
+        form.key,
       );
     }
 
@@ -165,30 +155,15 @@ const IdentitySidebar: ParentComponent<IdentitySidebarProps> = (props) => {
               value={form.username}
               onChange={handleUsernameChange}
             />
-
-            <Toggle
-              leftText="Password"
-              rightText="Key"
-              onChange={handleUseKeyChange}
+            <TextField
+              label="Password"
+              value={form.password}
+              mask
+              onChange={handlePasswordChange}
             />
-            <Show
-              when={form.useKey}
-              fallback={
-                <TextField
-                  label="Password"
-                  value={form.password}
-                  mask
-                  onChange={handlePasswordChange}
-                />
-              }
-            >
-              <Textarea
-                label="Key"
-                value={form.key}
-                onChange={handleKeyChange}
-              />
-              <DropUploadField onUpload={handleUploadKey} />
-            </Show>
+
+            <Textarea label="Key" value={form.key} onChange={handleKeyChange} />
+            <DropUploadField onUpload={handleUploadKey} />
           </PropertyCard>
         </div>
       </OverlayScrollbarsComponent>

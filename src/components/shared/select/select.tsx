@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { Component, createSignal, For } from "solid-js";
+import { Component, createEffect, createSignal, For } from "solid-js";
 
 interface SelectProps {
   label: string;
@@ -10,7 +10,7 @@ interface SelectProps {
 }
 
 const Select: Component<SelectProps> = (props) => {
-  const [value, setValue] = createSignal<string>(props.defaultValue || "");
+  const [value, setValue] = createSignal<string>("");
   const id = nanoid();
 
   const handleChange = (event: Event & { target: HTMLSelectElement }) => {
@@ -19,6 +19,14 @@ const Select: Component<SelectProps> = (props) => {
       props.onChange(event.target.value);
     }
   };
+
+  createEffect(() => {
+    if (props.defaultValue) {
+      setValue(props.defaultValue);
+    } else {
+      setValue("");
+    }
+  });
 
   return (
     <div class="relative">

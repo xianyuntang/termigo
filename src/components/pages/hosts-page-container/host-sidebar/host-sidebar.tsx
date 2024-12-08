@@ -41,13 +41,14 @@ const HostSidebar: ParentComponent<HostSidebarProps> = (props) => {
   const [identities] = createResource(identityService.listIdentities);
 
   createEffect(() => {
-    if (!props.open) {
-      setHost(DEFAULT_HOST_FORM);
-    } else if (props.host) {
+    if (props.host) {
+      console.log(props.host);
       setHost("label", props.host?.label || "");
       setHost("address", props.host?.address || "");
       setHost("port", props.host?.port.toString() || "22");
       setHost("identityId", props.host?.identityId);
+    } else {
+      setHost(DEFAULT_HOST_FORM);
     }
   });
 

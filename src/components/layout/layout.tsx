@@ -6,7 +6,7 @@ import Sidebar from "./sidebar";
 
 const Layout: ParentComponent = (props) => {
   return (
-    <div class="h-screen w-screen">
+    <div class="h-screen w-screen cursor-default select-none">
       <Navbar class="h-16" />
       <Sidebar class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-48" />
       <main>
