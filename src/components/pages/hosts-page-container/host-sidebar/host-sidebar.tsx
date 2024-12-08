@@ -42,7 +42,6 @@ const HostSidebar: ParentComponent<HostSidebarProps> = (props) => {
 
   createEffect(() => {
     if (props.host) {
-      console.log(props.host);
       setHost("label", props.host?.label || "");
       setHost("address", props.host?.address || "");
       setHost("port", props.host?.port.toString() || "22");

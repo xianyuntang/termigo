@@ -48,7 +48,7 @@ const HostsPageContainer = () => {
           <NewConnectionField />
         </Toolbar>
 
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-4">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
           <For each={hosts()}>
             {(host) => <HostCard host={host} onEdit={handleHostEditClick} />}
           </For>
