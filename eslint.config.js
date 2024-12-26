@@ -1,9 +1,9 @@
 import pluginJs from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
+import reactPlugin from "eslint-plugin-react";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import reactPlugin from "eslint-plugin-react";
 
 export default [
   { files: ["**/*.{js,mjs,cjs,ts}"] },
