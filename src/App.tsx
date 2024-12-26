@@ -6,9 +6,9 @@ import { MultiProvider } from "@solid-primitives/context";
 import { Route, Router } from "@solidjs/router";
 
 import Layout from "./components/layout";
-import HostsPage from "./pages/hosts-page";
-import IdentitiesPage from "./pages/identities-page";
-import TerminalsPage from "./pages/terminals-page";
+import HostsPage from "./components/pages/hosts-page";
+import IdentitiesPage from "./components/pages/identities-page";
+import TerminalsPage from "./components/pages/terminals-page";
 import { ActiveTerminalProvider, TerminalHistoryProvider } from "./stores";
 
 const App = () => {

@@ -1,27 +1,28 @@
 import { FiPlusCircle } from "solid-icons/fi";
 import { createResource, createSignal, For } from "solid-js";
 
-import { Host } from "../../../interfaces";
-import { hostService } from "../../../services";
+import { Identity } from "../../../interfaces";
+import { identityService } from "../../../services";
 import IconButton from "../../shared/icon-button";
 import Toolbar from "../../shared/toolbar";
-import HostCard from "./host-card";
-import HostSidebar from "./host-sidebar";
-import NewConnectionField from "./new-connection-field";
+import IdentityCard from "./identity-card";
+import IdentitySidebar from "./identity-sidebar";
 
-const HostsPageContainer = () => {
+const IdentitiesPage = () => {
   const [open, setOpen] = createSignal<boolean>(false);
-  const [selectedHost, setSelectedHost] = createSignal<Host>();
+  const [selectedIdentity, setSelectedIdentity] = createSignal<Identity>();
 
-  const [hosts, { refetch }] = createResource(hostService.listHosts);
+  const [identities, { refetch }] = createResource(
+    identityService.listIdentities
+  );
 
-  const handleOpenAddNewHostClick = () => {
-    setSelectedHost(undefined);
+  const handleAddNewClick = () => {
+    setSelectedIdentity(undefined);
     setOpen(true);
   };
 
-  const handleHostEditClick = (host: Host) => {
-    setSelectedHost(host);
+  const handleIdentityEditClick = (identity: Identity) => {
+    setSelectedIdentity(identity);
     setOpen(true);
   };
 
@@ -39,24 +40,25 @@ const HostsPageContainer = () => {
     <>
       <div class="flex w-full flex-col">
         <Toolbar>
-          <IconButton
-            tooltip="Add new host"
-            onClick={handleOpenAddNewHostClick}
-          >
+          <IconButton tooltip="Add new host" onClick={handleAddNewClick}>
             <FiPlusCircle class="size-full" />
           </IconButton>
-          <NewConnectionField />
         </Toolbar>
 
         <div class="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
-          <For each={hosts()}>
-            {(host) => <HostCard host={host} onEdit={handleHostEditClick} />}
+          <For each={identities()}>
+            {(identity) => (
+              <IdentityCard
+                identity={identity}
+                onEdit={handleIdentityEditClick}
+              />
+            )}
           </For>
         </div>
       </div>
-      <HostSidebar
+      <IdentitySidebar
         open={open()}
-        host={selectedHost()}
+        identity={selectedIdentity()}
         class="fixed -right-80 top-12 z-50 h-[calc(100vh-3rem)] w-80"
         onSave={handleSave}
         onDelete={handleDelete}
@@ -65,4 +67,4 @@ const HostsPageContainer = () => {
   );
 };
 
-export default HostsPageContainer;
+export default IdentitiesPage;

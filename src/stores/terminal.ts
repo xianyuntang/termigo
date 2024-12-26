@@ -1,7 +1,7 @@
 import { createContextProvider } from "@solid-primitives/context";
 import { createStore } from "solid-js/store";
 
-import { StatusType } from "../components/pages/terminal-page-container/terminal/terminal.interface.ts";
+import { StatusType } from "../components/pages/terminals-page/terminal/terminal.interface.ts";
 
 export interface ActiveTerminal {
   hostId: string;
@@ -12,7 +12,7 @@ export interface ActiveTerminal {
 const [ActiveTerminalProvider, useActiveTerminal] = createContextProvider(
   () => {
     const [activeTerminals, setActiveTerminal] = createStore<ActiveTerminal[]>(
-      [],
+      []
     );
 
     const add = (hostId: string, terminalId: string, label: string) => {
@@ -21,7 +21,7 @@ const [ActiveTerminalProvider, useActiveTerminal] = createContextProvider(
 
     const remove = (terminalId: string) => {
       setActiveTerminal((prev) =>
-        prev.filter((e) => e.terminalId !== terminalId),
+        prev.filter((e) => e.terminalId !== terminalId)
       );
     };
 
@@ -41,7 +41,7 @@ const [ActiveTerminalProvider, useActiveTerminal] = createContextProvider(
     add: () => {},
     remove: () => {},
     findOne: () => undefined,
-  },
+  }
 );
 
 const [TerminalHistoryProvider, useTerminalHistory] = createContextProvider(
@@ -82,7 +82,7 @@ const [TerminalHistoryProvider, useTerminalHistory] = createContextProvider(
     findOne: () => undefined,
     updateStatus: () => {},
     getStatus: () => undefined,
-  },
+  }
 );
 
 export {

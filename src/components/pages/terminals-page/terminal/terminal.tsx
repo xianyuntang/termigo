@@ -17,9 +17,9 @@ import {
 } from "solid-js";
 import { twMerge } from "tailwind-merge";
 
-import { uint8ArrayToString } from "../../../../core";
-import { hostService } from "../../../../services";
-import { useTerminalHistory } from "../../../../stores";
+import { uint8ArrayToString } from "../../../../core/index.ts";
+import { hostService } from "../../../../services/index.ts";
+import { useTerminalHistory } from "../../../../stores/index.ts";
 import {
   InEventData,
   isOutEventData,
@@ -39,11 +39,11 @@ const Terminal: Component<TerminalProps> = (props) => {
   const [xterm, setXterm] = createSignal<Xterm>();
   const [localHistory, setLocalHistory] = createSignal<string>("");
   const [localStatus, setLocalStatus] = createSignal<StatusType>(
-    StatusType.Pending,
+    StatusType.Pending
   );
 
   createResource(() =>
-    hostService.starTerminalStream(props.hostId, props.terminalId),
+    hostService.starTerminalStream(props.hostId, props.terminalId)
   );
 
   const { findOne, update, updateStatus, getStatus } = useTerminalHistory();
@@ -130,7 +130,7 @@ const Terminal: Component<TerminalProps> = (props) => {
             currentXterm.focus();
           } else if (
             [StatusType.ConnectionTimeout, StatusType.AuthFailed].includes(
-              payload.data.status,
+              payload.data.status
             )
           ) {
             currentXterm.dispose();
@@ -162,13 +162,13 @@ const Terminal: Component<TerminalProps> = (props) => {
         class={twMerge(
           "absolute transition-opacity opacity-100 z-10 flex h-60 w-80 max-w-sm flex-col items-center justify-center rounded-lg border border-gray-700 bg-gray-800 p-6 text-white shadow",
           localStatus() === StatusType.Connected && "opacity-0",
-          localStatus() === StatusType.ChannelOpened && "hidden",
+          localStatus() === StatusType.ChannelOpened && "hidden"
         )}
       >
         <Switch>
           <Match
             when={[StatusType.Pending, StatusType.Connecting].includes(
-              localStatus(),
+              localStatus()
             )}
           >
             <div class="flex w-full justify-center">
@@ -200,7 +200,7 @@ const Terminal: Component<TerminalProps> = (props) => {
           </Match>
           <Match
             when={[StatusType.Connected, StatusType.ChannelOpened].includes(
-              localStatus(),
+              localStatus()
             )}
           >
             <ImCheckmark class="size-8" />
