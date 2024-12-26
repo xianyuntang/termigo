@@ -1,4 +1,5 @@
 import pluginJs from "@eslint/js";
+import pluginQuery from "@tanstack/eslint-plugin-query";
 import eslintConfigPrettier from "eslint-config-prettier";
 import reactPlugin from "eslint-plugin-react";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
@@ -13,6 +14,7 @@ export default [
   eslintConfigPrettier,
   reactPlugin.configs.flat.recommended,
   reactPlugin.configs.flat["jsx-runtime"],
+  ...pluginQuery.configs["flat/recommended"],
   {
     plugins: {
       "simple-import-sort": simpleImportSort,

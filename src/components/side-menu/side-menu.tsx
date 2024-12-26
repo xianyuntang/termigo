@@ -2,6 +2,7 @@ import ComputerIcon from "@mui/icons-material/Computer";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
 import {
   Drawer,
+  drawerClasses,
   List,
   ListItem,
   ListItemButton,
@@ -27,19 +28,39 @@ const SideMenu = () => {
   };
 
   return (
-    <Drawer variant="permanent">
-      <List dense>
+    <Drawer
+      variant="permanent"
+      sx={{
+        display: "block",
+        width: "12rem",
+        flexShrink: 0,
+        [`& .${drawerClasses.paper}`]: {
+          width: "12rem",
+        },
+      }}
+    >
+      <List
+        dense
+        sx={(theme) => ({
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: 1,
+          padding: "8px",
+          gap: theme.spacing(1),
+        })}
+      >
         {items.map((item, index) => (
           <ListItem
             key={index}
             sx={{
               display: "block",
             }}
+            disablePadding
           >
             <ListItemButton
               sx={(theme) => {
                 return {
-                  borderRadius: theme.shape.borderRadius,
+                  borderRadius: theme.spacing(0.5),
                 };
               }}
               selected={index === activeIndex}

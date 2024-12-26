@@ -2,8 +2,8 @@ import { AppBar, Toolbar } from "@mui/material";
 
 const AppNavbar = () => {
   return (
-    <AppBar position="fixed">
-      <Toolbar variant="regular"></Toolbar>
+    <AppBar position="sticky">
+      <Toolbar variant="dense"></Toolbar>
     </AppBar>
   );
 };

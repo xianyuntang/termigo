@@ -1,4 +1,10 @@
-import { Box, createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import {
+  Box,
+  createTheme,
+  CssBaseline,
+  GlobalStyles,
+  ThemeProvider,
+} from "@mui/material";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
@@ -9,6 +15,15 @@ const theme = createTheme({
   palette: {
     mode: "dark",
   },
+  components: {
+    MuiCardHeader: {
+      styleOverrides: {
+        root: {
+          cursor: "default",
+        },
+      },
+    },
+  },
 });
 
 export const Route = createRootRoute({
@@ -16,10 +31,22 @@ export const Route = createRootRoute({
     <>
       <ThemeProvider theme={theme}>
         <CssBaseline enableColorScheme />
+        <GlobalStyles
+          styles={{
+            "*": {
+              userSelect: "none",
+            },
+          }}
+        />
         <Box sx={{ display: "flex" }}>
           <SideMenu />
-          <AppNavbar />
-          <Outlet />
+
+          <Box sx={{ flexGrow: 1 }}>
+            <AppNavbar />
+            <Box component="main" sx={{ flexFlow: 1 }}>
+              <Outlet />
+            </Box>
+          </Box>
           <TanStackRouterDevtools />
         </Box>
       </ThemeProvider>

@@ -11,17 +11,11 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as TerminalsIndexImport } from './routes/terminals/index'
 import { Route as IdentitiesIndexImport } from './routes/identities/index'
 import { Route as HostsIndexImport } from './routes/hosts/index'
+import { Route as TerminalsIdImport } from './routes/terminals/$id'
 
 // Create/Update Routes
-
-const TerminalsIndexRoute = TerminalsIndexImport.update({
-  id: '/terminals/',
-  path: '/terminals/',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const IdentitiesIndexRoute = IdentitiesIndexImport.update({
   id: '/identities/',
@@ -35,10 +29,23 @@ const HostsIndexRoute = HostsIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const TerminalsIdRoute = TerminalsIdImport.update({
+  id: '/terminals/$id',
+  path: '/terminals/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terminals/$id': {
+      id: '/terminals/$id'
+      path: '/terminals/$id'
+      fullPath: '/terminals/$id'
+      preLoaderRoute: typeof TerminalsIdImport
+      parentRoute: typeof rootRoute
+    }
     '/hosts/': {
       id: '/hosts/'
       path: '/hosts'
@@ -53,56 +60,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IdentitiesIndexImport
       parentRoute: typeof rootRoute
     }
-    '/terminals/': {
-      id: '/terminals/'
-      path: '/terminals'
-      fullPath: '/terminals'
-      preLoaderRoute: typeof TerminalsIndexImport
-      parentRoute: typeof rootRoute
-    }
   }
 }
 
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
+  '/terminals/$id': typeof TerminalsIdRoute
   '/hosts': typeof HostsIndexRoute
   '/identities': typeof IdentitiesIndexRoute
-  '/terminals': typeof TerminalsIndexRoute
 }
 
 export interface FileRoutesByTo {
+  '/terminals/$id': typeof TerminalsIdRoute
   '/hosts': typeof HostsIndexRoute
   '/identities': typeof IdentitiesIndexRoute
-  '/terminals': typeof TerminalsIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
+  '/terminals/$id': typeof TerminalsIdRoute
   '/hosts/': typeof HostsIndexRoute
   '/identities/': typeof IdentitiesIndexRoute
-  '/terminals/': typeof TerminalsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/hosts' | '/identities' | '/terminals'
+  fullPaths: '/terminals/$id' | '/hosts' | '/identities'
   fileRoutesByTo: FileRoutesByTo
-  to: '/hosts' | '/identities' | '/terminals'
-  id: '__root__' | '/hosts/' | '/identities/' | '/terminals/'
+  to: '/terminals/$id' | '/hosts' | '/identities'
+  id: '__root__' | '/terminals/$id' | '/hosts/' | '/identities/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
+  TerminalsIdRoute: typeof TerminalsIdRoute
   HostsIndexRoute: typeof HostsIndexRoute
   IdentitiesIndexRoute: typeof IdentitiesIndexRoute
-  TerminalsIndexRoute: typeof TerminalsIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  TerminalsIdRoute: TerminalsIdRoute,
   HostsIndexRoute: HostsIndexRoute,
   IdentitiesIndexRoute: IdentitiesIndexRoute,
-  TerminalsIndexRoute: TerminalsIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -115,19 +115,19 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
+        "/terminals/$id",
         "/hosts/",
-        "/identities/",
-        "/terminals/"
+        "/identities/"
       ]
+    },
+    "/terminals/$id": {
+      "filePath": "terminals/$id.tsx"
     },
     "/hosts/": {
       "filePath": "hosts/index.tsx"
     },
     "/identities/": {
       "filePath": "identities/index.tsx"
-    },
-    "/terminals/": {
-      "filePath": "terminals/index.tsx"
     }
   }
 }
