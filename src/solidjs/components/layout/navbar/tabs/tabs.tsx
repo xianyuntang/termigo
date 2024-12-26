@@ -3,7 +3,7 @@ import { VsClose } from "solid-icons/vs";
 import { Component, For } from "solid-js";
 import { twMerge } from "tailwind-merge";
 
-import { futureService } from "../../../../services";
+import { futureService } from "../../../../../services";
 import { useActiveTerminal } from "../../../../stores";
 import IconButton from "../../../shared/icon-button";
 
@@ -32,7 +32,7 @@ const Tabs: Component<TabsProps> = (props) => {
     <div
       class={twMerge(
         "border-gray-700 h-full flex items-center justify-center",
-        props.class,
+        props.class
       )}
     >
       <ul class="flex flex-nowrap text-center text-sm font-medium text-gray-400">

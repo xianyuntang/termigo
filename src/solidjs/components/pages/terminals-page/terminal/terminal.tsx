@@ -17,8 +17,8 @@ import {
 } from "solid-js";
 import { twMerge } from "tailwind-merge";
 
-import { uint8ArrayToString } from "../../../../core/index.ts";
-import { hostService } from "../../../../services/index.ts";
+import { uint8ArrayToString } from "../../../../../core/index.ts";
+import { hostService } from "../../../../../services/index.ts";
 import { useTerminalHistory } from "../../../../stores/index.ts";
 import {
   InEventData,

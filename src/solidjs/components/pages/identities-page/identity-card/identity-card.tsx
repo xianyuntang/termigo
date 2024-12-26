@@ -1,7 +1,7 @@
 import { VsEdit } from "solid-icons/vs";
 import { Component } from "solid-js";
 
-import { Identity } from "../../../../interfaces";
+import { Identity } from "../../../../../interfaces";
 import IconButton from "../../../shared/icon-button";
 
 interface IdentityCardProps {

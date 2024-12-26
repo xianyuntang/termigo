@@ -5,8 +5,8 @@ import { createEffect, createResource, ParentComponent, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import { twMerge } from "tailwind-merge";
 
-import { Host, Identity } from "../../../../interfaces";
-import { hostService, identityService } from "../../../../services";
+import { Host, Identity } from "../../../../../interfaces";
+import { hostService, identityService } from "../../../../../services";
 import IconButton from "../../../shared/icon-button";
 import PropertyCard from "../../../shared/property-card";
 import Select from "../../../shared/select";
@@ -74,14 +74,14 @@ const HostSidebar: ParentComponent<HostSidebarProps> = (props) => {
         host.address,
         parseInt(host.port),
         host.identityId,
-        host.label,
+        host.label
       );
     } else {
       await hostService.addHost(
         host.address,
         parseInt(host.port),
         host.identityId,
-        host.label,
+        host.label
       );
     }
     if (typeof props.onSave === "function") {
@@ -105,7 +105,7 @@ const HostSidebar: ParentComponent<HostSidebarProps> = (props) => {
       class={twMerge(
         "bg-gray-800 transition-transform p-0.5",
         props.open && "-translate-x-full",
-        props.class,
+        props.class
       )}
     >
       <OverlayScrollbarsComponent

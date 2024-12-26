@@ -5,9 +5,9 @@ import { createEffect, ParentComponent, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import { twMerge } from "tailwind-merge";
 
-import { readFile } from "../../../../core";
-import { Identity } from "../../../../interfaces";
-import { identityService } from "../../../../services";
+import { readFile } from "../../../../../core";
+import { Identity } from "../../../../../interfaces";
+import { identityService } from "../../../../../services";
 import DropUploadField from "../../../shared/drop-uplaod-field";
 import IconButton from "../../../shared/icon-button";
 import PropertyCard from "../../../shared/property-card";
@@ -79,14 +79,14 @@ const IdentitySidebar: ParentComponent<IdentitySidebarProps> = (props) => {
         form.username,
         form.label,
         form.password || undefined,
-        form.key || undefined,
+        form.key || undefined
       );
     } else {
       await identityService.addIdentity(
         form.username,
         form.label,
         form.password || undefined,
-        form.key || undefined,
+        form.key || undefined
       );
     }
 
@@ -110,7 +110,7 @@ const IdentitySidebar: ParentComponent<IdentitySidebarProps> = (props) => {
       class={twMerge(
         "overflow-y-auto bg-gray-800 p-0.5 transition-transform",
         props.open && "-translate-x-full",
-        props.class,
+        props.class
       )}
     >
       <OverlayScrollbarsComponent

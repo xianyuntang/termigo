@@ -4,7 +4,7 @@ import { BiRegularTerminal } from "solid-icons/bi";
 import { VsEdit } from "solid-icons/vs";
 import { Component } from "solid-js";
 
-import { Host } from "../../../../interfaces";
+import { Host } from "../../../../../interfaces";
 import { useActiveTerminal } from "../../../../stores";
 import IconButton from "../../../shared/icon-button";
 

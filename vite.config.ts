@@ -1,12 +1,12 @@
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [solid()],
+  plugins: [react()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
