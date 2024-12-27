@@ -9,7 +9,9 @@ import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
 import AppNavbar from "../components/app-navbar";
+import TerminalsPage from "../components/pages/terminals-page";
 import SideMenu from "../components/side-menu";
+import { useTerminalStore } from "../stores";
 
 const theme = createTheme({
   palette: {
@@ -27,7 +29,13 @@ const theme = createTheme({
 });
 
 export const Route = createRootRoute({
-  component: () => (
+  component: RouteComponent,
+});
+
+function RouteComponent() {
+  const activeTerminal = useTerminalStore((state) => state.activeTerminal);
+
+  return (
     <>
       <ThemeProvider theme={theme}>
         <CssBaseline enableColorScheme />
@@ -41,15 +49,15 @@ export const Route = createRootRoute({
         <Box sx={{ display: "flex" }}>
           <SideMenu />
 
-          <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ flexGrow: 1, overflowX: "hidden" }}>
             <AppNavbar />
             <Box component="main" sx={{ flexFlow: 1 }}>
-              <Outlet />
+              {activeTerminal ? <TerminalsPage /> : <Outlet />}
             </Box>
           </Box>
           <TanStackRouterDevtools />
         </Box>
       </ThemeProvider>
     </>
-  ),
-});
+  );
+}

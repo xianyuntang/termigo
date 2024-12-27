@@ -12,8 +12,14 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { useTerminalStore } from "../../stores";
+
 const SideMenu = () => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
+
+  const setActiveTerminal = useTerminalStore(
+    (state) => state.setActiveTerminal
+  );
 
   const navigate = useNavigate();
 
@@ -25,6 +31,7 @@ const SideMenu = () => {
   const handleClick = (index: number, url: string) => {
     navigate({ to: url });
     setActiveIndex(index);
+    setActiveTerminal(null);
   };
 
   return (

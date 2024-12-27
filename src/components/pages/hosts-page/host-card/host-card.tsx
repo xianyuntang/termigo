@@ -1,4 +1,12 @@
-import { Button, Card as _Card, CardActions, CardHeader } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import TerminalIcon from "@mui/icons-material/Terminal";
+import {
+  Card as _Card,
+  CardActions,
+  CardHeader,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 
 import { Host } from "../../../../interfaces";
 
@@ -24,10 +32,17 @@ const HostCard = ({ host, onEditClicked, onConnectClicked }: CardProps) => {
   return (
     <_Card sx={{ width: "15rem" }}>
       <CardHeader title={host.label} />
-
-      <CardActions>
-        <Button onClick={() => handleEditClick(host)}>edit</Button>
-        <Button onClick={() => handleConnectClick(host)}>connect</Button>
+      <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Tooltip title="Edit">
+          <IconButton onClick={() => handleEditClick(host)}>
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Connect">
+          <IconButton onClick={() => handleConnectClick(host)}>
+            <TerminalIcon />
+          </IconButton>
+        </Tooltip>
       </CardActions>
     </_Card>
   );

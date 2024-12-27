@@ -1,9 +1,4 @@
-interface TerminalsPageProps {
-  terminalId: string;
-}
-
-const TerminalsPage = ({ terminalId }: TerminalsPageProps) => {
-  console.log(terminalId);
+const TerminalsPage = () => {
   return <div>TerminalsPage</div>;
 };
 
