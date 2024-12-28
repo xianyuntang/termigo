@@ -1,5 +1,5 @@
 export interface Host {
-  id?: string;
+  id: string;
   address: string;
   port: number;
   identityId: string;

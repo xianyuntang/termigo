@@ -46,13 +46,46 @@ function RouteComponent() {
             },
           }}
         />
-        <Box sx={{ display: "flex" }}>
+        <Box sx={{ display: "flex", height: "100vh" }}>
           <SideMenu />
 
-          <Box sx={{ flexGrow: 1, overflowX: "hidden" }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexGrow: 1,
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
             <AppNavbar />
-            <Box component="main" sx={{ flexFlow: 1 }}>
-              {activeTerminal ? <TerminalsPage /> : <Outlet />}
+            <Box
+              component="main"
+              sx={(theme) => ({
+                flexGrow: 1,
+                padding: theme.spacing(2),
+                minHeight: 0,
+              })}
+            >
+              <Box
+                sx={{
+                  flex: 1,
+                  overflow: "hidden",
+                  display: activeTerminal ? "block" : "none",
+                  height: "100%",
+                }}
+              >
+                <TerminalsPage />
+              </Box>
+              <Box
+                sx={{
+                  flex: 1,
+                  overflow: "auto",
+                  display: activeTerminal ? "none" : "block",
+                  height: "100%",
+                }}
+              >
+                <Outlet />
+              </Box>
             </Box>
           </Box>
           <TanStackRouterDevtools />

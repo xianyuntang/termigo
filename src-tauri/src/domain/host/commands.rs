@@ -179,7 +179,6 @@ pub async fn start_terminal_stream(
                     return Err(Russh(Error::ConnectionTimeout));
                 }
             };
-
             if let Some(password) = &identity.password {
                 log::debug!("Trying authenticate password");
                 session
@@ -230,6 +229,14 @@ pub async fn start_terminal_stream(
                     serde_json::from_str::<EventData>(event.payload()).expect("Invalid Event");
                 tx.try_send(event_data.data).unwrap();
             });
+
+            window.emit_to(
+                "main",
+                &cloned_terminal_id,
+                json!(EventData {
+                    data: Data::Status(StatusType::StartStreaming)
+                }),
+            )?;
 
             loop {
                 tokio::select! {

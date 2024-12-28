@@ -13,6 +13,9 @@ const HostsPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   const addTerminal = useTerminalStore((state) => state.addTerminal);
+  const setActiveTerminal = useTerminalStore(
+    (state) => state.setActiveTerminal
+  );
 
   const { data: hosts } = useQuery({
     queryKey: ["hosts"],
@@ -25,8 +28,9 @@ const HostsPage = () => {
   };
 
   const handleConnectClick = (host: Host) => {
-    console.log(host);
-    addTerminal(nanoid());
+    const terminal = nanoid();
+    addTerminal(terminal, host);
+    setActiveTerminal(terminal);
   };
 
   const handleSidebarClose = () => {

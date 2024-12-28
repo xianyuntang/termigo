@@ -13,7 +13,6 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IdentitiesIndexImport } from './routes/identities/index'
 import { Route as HostsIndexImport } from './routes/hosts/index'
-import { Route as TerminalsIdImport } from './routes/terminals/$id'
 
 // Create/Update Routes
 
@@ -29,23 +28,10 @@ const HostsIndexRoute = HostsIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const TerminalsIdRoute = TerminalsIdImport.update({
-  id: '/terminals/$id',
-  path: '/terminals/$id',
-  getParentRoute: () => rootRoute,
-} as any)
-
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terminals/$id': {
-      id: '/terminals/$id'
-      path: '/terminals/$id'
-      fullPath: '/terminals/$id'
-      preLoaderRoute: typeof TerminalsIdImport
-      parentRoute: typeof rootRoute
-    }
     '/hosts/': {
       id: '/hosts/'
       path: '/hosts'
@@ -66,41 +52,36 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/terminals/$id': typeof TerminalsIdRoute
   '/hosts': typeof HostsIndexRoute
   '/identities': typeof IdentitiesIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '/terminals/$id': typeof TerminalsIdRoute
   '/hosts': typeof HostsIndexRoute
   '/identities': typeof IdentitiesIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/terminals/$id': typeof TerminalsIdRoute
   '/hosts/': typeof HostsIndexRoute
   '/identities/': typeof IdentitiesIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/terminals/$id' | '/hosts' | '/identities'
+  fullPaths: '/hosts' | '/identities'
   fileRoutesByTo: FileRoutesByTo
-  to: '/terminals/$id' | '/hosts' | '/identities'
-  id: '__root__' | '/terminals/$id' | '/hosts/' | '/identities/'
+  to: '/hosts' | '/identities'
+  id: '__root__' | '/hosts/' | '/identities/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  TerminalsIdRoute: typeof TerminalsIdRoute
   HostsIndexRoute: typeof HostsIndexRoute
   IdentitiesIndexRoute: typeof IdentitiesIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  TerminalsIdRoute: TerminalsIdRoute,
   HostsIndexRoute: HostsIndexRoute,
   IdentitiesIndexRoute: IdentitiesIndexRoute,
 }
@@ -115,13 +96,9 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/terminals/$id",
         "/hosts/",
         "/identities/"
       ]
-    },
-    "/terminals/$id": {
-      "filePath": "terminals/$id.tsx"
     },
     "/hosts/": {
       "filePath": "hosts/index.tsx"

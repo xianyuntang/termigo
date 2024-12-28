@@ -40,7 +40,7 @@ const SideMenu = () => {
       sx={{
         display: "block",
         width: "12rem",
-        flexShrink: 0,
+        height: "100vh",
         [`& .${drawerClasses.paper}`]: {
           width: "12rem",
         },
