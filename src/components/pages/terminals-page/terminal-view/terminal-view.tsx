@@ -59,7 +59,10 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     queryFn: () => hostService.starTerminalStream(host.id, terminal),
   });
 
-  const ERROR_STATUS = [StatusType.ConnectionTimeout, StatusType.AuthFailed];
+  const ERROR_STATUS = useMemo(
+    () => [StatusType.ConnectionTimeout, StatusType.AuthFailed],
+    []
+  );
 
   const initXterm = useCallback(
     (element: HTMLDivElement) => {
@@ -82,7 +85,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
       setXterm(xterm);
       return xterm;
     },
-    [theme.palette.background.paper, setFitAddon, setXterm]
+    [theme.palette.background.paper]
   );
 
   useEffect(() => {
@@ -92,7 +95,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
       xterm.dispose();
       setXterm(undefined);
     };
-  }, [containerRef]);
+  }, [containerRef, initXterm]);
 
   useEffect(() => {
     if (!fitAddon || !containerRef) return;
@@ -106,7 +109,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     return () => {
       observer.disconnect();
     };
-  }, [fitAddon, containerRef]);
+  }, [fitAddon, containerRef, resize]);
 
   useEffect(() => {
     if (!xterm) return;
@@ -125,7 +128,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     return () => {
       xterm.dispose();
     };
-  }, [xterm]);
+  }, [xterm, terminal]);
 
   useEffect(() => {
     if (!xterm) return;
@@ -159,7 +162,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         unlistenOutFn();
       }
     };
-  }, [xterm]);
+  }, [xterm, ERROR_STATUS, terminal]);
 
   const progress = useMemo(() => {
     switch (status) {
