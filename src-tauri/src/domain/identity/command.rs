@@ -49,7 +49,7 @@ pub async fn update_identity(
     label: Option<String>,
     username: String,
     password: Option<String>,
-    key: Option<String>,
+    public_key: Option<String>,
 ) -> Result<Response, ApiError> {
     log::debug!("add_identity called");
 
@@ -62,7 +62,7 @@ pub async fn update_identity(
         identity.label = label;
         identity.username = username;
         identity.password = password;
-        identity.key = key;
+        identity.public_key = public_key;
     } else {
         return Err(ApiError::NotFound {
             item: "identity".to_string(),

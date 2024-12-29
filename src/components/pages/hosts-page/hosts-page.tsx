@@ -1,4 +1,5 @@
-import { Box, Grid2 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import { Box, Button, Grid2, Toolbar } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
 import { useState } from "react";
@@ -11,20 +12,21 @@ import Sidebar from "./sidebar";
 
 const HostsPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [selectedHost, setSelectedHost] = useState<Host | undefined>(undefined);
 
   const addTerminal = useTerminalStore((state) => state.addTerminal);
   const setActiveTerminal = useTerminalStore(
     (state) => state.setActiveTerminal
   );
 
-  const { data: hosts } = useQuery({
+  const { data: hosts, refetch } = useQuery({
     queryKey: ["hosts"],
     queryFn: hostService.listHosts,
   });
 
   const handleEditClick = (host: Host) => {
-    console.log(host);
     setIsSidebarOpen(true);
+    setSelectedHost(host);
   };
 
   const handleConnectClick = (host: Host) => {
@@ -37,12 +39,23 @@ const HostsPage = () => {
     setIsSidebarOpen(false);
   };
 
+  const handleAddClick = () => {
+    setIsSidebarOpen(true);
+    setSelectedHost(undefined);
+  };
+
+  const handleSaveClick = () => {
+    setIsSidebarOpen(false);
+    refetch();
+  };
+
   return (
-    <Box
-      sx={(theme) => ({
-        padding: theme.spacing(2),
-      })}
-    >
+    <Box>
+      <Toolbar>
+        <Button endIcon={<AddIcon />} onClick={handleAddClick}>
+          add new
+        </Button>
+      </Toolbar>
       <Grid2 container spacing={2} sx={{ flexGrow: 1 }}>
         {hosts?.map((host) => (
           <Grid2 key={host.id}>
@@ -55,7 +68,12 @@ const HostsPage = () => {
         ))}
       </Grid2>
 
-      <Sidebar isOpen={isSidebarOpen} onClose={handleSidebarClose} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        host={selectedHost}
+        onClose={handleSidebarClose}
+        onSave={handleSaveClick}
+      />
     </Box>
   );
 };
