@@ -15,10 +15,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
-import { readFile } from "../../../../core";
 import { AuthType, Host } from "../../../../interfaces";
-import { hostService, identityService } from "../../../../services";
-import Dropzone from "../../../shared/dropzone";
+import {
+  hostService,
+  identityService,
+  publicKeyService,
+} from "../../../../services";
 import SidebarCard from "../../../shared/sidebar-card";
 
 interface SidebarProps {
@@ -99,6 +101,13 @@ export const Sidebar = ({
     queryFn: identityService.listIdentities,
   });
 
+  const { data: publicKeys } = useQuery({
+    queryKey: ["publicKeys"],
+    queryFn: publicKeyService.list,
+  });
+
+  const authType = watch("authType");
+
   useEffect(() => {
     setValue("id", host?.id);
     setValue("label", host?.label || "");
@@ -119,11 +128,6 @@ export const Sidebar = ({
       onClose();
       reset();
     }
-  };
-
-  const handleFilesDrop = async (files: File[]) => {
-    const text = await readFile(files[0]);
-    setValue("publicKey", text);
   };
 
   const handleDelete = async () => {
@@ -219,7 +223,7 @@ export const Sidebar = ({
               )}
             />
 
-            {watch("authType") === AuthType.Identity && (
+            {authType === AuthType.Identity && (
               <Controller
                 name="identity"
                 control={control}
@@ -241,7 +245,7 @@ export const Sidebar = ({
                 )}
               />
             )}
-            {watch("authType") === AuthType.Username && (
+            {authType === AuthType.Username && (
               <>
                 <Controller
                   name="username"
@@ -269,20 +273,23 @@ export const Sidebar = ({
                 <Controller
                   name="publicKey"
                   control={control}
+                  rules={{ required: true }}
                   render={({ field }) => (
-                    <FormControl fullWidth>
-                      <TextField
-                        {...field}
+                    <FormControl fullWidth size="small">
+                      <InputLabel id="public-key-select">Public Key</InputLabel>
+                      <Select
+                        labelId="public-key-select"
                         label="Public Key"
-                        multiline
-                        minRows={5}
-                      />
+                        {...field}
+                      >
+                        {publicKeys?.map((publicKey) => (
+                          <MenuItem key={publicKey.id} value={publicKey.id}>
+                            {publicKey.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
                     </FormControl>
                   )}
-                />
-                <Dropzone
-                  text="Drag and drop to import public key"
-                  onFilesDrop={handleFilesDrop}
                 />
               </>
             )}

@@ -5,8 +5,9 @@ import {
   GlobalStyles,
   ThemeProvider,
 } from "@mui/material";
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { useEffect } from "react";
 
 import AppNavbar from "../components/app-navbar";
 import TerminalsPage from "../components/pages/terminals-page";
@@ -33,6 +34,12 @@ export const Route = createRootRoute({
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate({ to: "/hosts" });
+  }, [navigate]);
+
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
 
   return (

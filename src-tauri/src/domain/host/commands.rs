@@ -2,6 +2,7 @@ use crate::domain::host::event::{Data, EventData, StatusType};
 use crate::domain::host::lib::Host;
 use crate::domain::host::ssh::SshClient;
 use crate::domain::identity::lib::Identity;
+use crate::domain::public_keys::lib::PublicKey;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::error::ApiError::Russh;
@@ -150,11 +151,14 @@ pub async fn start_terminal_stream(
         return Ok(Response::new_ok_message());
     }
 
-    let (hosts, identities) = {
+    let (hosts, identities, public_keys) = {
         let store = &mut state.lock().await.store;
         (
             serde_json::from_value::<Vec<Host>>(store.get("hosts").unwrap_or(json!([])))?,
             serde_json::from_value::<Vec<Identity>>(store.get("identities").unwrap_or(json!([])))?,
+            serde_json::from_value::<Vec<PublicKey>>(
+                store.get("public_keys").unwrap_or(json!([])),
+            )?,
         )
     };
 
@@ -170,11 +174,14 @@ pub async fn start_terminal_stream(
             .find(|identity| identity.id == id)
             .cloned()
     });
+
     let (username, password, public_key) = if host.auth_type == AuthType::Username {
         (
             host.username.clone(),
             host.password.clone(),
-            host.public_key.clone(),
+            host.public_key
+                .and_then(|id| public_keys.iter().find(|public_key| public_key.id == id))
+                .map(|p| p.content.clone()),
         )
     } else {
         (
@@ -184,7 +191,9 @@ pub async fn start_terminal_stream(
                 .and_then(|identity| identity.password.clone()),
             identity
                 .as_ref()
-                .and_then(|identity| identity.public_key.clone()),
+                .and_then(|identity| identity.public_key.clone())
+                .and_then(|id| public_keys.iter().find(|public_key| public_key.id == id))
+                .map(|p| p.content.clone()),
         )
     };
 

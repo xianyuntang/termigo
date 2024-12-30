@@ -12,6 +12,7 @@ import {
   DialogContentText,
   DialogTitle,
   LinearProgress,
+  Typography,
   useTheme,
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
@@ -206,6 +207,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
                 variant="determinate"
                 value={progress}
               />
+              <Typography variant="body2">{status}</Typography>
             </DialogContentText>
           </DialogContent>
           <DialogActions>
