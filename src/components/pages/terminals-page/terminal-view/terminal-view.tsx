@@ -46,6 +46,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   const [fitAddon, setFitAddon] = useState<FitAddon | undefined>(undefined);
   const [status, setStatus] = useState<StatusType>(StatusType.Pending);
 
+  const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
 
   const theme = useTheme();
@@ -64,6 +65,12 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     () => [StatusType.ConnectionTimeout, StatusType.AuthFailed],
     []
   );
+
+  useEffect(() => {
+    if (activeTerminal === terminal) {
+      xterm?.focus();
+    }
+  }, [activeTerminal, terminal, xterm]);
 
   const initXterm = useCallback(
     (element: HTMLDivElement) => {
@@ -84,6 +91,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
 
       setFitAddon(fitAddon);
       setXterm(xterm);
+
       return xterm;
     },
     [theme.palette.background.paper]
@@ -149,7 +157,6 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
                   size: [xterm.cols, xterm.rows],
                 } as WindowChangeEventData,
               });
-              xterm.focus();
             } else if (ERROR_STATUS.includes(payload.data.status)) {
               await futureService.stopFuture(terminal);
             }
