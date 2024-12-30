@@ -95,7 +95,8 @@ function RouteComponent() {
               </Box>
             </Box>
           </Box>
-          <TanStackRouterDevtools />
+
+          {!import.meta.env.PROD && <TanStackRouterDevtools />}
         </Box>
       </ThemeProvider>
     </>
