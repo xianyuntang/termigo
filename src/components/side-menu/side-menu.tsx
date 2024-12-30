@@ -1,4 +1,5 @@
 import ComputerIcon from "@mui/icons-material/Computer";
+import KeyIcon from "@mui/icons-material/Key";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
 import {
   Drawer,
@@ -26,6 +27,7 @@ const SideMenu = () => {
   const items = [
     { icon: <ComputerIcon />, text: "Hosts", url: "/hosts" },
     { icon: <PermIdentityIcon />, text: "Identities", url: "/identities" },
+    { icon: <KeyIcon />, text: "Public Keys", url: "/public-keys" },
   ];
 
   const handleClick = (index: number, url: string) => {

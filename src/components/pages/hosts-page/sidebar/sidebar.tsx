@@ -12,7 +12,7 @@ import {
   TextField,
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
 import { readFile } from "../../../../core";
@@ -26,10 +26,11 @@ interface SidebarProps {
   host?: Host;
   onClose?: () => void;
   onSave?: () => void;
-  onDelete?: (host: string) => void;
+  onDelete?: () => void;
 }
 
 interface ModifyHostForm {
+  id?: string;
   label: string;
   address: string;
   port: number;
@@ -47,8 +48,6 @@ export const Sidebar = ({
   onSave,
   onDelete,
 }: SidebarProps) => {
-  const [hostId, setHostId] = useState<string | undefined>(host?.id);
-
   const { handleSubmit, control, setValue, reset, watch } =
     useForm<ModifyHostForm>({
       defaultValues: {
@@ -63,10 +62,12 @@ export const Sidebar = ({
       },
     });
 
+  const id = watch("id");
+
   const onSubmit: SubmitHandler<ModifyHostForm> = async (data) => {
-    if (hostId) {
-      await hostService.updateHost(
-        hostId,
+    if (data.id) {
+      await hostService.update(
+        data.id,
         data.address,
         data.port,
         data.authType,
@@ -77,7 +78,7 @@ export const Sidebar = ({
         data.publicKey
       );
     } else {
-      const response = await hostService.addHost(
+      await hostService.add(
         data.address,
         data.port,
         data.authType,
@@ -87,7 +88,6 @@ export const Sidebar = ({
         data.password,
         data.publicKey
       );
-      setHostId(response.id);
     }
     if (typeof onSave === "function") {
       onSave();
@@ -100,7 +100,7 @@ export const Sidebar = ({
   });
 
   useEffect(() => {
-    setHostId(host?.id);
+    setValue("id", host?.id);
     setValue("label", host?.label || "");
     setValue("address", host?.address || "");
     setValue("port", host?.port || 22);
@@ -127,8 +127,12 @@ export const Sidebar = ({
   };
 
   const handleDelete = async () => {
-    if (hostId && typeof onDelete === "function") {
-      onDelete(hostId);
+    if (id) {
+      await hostService.remove(id);
+    }
+
+    if (typeof onDelete === "function") {
+      onDelete();
     }
   };
 
@@ -291,7 +295,7 @@ export const Sidebar = ({
             <Button
               endIcon={<DeleteIcon />}
               color="error"
-              disabled={!hostId}
+              disabled={!watch()}
               onClick={handleDelete}
             >
               delete

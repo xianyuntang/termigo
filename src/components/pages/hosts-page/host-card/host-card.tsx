@@ -1,7 +1,7 @@
 import EditIcon from "@mui/icons-material/Edit";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import {
-  Card as _Card,
+  Card,
   CardActions,
   CardHeader,
   IconButton,
@@ -17,34 +17,34 @@ interface CardProps {
 }
 
 const HostCard = ({ host, onEditClicked, onConnectClicked }: CardProps) => {
-  const handleEditClick = (host: Host) => {
+  const handleEditClick = () => {
     if (typeof onEditClicked === "function") {
       onEditClicked(host);
     }
   };
 
-  const handleConnectClick = (host: Host) => {
+  const handleConnectClick = () => {
     if (typeof onConnectClicked === "function") {
       onConnectClicked(host);
     }
   };
 
   return (
-    <_Card sx={{ width: "15rem" }}>
+    <Card sx={{ width: "15rem" }}>
       <CardHeader title={host.label} />
       <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
         <Tooltip title="Edit">
-          <IconButton onClick={() => handleEditClick(host)}>
+          <IconButton onClick={handleEditClick}>
             <EditIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Connect">
-          <IconButton onClick={() => handleConnectClick(host)}>
+          <IconButton onClick={handleConnectClick}>
             <TerminalIcon />
           </IconButton>
         </Tooltip>
       </CardActions>
-    </_Card>
+    </Card>
   );
 };
 
