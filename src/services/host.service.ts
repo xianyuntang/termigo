@@ -6,6 +6,24 @@ class HostService {
     return invoker<OKMessage>("start_terminal_stream", { host, terminal });
   };
 
+  startTunnelStream = async (
+    host: string,
+    tunnel: string,
+    localAddress: string,
+    localPort: number,
+    destinationAddress: string,
+    destinationPort: number
+  ) => {
+    return invoker<OKMessage>("start_tunnel_stream", {
+      host,
+      tunnel,
+      localAddress,
+      localPort,
+      destinationAddress,
+      destinationPort,
+    });
+  };
+
   list = async () => {
     return invoker<Host[]>("list_hosts");
   };

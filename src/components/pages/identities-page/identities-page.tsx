@@ -7,6 +7,7 @@ import { Identity } from "../../../interfaces";
 import { identityService } from "../../../services";
 import IdentityCard from "./identity-card";
 import Sidebar from "./sidebar";
+import { IdentityForm } from "./sidebar/sidebar";
 
 const PublicKeysPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -25,11 +26,30 @@ const PublicKeysPage = () => {
   const handleSidebarClose = () => {
     setIsSidebarOpen(false);
   };
-  const handleSaveClick = () => {
+  const handleSaveClick = async (form: IdentityForm) => {
+    if (form.id) {
+      await identityService.update(
+        form.id,
+        form.label,
+        form.username,
+        form.password,
+        form.publicKey
+      );
+    } else {
+      await identityService.add(
+        form.label,
+        form.username,
+        form.password,
+        form.publicKey
+      );
+    }
     setIsSidebarOpen(false);
     refetch();
   };
-  const handleDeleteClick = () => {
+  const handleDeleteClick = async (id?: string) => {
+    if (id) {
+      await identityService.delete(id);
+    }
     setIsSidebarOpen(false);
     refetch();
   };
@@ -48,12 +68,9 @@ const PublicKeysPage = () => {
         </Button>
       </Toolbar>
       <Grid2 container spacing={2} sx={{ flexGrow: 1 }}>
-        {data?.map((e) => (
-          <Grid2 key={e.id}>
-            <IdentityCard
-              identity={e}
-              onEditClicked={() => handleEditClick(e)}
-            />
+        {data?.map((identity) => (
+          <Grid2 key={identity.id}>
+            <IdentityCard identity={identity} onEditClicked={handleEditClick} />
           </Grid2>
         ))}
       </Grid2>

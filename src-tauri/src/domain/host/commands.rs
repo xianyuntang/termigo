@@ -1,11 +1,10 @@
 use crate::domain::host::event::{Data, EventData, StatusType};
-use crate::domain::host::lib::Host;
+use crate::domain::host::models::Host;
+use crate::domain::host::session::get_session_credential;
 use crate::domain::host::ssh::SshClient;
-use crate::domain::identity::lib::Identity;
-use crate::domain::public_keys::lib::PublicKey;
+
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
-use crate::infrastructure::error::ApiError::Russh;
 use crate::infrastructure::response::Response;
 use crate::infrastructure::transform::convert_empty_to_option;
 use log;
@@ -13,16 +12,15 @@ use russh::keys::decode_secret_key;
 use russh::{client, ChannelMsg, Error};
 use serde_json::json;
 use std::sync::Arc;
-use std::time::Duration;
 use tauri::{Emitter, Event, Listener, State, Window};
-use tokio::io::AsyncWriteExt;
+use tokio::io::{self, AsyncWriteExt};
+use tokio::net::TcpListener;
 use tokio::sync::{mpsc, Mutex};
 use tokio::task::JoinHandle;
-use tokio::time::sleep;
 use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
 
-use super::lib::AuthType;
+use super::models::AuthType;
 
 #[tauri::command]
 pub async fn list_hosts(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
@@ -151,68 +149,20 @@ pub async fn start_terminal_stream(
         return Ok(Response::new_ok_message());
     }
 
-    let (hosts, identities, public_keys) = {
-        let store = &mut state.lock().await.store;
-        (
-            serde_json::from_value::<Vec<Host>>(store.get("hosts").unwrap_or(json!([])))?,
-            serde_json::from_value::<Vec<Identity>>(store.get("identities").unwrap_or(json!([])))?,
-            serde_json::from_value::<Vec<PublicKey>>(
-                store.get("public_keys").unwrap_or(json!([])),
-            )?,
-        )
-    };
-
-    let host = hosts
-        .iter()
-        .find(|h| h.id == host)
-        .cloned()
-        .ok_or(ApiError::NotFound { item: host })?;
-
-    let identity = host.identity.and_then(|id| {
-        identities
-            .iter()
-            .find(|identity| identity.id == id)
-            .cloned()
-    });
-    let (username, password, public_key) = if host.auth_type == AuthType::Username {
-        (
-            host.username.clone(),
-            host.password.clone(),
-            host.public_key
-                .and_then(|id| public_keys.iter().find(|public_key| public_key.id == id))
-                .map(|p| p.content.clone()),
-        )
-    } else {
-        (
-            identity.as_ref().map(|identity| identity.username.clone()),
-            identity
-                .as_ref()
-                .and_then(|identity| identity.password.clone()),
-            identity
-                .as_ref()
-                .and_then(|identity| identity.public_key.clone())
-                .and_then(|id| public_keys.iter().find(|public_key| public_key.id == id))
-                .map(|p| p.content.clone()),
-        )
-    };
-
-    let username = username.ok_or(ApiError::NotFound {
-        item: "username".to_string(),
-    })?;
-
-    let config = Arc::new(client::Config {
-        ..Default::default()
-    });
-
-    let ssh_client = SshClient::new();
+    let (host, username, password, public_key) = get_session_credential(&state, host).await?;
 
     let cancel_token = CancellationToken::new();
     let cloned_cancel_token = cancel_token.clone();
 
     let cloned_terminal = terminal.clone();
     let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
-        sleep(Duration::from_secs(1)).await;
         log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
+
+        let config = Arc::new(client::Config {
+            ..Default::default()
+        });
+
+        let ssh_client = SshClient::new();
 
         window.emit_to(
             "main",
@@ -238,7 +188,7 @@ pub async fn start_terminal_stream(
                         data: Data::Status(StatusType::ConnectionTimeout)
                     }),
                 )?;
-                return Err(Russh(Error::ConnectionTimeout));
+                return Err(ApiError::Russh(Error::ConnectionTimeout));
             }
         };
         let mut auth_res = false;
@@ -262,7 +212,7 @@ pub async fn start_terminal_stream(
                     data: Data::Status(StatusType::AuthFailed)
                 }),
             )?;
-            return Err(Russh(Error::NoAuthMethod));
+            return Err(ApiError::Russh(Error::NoAuthMethod));
         }
 
         window.emit_to(
@@ -286,12 +236,12 @@ pub async fn start_terminal_stream(
             }),
         )?;
 
-        let (tx, mut rx) = mpsc::channel::<Data>(1024);
+        let (tx, mut rx) = mpsc::unbounded_channel::<Data>();
 
         let event_id = window.listen(&cloned_terminal, move |event: Event| {
             let event_data =
                 serde_json::from_str::<EventData>(event.payload()).expect("Invalid Event");
-            tx.try_send(event_data.data).unwrap();
+            tx.send(event_data.data).unwrap();
         });
 
         window.emit_to(
@@ -332,6 +282,152 @@ pub async fn start_terminal_stream(
     {
         let future_manager = &mut state.lock().await.future_manager;
         future_manager.add(cancel_token, Some(terminal.clone()));
+    }
+    Ok(Response::new_ok_message())
+}
+
+#[tauri::command]
+#[allow(clippy::too_many_arguments)]
+pub async fn start_tunnel_stream(
+    window: Window,
+    state: State<'_, Mutex<AppData>>,
+    host: String,
+    tunnel: String,
+    local_address: String,
+    local_port: u32,
+    destination_address: String,
+    destination_port: u32,
+) -> Result<Response, ApiError> {
+    log::debug!("start_tunnel_stream called");
+
+    if state.lock().await.future_manager.exist(&tunnel) {
+        return Ok(Response::new_ok_message());
+    }
+
+    let (host, username, password, public_key) = get_session_credential(&state, host).await?;
+
+    let cancel_token = CancellationToken::new();
+    let cloned_cancel_token = cancel_token.clone();
+
+    let cloned_tunnel = tunnel.clone();
+    let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
+        log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
+
+        let config = Arc::new(client::Config {
+            ..Default::default()
+        });
+
+        let ssh_client = SshClient::new();
+
+        window.emit_to(
+            "main",
+            &cloned_tunnel,
+            json!(EventData {
+                data: Data::Status(StatusType::Connecting)
+            }),
+        )?;
+
+        let session = match client::connect(
+            config,
+            format!("{}:{}", &host.address, &host.port),
+            ssh_client,
+        )
+        .await
+        {
+            Ok(session) => Arc::new(Mutex::new(session)),
+            Err(_) => {
+                window.emit_to(
+                    "main",
+                    &cloned_tunnel,
+                    json!(EventData {
+                        data: Data::Status(StatusType::ConnectionTimeout)
+                    }),
+                )?;
+                return Err(ApiError::Russh(Error::ConnectionTimeout));
+            }
+        };
+        let mut auth_res = false;
+
+        if let Some(password) = password {
+            log::debug!("Trying authenticate password");
+            auth_res = session
+                .lock()
+                .await
+                .authenticate_password(username, password)
+                .await?;
+        } else if let Some(public_key) = public_key {
+            log::debug!("Trying authenticate public key");
+            let key_pair = decode_secret_key(&public_key, None)?;
+            auth_res = session
+                .lock()
+                .await
+                .authenticate_publickey(username, Arc::new(key_pair))
+                .await?;
+        }
+
+        if !auth_res {
+            window.emit_to(
+                "main",
+                &cloned_tunnel,
+                json!(EventData {
+                    data: Data::Status(StatusType::AuthFailed)
+                }),
+            )?;
+            return Err(ApiError::Russh(Error::NoAuthMethod));
+        }
+
+        window.emit_to(
+            "main",
+            &cloned_tunnel,
+            json!(EventData {
+                data: Data::Status(StatusType::Connected)
+            }),
+        )?;
+
+        let listener = TcpListener::bind(format!("{local_address}:{local_port}")).await?;
+
+        loop {
+            tokio::select! {
+                incoming = listener.accept() => {
+                    if let Ok((mut socket,_)) = incoming {
+                        let cloned_session = Arc::clone(&session);
+                        let cloned_destination_address = destination_address.clone();
+                        let cloned_local_address = local_address.clone();
+                        tokio::spawn(async move {
+                            let channel = cloned_session
+                                .lock()
+                                .await
+                                .channel_open_direct_tcpip(
+                                    &cloned_destination_address,
+                                    destination_port,
+                                    &cloned_local_address,
+                                    local_port,
+                                )
+                                .await?;
+
+                            let (mut ri, mut wi) = socket.split();
+                            let stream = channel.into_stream();
+                            let (mut rc, mut wc) = io::split(stream);
+
+                            let client_to_remote = io::copy(&mut ri, &mut wc);
+                            let remote_to_client = io::copy(&mut rc, &mut wi);
+
+                            tokio::try_join!(client_to_remote, remote_to_client)?;
+
+                            Ok::<(),ApiError>(())
+                        });
+                    }
+                }
+                _ = cloned_cancel_token.cancelled() =>{
+                    return Ok(())
+                }
+            };
+        }
+    });
+
+    {
+        let future_manager = &mut state.lock().await.future_manager;
+        future_manager.add(cancel_token, Some(tunnel.clone()));
     }
     Ok(Response::new_ok_message())
 }

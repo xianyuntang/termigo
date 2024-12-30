@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use russh::client;
 use russh::keys::key::PublicKey;
 
+#[derive(Clone)]
 pub struct SshClient {}
 
 impl SshClient {

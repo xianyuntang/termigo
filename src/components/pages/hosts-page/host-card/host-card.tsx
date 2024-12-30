@@ -1,3 +1,4 @@
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import EditIcon from "@mui/icons-material/Edit";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import {
@@ -14,9 +15,15 @@ interface CardProps {
   host: Host;
   onEditClicked?: (host: Host) => void;
   onConnectClicked?: (host: Host) => void;
+  onTunnelClicked?: (host: Host) => void;
 }
 
-const HostCard = ({ host, onEditClicked, onConnectClicked }: CardProps) => {
+const HostCard = ({
+  host,
+  onEditClicked,
+  onConnectClicked,
+  onTunnelClicked,
+}: CardProps) => {
   const handleEditClick = () => {
     if (typeof onEditClicked === "function") {
       onEditClicked(host);
@@ -29,6 +36,12 @@ const HostCard = ({ host, onEditClicked, onConnectClicked }: CardProps) => {
     }
   };
 
+  const handleTunnelClick = () => {
+    if (typeof onTunnelClicked === "function") {
+      onTunnelClicked(host);
+    }
+  };
+
   return (
     <Card sx={{ width: "15rem" }}>
       <CardHeader title={host.label} />
@@ -36,6 +49,11 @@ const HostCard = ({ host, onEditClicked, onConnectClicked }: CardProps) => {
         <Tooltip title="Edit">
           <IconButton onClick={handleEditClick}>
             <EditIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Port Forward">
+          <IconButton onClick={handleTunnelClick}>
+            <ArrowForwardIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Connect">

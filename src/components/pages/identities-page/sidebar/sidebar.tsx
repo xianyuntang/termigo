@@ -16,18 +16,18 @@ import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
 import { Identity } from "../../../../interfaces";
-import { identityService, publicKeyService } from "../../../../services";
+import { publicKeyService } from "../../../../services";
 import SidebarCard from "../../../shared/sidebar-card";
 
 interface SidebarProps {
   isOpen: boolean;
   identity?: Identity;
   onClose?: () => void;
-  onSave?: () => void;
-  onDelete?: () => void;
+  onSave?: (form: IdentityForm) => void;
+  onDelete?: (id?: string) => void;
 }
 
-interface ModifyPublicKeyForm {
+export interface IdentityForm {
   id?: string;
   label: string;
   username: string;
@@ -48,7 +48,7 @@ export const Sidebar = ({
   });
 
   const { handleSubmit, control, setValue, reset, watch } =
-    useForm<ModifyPublicKeyForm>({
+    useForm<IdentityForm>({
       defaultValues: {
         label: "",
         username: "",
@@ -59,26 +59,9 @@ export const Sidebar = ({
 
   const id = watch("id");
 
-  const onSubmit: SubmitHandler<ModifyPublicKeyForm> = async (data) => {
-    console.log(123);
-    if (data.id) {
-      await identityService.update(
-        data.id,
-        data.label,
-        data.username,
-        data.password,
-        data.publicKey
-      );
-    } else {
-      await identityService.add(
-        data.label,
-        data.username,
-        data.password,
-        data.publicKey
-      );
-    }
+  const onSubmit: SubmitHandler<IdentityForm> = async (data) => {
     if (typeof onSave === "function") {
-      onSave();
+      onSave(data);
     }
   };
 
@@ -98,11 +81,8 @@ export const Sidebar = ({
   };
 
   const handleDelete = async () => {
-    if (id) {
-      await identityService.delete(id);
-    }
     if (typeof onDelete === "function") {
-      onDelete();
+      onDelete(id);
     }
   };
 
@@ -117,105 +97,103 @@ export const Sidebar = ({
         },
       }}
     >
-      <form>
-        <Box
-          sx={(theme) => ({
-            padding: theme.spacing(2),
-            display: "flex",
-            flexDirection: "column",
-            gap: theme.spacing(2),
-          })}
+      <Box
+        sx={(theme) => ({
+          padding: theme.spacing(2),
+          display: "flex",
+          flexDirection: "column",
+          gap: theme.spacing(2),
+        })}
+      >
+        <SidebarCard title="General">
+          <Controller
+            name="label"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth>
+                <TextField
+                  {...field}
+                  label="Label"
+                  size="small"
+                  autoCapitalize="off"
+                  autoComplete="off"
+                />
+              </FormControl>
+            )}
+          />
+        </SidebarCard>
+
+        <SidebarCard title="Key Information">
+          <Controller
+            name="username"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth>
+                <TextField
+                  {...field}
+                  label="Username"
+                  size="small"
+                  autoCapitalize="off"
+                  autoComplete="off"
+                />
+              </FormControl>
+            )}
+          />
+          <Controller
+            name="password"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth>
+                <TextField
+                  {...field}
+                  label="Password"
+                  size="small"
+                  autoCapitalize="off"
+                  autoComplete="off"
+                />
+              </FormControl>
+            )}
+          />
+
+          <Controller
+            name="publicKey"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth size="small">
+                <InputLabel id="public-key-select">Public Key</InputLabel>
+                <Select
+                  labelId="public-key-select"
+                  label="Public Key"
+                  {...field}
+                >
+                  {publicKeys?.map((publicKey) => (
+                    <MenuItem key={publicKey.id} value={publicKey.id}>
+                      {publicKey.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          />
+        </SidebarCard>
+
+        <ButtonGroup
+          size="small"
+          sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
         >
-          <SidebarCard title="General">
-            <Controller
-              name="label"
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth>
-                  <TextField
-                    {...field}
-                    label="Label"
-                    size="small"
-                    autoCapitalize="off"
-                    autoComplete="off"
-                  />
-                </FormControl>
-              )}
-            />
-          </SidebarCard>
-
-          <SidebarCard title="Key Information">
-            <Controller
-              name="username"
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth>
-                  <TextField
-                    {...field}
-                    label="Username"
-                    size="small"
-                    autoCapitalize="off"
-                    autoComplete="off"
-                  />
-                </FormControl>
-              )}
-            />
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth>
-                  <TextField
-                    {...field}
-                    label="Password"
-                    size="small"
-                    autoCapitalize="off"
-                    autoComplete="off"
-                  />
-                </FormControl>
-              )}
-            />
-
-            <Controller
-              name="publicKey"
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth size="small">
-                  <InputLabel id="public-key-select">Public Key</InputLabel>
-                  <Select
-                    labelId="public-key-select"
-                    label="Public Key"
-                    {...field}
-                  >
-                    {publicKeys?.map((publicKey) => (
-                      <MenuItem key={publicKey.id} value={publicKey.id}>
-                        {publicKey.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            />
-          </SidebarCard>
-
-          <ButtonGroup
-            size="small"
-            sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
+          <Button
+            endIcon={<DeleteIcon />}
+            color="error"
+            disabled={!id}
+            onClick={handleDelete}
           >
-            <Button
-              endIcon={<DeleteIcon />}
-              color="error"
-              disabled={!id}
-              onClick={handleDelete}
-            >
-              delete
-            </Button>
-            <Button endIcon={<CheckIcon />} onClick={handleSubmit(onSubmit)}>
-              save
-            </Button>
-          </ButtonGroup>
-        </Box>
-      </form>
+            delete
+          </Button>
+          <Button endIcon={<CheckIcon />} onClick={handleSubmit(onSubmit)}>
+            save
+          </Button>
+        </ButtonGroup>
+      </Box>
     </Drawer>
   );
 };

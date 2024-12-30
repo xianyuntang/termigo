@@ -14,6 +14,7 @@ use crate::domain::public_keys::command::{
 };
 use crate::infrastructure::app::AppData;
 
+use domain::host::commands::start_tunnel_stream;
 use tauri::Manager;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::Mutex;
@@ -45,6 +46,7 @@ pub fn run() {
             list_hosts,
             update_host,
             start_terminal_stream,
+            start_tunnel_stream,
             // Identity
             add_identity,
             delete_identity,

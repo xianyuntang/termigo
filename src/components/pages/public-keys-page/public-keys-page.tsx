@@ -6,7 +6,7 @@ import { useState } from "react";
 import { PublicKey } from "../../../interfaces";
 import { publicKeyService } from "../../../services";
 import PublicKeyCard from "./public-key-card";
-import { Sidebar } from "./sidebar";
+import { PublicKeyForm, Sidebar } from "./sidebar";
 
 const PublicKeysPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -25,11 +25,19 @@ const PublicKeysPage = () => {
   const handleSidebarClose = () => {
     setIsSidebarOpen(false);
   };
-  const handleSaveClick = () => {
+  const handleSaveClick = async (form: PublicKeyForm) => {
+    if (form.id) {
+      await publicKeyService.update(form.id, form.label, form.content);
+    } else {
+      await publicKeyService.add(form.label, form.content);
+    }
     setIsSidebarOpen(false);
     refetch();
   };
-  const handleDeleteClick = () => {
+  const handleDeleteClick = async (id?: string) => {
+    if (id) {
+      await publicKeyService.delete(id);
+    }
     setIsSidebarOpen(false);
     refetch();
   };
@@ -48,11 +56,11 @@ const PublicKeysPage = () => {
         </Button>
       </Toolbar>
       <Grid2 container spacing={2} sx={{ flexGrow: 1 }}>
-        {data?.map((e) => (
-          <Grid2 key={e.id}>
+        {data?.map((publicKey) => (
+          <Grid2 key={publicKey.id}>
             <PublicKeyCard
-              publicKey={e}
-              onEditClicked={() => handleEditClick(e)}
+              publicKey={publicKey}
+              onEditClicked={handleEditClick}
             />
           </Grid2>
         ))}
