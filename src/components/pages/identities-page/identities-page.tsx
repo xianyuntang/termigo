@@ -1,5 +1,72 @@
-const IdentitiesPage = () => {
-  return <div>IdentitiesPage</div>;
+import AddIcon from "@mui/icons-material/Add";
+import { Box, Button, Grid2, Toolbar } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
+import { Identity } from "../../../interfaces";
+import { identityService } from "../../../services";
+import IdentityCard from "./identity-card";
+import Sidebar from "./sidebar";
+
+const PublicKeysPage = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [selected, setSelected] = useState<Identity | undefined>(undefined);
+
+  const { data, refetch } = useQuery({
+    queryKey: ["identities"],
+    queryFn: identityService.list,
+  });
+
+  const handleAddClick = () => {
+    setSelected(undefined);
+    setIsSidebarOpen(true);
+  };
+
+  const handleSidebarClose = () => {
+    setIsSidebarOpen(false);
+  };
+  const handleSaveClick = () => {
+    setIsSidebarOpen(false);
+    refetch();
+  };
+  const handleDeleteClick = () => {
+    setIsSidebarOpen(false);
+    refetch();
+  };
+
+  const handleEditClick = (identity: Identity) => {
+    setIsSidebarOpen(true);
+    setSelected(identity);
+    refetch();
+  };
+
+  return (
+    <Box>
+      <Toolbar>
+        <Button endIcon={<AddIcon />} onClick={handleAddClick}>
+          add new
+        </Button>
+      </Toolbar>
+      <Grid2 container spacing={2} sx={{ flexGrow: 1 }}>
+        {data?.map((e) => (
+          <Grid2 key={e.id}>
+            <IdentityCard
+              identity={e}
+              onEditClicked={() => handleEditClick(e)}
+            />
+          </Grid2>
+        ))}
+      </Grid2>
+
+      <Sidebar
+        isOpen={isSidebarOpen}
+        identity={selected}
+        onClose={handleSidebarClose}
+        onSave={handleSaveClick}
+        onDelete={handleDeleteClick}
+      />
+    </Box>
+  );
 };
 
-export default IdentitiesPage;
+export default PublicKeysPage;

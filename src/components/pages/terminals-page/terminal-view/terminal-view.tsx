@@ -207,7 +207,9 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
                 variant="determinate"
                 value={progress}
               />
-              <Typography variant="body2">{status}</Typography>
+              <Typography component="span" variant="body2">
+                {status}
+              </Typography>
             </DialogContentText>
           </DialogContent>
           <DialogActions>

@@ -2,41 +2,41 @@ import { invoker } from "../core";
 import { Identity, OKMessage } from "../interfaces";
 
 class identityService {
-  listIdentities = async () => {
+  list = async () => {
     return invoker<Identity[]>("list_identities");
   };
 
-  addIdentity = async (
+  add = async (
     username: string,
-    label?: string,
-    password?: string,
-    key?: string
+    label: string,
+    password: string,
+    publicKey: string
   ) => {
     return invoker<OKMessage>("add_identity", {
       username,
       label,
       password,
-      key,
+      publicKey,
     });
   };
 
-  updateIdentity = async (
+  update = async (
     id: string,
+    label: string,
     username: string,
-    label?: string,
-    password?: string,
-    key?: string
+    password: string,
+    publicKey: string
   ) => {
     return invoker<OKMessage>("update_identity", {
       id,
-      username,
       label,
+      username,
       password,
-      key,
+      publicKey,
     });
   };
 
-  deleteIdentity = async (id: string) => {
+  delete = async (id: string) => {
     return invoker<OKMessage>("delete_identity", { id });
   };
 }

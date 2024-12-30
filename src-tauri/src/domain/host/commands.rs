@@ -174,7 +174,6 @@ pub async fn start_terminal_stream(
             .find(|identity| identity.id == id)
             .cloned()
     });
-
     let (username, password, public_key) = if host.auth_type == AuthType::Username {
         (
             host.username.clone(),

@@ -98,7 +98,7 @@ export const Sidebar = ({
 
   const { data: identities } = useQuery({
     queryKey: ["identities"],
-    queryFn: identityService.listIdentities,
+    queryFn: identityService.list,
   });
 
   const { data: publicKeys } = useQuery({
@@ -236,7 +236,7 @@ export const Sidebar = ({
                       label="Identity"
                     >
                       {identities?.map((identity) => (
-                        <MenuItem key={identity.id} value={identity.label}>
+                        <MenuItem key={identity.id} value={identity.id}>
                           {identity.label || identity.username}
                         </MenuItem>
                       ))}

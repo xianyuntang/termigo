@@ -13,7 +13,7 @@ const PublicKeysPage = () => {
   const [selected, setSelected] = useState<PublicKey | undefined>(undefined);
 
   const { data, refetch } = useQuery({
-    queryKey: ["public-key"],
+    queryKey: ["public-keys"],
     queryFn: publicKeyService.list,
   });
 
