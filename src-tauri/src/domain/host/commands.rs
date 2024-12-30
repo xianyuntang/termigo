@@ -6,6 +6,7 @@ use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::error::ApiError::Russh;
 use crate::infrastructure::response::Response;
+use crate::infrastructure::transform::convert_empty_to_option;
 use log;
 use russh::keys::decode_secret_key;
 use russh::{client, ChannelMsg, Error};
@@ -36,21 +37,28 @@ pub async fn list_hosts(state: State<'_, Mutex<AppData>>) -> Result<Response, Ap
 #[allow(clippy::too_many_arguments)]
 pub async fn add_host(
     state: State<'_, Mutex<AppData>>,
-    label: Option<String>,
+    label: String,
     address: String,
     port: u32,
     auth_type: AuthType,
-    identity: Option<String>,
-    username: Option<String>,
-    password: Option<String>,
-    public_key: Option<String>,
+    identity: String,
+    username: String,
+    password: String,
+    public_key: String,
 ) -> Result<Response, ApiError> {
     log::debug!("add_host called");
 
     let store = &mut state.lock().await.store;
 
     let host = Host::new(
-        label, address, port, auth_type, identity, username, password, public_key,
+        convert_empty_to_option(label),
+        address,
+        port,
+        auth_type,
+        convert_empty_to_option(identity),
+        convert_empty_to_option(username),
+        convert_empty_to_option(password),
+        convert_empty_to_option(public_key),
     );
     let mut hosts = serde_json::from_value::<Vec<Host>>(store.get("hosts").unwrap_or(json!([])))?;
 
@@ -65,14 +73,14 @@ pub async fn add_host(
 pub async fn update_host(
     state: State<'_, Mutex<AppData>>,
     id: String,
-    label: Option<String>,
+    label: String,
     address: String,
     port: u32,
     auth_type: AuthType,
-    identity: Option<String>,
-    username: Option<String>,
-    password: Option<String>,
-    public_key: Option<String>,
+    identity: String,
+    username: String,
+    password: String,
+    public_key: String,
 ) -> Result<Response, ApiError> {
     log::debug!("update_host called");
 
@@ -81,14 +89,14 @@ pub async fn update_host(
     let mut hosts = serde_json::from_value::<Vec<Host>>(store.get("hosts").unwrap_or(json!([])))?;
 
     let host = if let Some(host) = hosts.iter_mut().find(|host| host.id == id) {
-        host.label = label;
+        host.label = convert_empty_to_option(label);
         host.address = address;
         host.port = port;
         host.auth_type = auth_type;
-        host.identity = identity;
-        host.username = username;
-        host.password = password;
-        host.public_key = public_key;
+        host.identity = convert_empty_to_option(identity);
+        host.username = convert_empty_to_option(username);
+        host.password = convert_empty_to_option(password);
+        host.public_key = convert_empty_to_option(public_key);
 
         Some(host.clone())
     } else {
@@ -136,7 +144,7 @@ pub async fn start_terminal_stream(
     host: String,
     terminal: String,
 ) -> Result<Response, ApiError> {
-    log::debug!("start_terminal_stream called with terminalId {}", terminal);
+    log::debug!("start_terminal_stream called");
 
     if state.lock().await.future_manager.exist(&terminal) {
         return Ok(Response::new_ok_message());
@@ -225,17 +233,20 @@ pub async fn start_terminal_stream(
                 return Err(Russh(Error::ConnectionTimeout));
             }
         };
+        let mut auth_res = false;
 
         if let Some(password) = password {
             log::debug!("Trying authenticate password");
-            session.authenticate_password(username, password).await?;
+            auth_res = session.authenticate_password(username, password).await?;
         } else if let Some(public_key) = public_key {
             log::debug!("Trying authenticate public key");
             let key_pair = decode_secret_key(&public_key, None)?;
-            session
+            auth_res = session
                 .authenticate_publickey(username, Arc::new(key_pair))
                 .await?;
-        } else {
+        }
+
+        if !auth_res {
             window.emit_to(
                 "main",
                 &cloned_terminal,

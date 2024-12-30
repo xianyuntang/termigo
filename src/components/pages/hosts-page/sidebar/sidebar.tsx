@@ -26,6 +26,7 @@ interface SidebarProps {
   host?: Host;
   onClose?: () => void;
   onSave?: () => void;
+  onDelete?: (host: string) => void;
 }
 
 interface ModifyHostForm {
@@ -39,7 +40,13 @@ interface ModifyHostForm {
   publicKey: string;
 }
 
-export const Sidebar = ({ isOpen, host, onClose, onSave }: SidebarProps) => {
+export const Sidebar = ({
+  isOpen,
+  host,
+  onClose,
+  onSave,
+  onDelete,
+}: SidebarProps) => {
   const [hostId, setHostId] = useState<string | undefined>(host?.id);
 
   const { handleSubmit, control, setValue, reset, watch } =
@@ -105,7 +112,7 @@ export const Sidebar = ({ isOpen, host, onClose, onSave }: SidebarProps) => {
       setValue("password", host?.password || "");
       setValue("publicKey", host?.publicKey || "");
     }
-  }, [host, setValue]);
+  }, [host, setValue, isOpen]);
 
   const handleClose = () => {
     if (typeof onClose === "function") {
@@ -117,6 +124,12 @@ export const Sidebar = ({ isOpen, host, onClose, onSave }: SidebarProps) => {
   const handleFilesDrop = async (files: File[]) => {
     const text = await readFile(files[0]);
     setValue("publicKey", text);
+  };
+
+  const handleDelete = async () => {
+    if (hostId && typeof onDelete === "function") {
+      onDelete(hostId);
+    }
   };
 
   return (
@@ -275,7 +288,12 @@ export const Sidebar = ({ isOpen, host, onClose, onSave }: SidebarProps) => {
             size="small"
             sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
           >
-            <Button endIcon={<DeleteIcon />} color="error">
+            <Button
+              endIcon={<DeleteIcon />}
+              color="error"
+              disabled={!hostId}
+              onClick={handleDelete}
+            >
               delete
             </Button>
             <Button endIcon={<CheckIcon />} onClick={handleSubmit(onSubmit)}>

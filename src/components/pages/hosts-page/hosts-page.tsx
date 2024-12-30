@@ -49,6 +49,12 @@ const HostsPage = () => {
     refetch();
   };
 
+  const handleDeleteClick = async (host: string) => {
+    await hostService.removeHost(host);
+    setIsSidebarOpen(false);
+    refetch();
+  };
+
   return (
     <Box>
       <Toolbar>
@@ -73,6 +79,7 @@ const HostsPage = () => {
         host={selectedHost}
         onClose={handleSidebarClose}
         onSave={handleSaveClick}
+        onDelete={handleDeleteClick}
       />
     </Box>
   );

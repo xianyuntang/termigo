@@ -1,11 +1,8 @@
 import { invoker } from "../core";
 import { AuthType, Host, OKMessage } from "../interfaces";
 
-export const starTerminalStream = async (
-  hostId: string,
-  terminalId: string
-) => {
-  return invoker<OKMessage>("start_terminal_stream", { hostId, terminalId });
+export const starTerminalStream = async (host: string, terminal: string) => {
+  return invoker<OKMessage>("start_terminal_stream", { host, terminal });
 };
 
 export const listHosts = async () => {
