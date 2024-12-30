@@ -1,8 +1,9 @@
 import pluginJs from "@eslint/js";
+import pluginQuery from "@tanstack/eslint-plugin-query";
 import eslintConfigPrettier from "eslint-config-prettier";
+import reactPlugin from "eslint-plugin-react";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
-import solidRecommended from "eslint-plugin-solid/configs/recommended";
-import tailwind from "eslint-plugin-tailwindcss";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -12,8 +13,18 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   eslintConfigPrettier,
-  solidRecommended,
-  ...tailwind.configs["flat/recommended"],
+  reactPlugin.configs.flat.recommended,
+  reactPlugin.configs.flat["jsx-runtime"],
+  ...pluginQuery.configs["flat/recommended"],
+  {
+    plugins: {
+      "react-hooks": reactHooksPlugin,
+    },
+    rules: {
+      "react/react-in-jsx-scope": "off",
+      ...reactHooksPlugin.configs.recommended.rules,
+    },
+  },
   {
     plugins: {
       "simple-import-sort": simpleImportSort,

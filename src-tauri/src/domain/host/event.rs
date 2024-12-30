@@ -7,6 +7,7 @@ pub enum StatusType {
     Connecting,
     Connected,
     ChannelOpened,
+    StartStreaming,
     AuthFailed,
     ConnectionTimeout,
 }

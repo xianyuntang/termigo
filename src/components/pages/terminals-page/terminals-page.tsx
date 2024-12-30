@@ -1,26 +1,26 @@
-import { useParams } from "@solidjs/router";
-import { createEffect, createSignal, Show } from "solid-js";
+import { Box } from "@mui/material";
 
-import { useActiveTerminal } from "../../../stores";
-import Terminal from "./terminal";
+import { useTerminalStore } from "../../../stores";
+import TerminalView from "./terminal-view/terminal-view";
 
 const TerminalsPage = () => {
-  const { terminalId } = useParams();
-  const [hostId, setHostId] = createSignal<string>();
-
-  const { findOne } = useActiveTerminal();
-
-  createEffect(() => {
-    const activeTerminal = findOne(terminalId);
-    setHostId(activeTerminal?.hostId);
-  });
+  const activeTerminal = useTerminalStore((state) => state.activeTerminal);
+  const openedTerminals = useTerminalStore((state) => state.openedTerminals);
 
   return (
-    <div class="size-full">
-      <Show when={hostId()}>
-        {(hostId) => <Terminal hostId={hostId()} terminalId={terminalId} />}
-      </Show>
-    </div>
+    <>
+      {openedTerminals.map((openedTerminal) => (
+        <Box
+          key={openedTerminal}
+          sx={{
+            display: openedTerminal === activeTerminal ? "block" : "none",
+            height: "100%",
+          }}
+        >
+          <TerminalView terminal={openedTerminal} />
+        </Box>
+      ))}
+    </>
   );
 };
 

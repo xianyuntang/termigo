@@ -1,1 +1,1 @@
-export { default } from "./identity-card.tsx";
+export { default } from "./identity-card";

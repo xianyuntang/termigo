@@ -1,7 +1,16 @@
+export enum AuthType {
+  Username = "Username",
+  Identity = "Identity",
+}
+
 export interface Host {
-  id?: string;
+  id: string;
   address: string;
   port: number;
-  identityId: string;
   label?: string;
+  authType: AuthType;
+  identity?: string;
+  username?: string;
+  password?: string;
+  publicKey?: string;
 }

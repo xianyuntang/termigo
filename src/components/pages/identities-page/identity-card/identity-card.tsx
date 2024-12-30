@@ -1,28 +1,37 @@
-import { VsEdit } from "solid-icons/vs";
-import { Component } from "solid-js";
+import EditIcon from "@mui/icons-material/Edit";
+import {
+  Card,
+  CardActions,
+  CardHeader,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 
 import { Identity } from "../../../../interfaces";
-import IconButton from "../../../shared/icon-button";
 
 interface IdentityCardProps {
   identity: Identity;
-  onEdit: (identity: Identity) => void;
+  onEditClicked?: (identity: Identity) => void;
 }
 
-const IdentityCard: Component<IdentityCardProps> = (props) => {
+const IdentityCard = ({ identity, onEditClicked }: IdentityCardProps) => {
   const handleEditClick = () => {
-    if (typeof props.onEdit === "function") {
-      props.onEdit(props.identity);
+    if (typeof onEditClicked === "function") {
+      onEditClicked(identity);
     }
   };
 
   return (
-    <div class="flex grow items-center justify-between rounded-lg border border-gray-700 bg-gray-800 p-3 shadow">
-      <div class="text-white">{props.identity.label}</div>
-      <IconButton tooltip="Edit" onClick={handleEditClick}>
-        <VsEdit class="size-full" />
-      </IconButton>
-    </div>
+    <Card sx={{ width: "15rem" }}>
+      <CardHeader title={identity.label} />
+      <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Tooltip title="Edit">
+          <IconButton onClick={handleEditClick}>
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+      </CardActions>
+    </Card>
   );
 };
 

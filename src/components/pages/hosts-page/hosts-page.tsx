@@ -1,67 +1,86 @@
-import { FiPlusCircle } from "solid-icons/fi";
-import { createResource, createSignal, For } from "solid-js";
+import AddIcon from "@mui/icons-material/Add";
+import { Box, Button, Grid2, Toolbar } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import { nanoid } from "nanoid";
+import { useState } from "react";
 
 import { Host } from "../../../interfaces";
 import { hostService } from "../../../services";
-import IconButton from "../../shared/icon-button";
-import Toolbar from "../../shared/toolbar";
+import { useTerminalStore } from "../../../stores";
 import HostCard from "./host-card";
-import HostSidebar from "./host-sidebar";
-import NewConnectionField from "./new-connection-field";
+import Sidebar from "./sidebar";
 
 const HostsPage = () => {
-  const [open, setOpen] = createSignal<boolean>(false);
-  const [selectedHost, setSelectedHost] = createSignal<Host>();
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [selected, setSelected] = useState<Host | undefined>(undefined);
 
-  const [hosts, { refetch }] = createResource(hostService.listHosts);
+  const addTerminal = useTerminalStore((state) => state.addTerminal);
+  const setActiveTerminal = useTerminalStore(
+    (state) => state.setActiveTerminal
+  );
 
-  const handleOpenAddNewHostClick = () => {
-    setSelectedHost(undefined);
-    setOpen(true);
+  const { data, refetch } = useQuery({
+    queryKey: ["hosts"],
+    queryFn: hostService.list,
+  });
+
+  const handleEditClick = (host: Host) => {
+    setIsSidebarOpen(true);
+    setSelected(host);
   };
 
-  const handleHostEditClick = (host: Host) => {
-    setSelectedHost(host);
-    setOpen(true);
+  const handleConnectClick = (host: Host) => {
+    const terminal = nanoid();
+    addTerminal(terminal, host);
+    setActiveTerminal(terminal);
   };
 
-  const handleSave = async () => {
+  const handleSidebarClose = () => {
+    setIsSidebarOpen(false);
+  };
+
+  const handleAddClick = () => {
+    setIsSidebarOpen(true);
+    setSelected(undefined);
+  };
+
+  const handleSaveClick = () => {
+    setIsSidebarOpen(false);
     refetch();
-    setOpen(false);
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = async () => {
+    setIsSidebarOpen(false);
     refetch();
-    setOpen(false);
   };
 
   return (
-    <>
-      <div class="flex w-full flex-col">
-        <Toolbar>
-          <IconButton
-            tooltip="Add new host"
-            onClick={handleOpenAddNewHostClick}
-          >
-            <FiPlusCircle class="size-full" />
-          </IconButton>
-          <NewConnectionField />
-        </Toolbar>
+    <Box>
+      <Toolbar>
+        <Button endIcon={<AddIcon />} onClick={handleAddClick}>
+          add new
+        </Button>
+      </Toolbar>
+      <Grid2 container spacing={2} sx={{ flexGrow: 1 }}>
+        {data?.map((e) => (
+          <Grid2 key={e.id}>
+            <HostCard
+              host={e}
+              onEditClicked={() => handleEditClick(e)}
+              onConnectClicked={() => handleConnectClick(e)}
+            />
+          </Grid2>
+        ))}
+      </Grid2>
 
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
-          <For each={hosts()}>
-            {(host) => <HostCard host={host} onEdit={handleHostEditClick} />}
-          </For>
-        </div>
-      </div>
-      <HostSidebar
-        open={open()}
-        host={selectedHost()}
-        class="fixed -right-80 top-12 z-50 h-[calc(100vh-3rem)] w-80"
-        onSave={handleSave}
-        onDelete={handleDelete}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        host={selected}
+        onClose={handleSidebarClose}
+        onSave={handleSaveClick}
+        onDelete={handleDeleteClick}
       />
-    </>
+    </Box>
   );
 };
 

@@ -9,6 +9,9 @@ use crate::domain::host::commands::{
 use crate::domain::identity::command::{
     add_identity, delete_identity, list_identities, update_identity,
 };
+use crate::domain::public_keys::command::{
+    add_public_key, delete_public_key, list_public_keys, update_public_key,
+};
 use crate::infrastructure::app::AppData;
 
 use tauri::Manager;
@@ -37,17 +40,22 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             // Host
-            list_hosts,
             add_host,
-            update_host,
             delete_host,
-            // Identity
-            list_identities,
-            add_identity,
-            update_identity,
-            delete_identity,
-            // Future
+            list_hosts,
+            update_host,
             start_terminal_stream,
+            // Identity
+            add_identity,
+            delete_identity,
+            list_identities,
+            update_identity,
+            // Public Keys
+            add_public_key,
+            delete_public_key,
+            list_public_keys,
+            update_public_key,
+            // Future
             stop_future
         ])
         .run(tauri::generate_context!())

@@ -2,6 +2,7 @@ use crate::domain::identity::lib::Identity;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
+use crate::infrastructure::transform::convert_empty_to_option;
 use serde_json::json;
 use tauri;
 use tauri::State;
@@ -21,10 +22,10 @@ pub async fn list_identities(state: State<'_, Mutex<AppData>>) -> Result<Respons
 #[tauri::command]
 pub async fn add_identity(
     state: State<'_, Mutex<AppData>>,
-    label: Option<String>,
+    label: String,
     username: String,
-    password: Option<String>,
-    key: Option<String>,
+    password: String,
+    public_key: String,
 ) -> Result<Response, ApiError> {
     log::debug!("add_identity called");
 
@@ -33,7 +34,12 @@ pub async fn add_identity(
     let mut identities =
         serde_json::from_value::<Vec<Identity>>(store.get("identities").unwrap_or(json!([])))?;
 
-    let identity = Identity::new(label, username, password, key);
+    let identity = Identity::new(
+        convert_empty_to_option(label),
+        username,
+        convert_empty_to_option(password),
+        convert_empty_to_option(public_key),
+    );
 
     identities.push(identity);
 
@@ -46,10 +52,10 @@ pub async fn add_identity(
 pub async fn update_identity(
     state: State<'_, Mutex<AppData>>,
     id: String,
-    label: Option<String>,
+    label: String,
     username: String,
-    password: Option<String>,
-    key: Option<String>,
+    password: String,
+    public_key: String,
 ) -> Result<Response, ApiError> {
     log::debug!("add_identity called");
 
@@ -59,10 +65,10 @@ pub async fn update_identity(
         serde_json::from_value::<Vec<Identity>>(store.get("identities").unwrap_or(json!([])))?;
 
     if let Some(identity) = identities.iter_mut().find(|identity| identity.id == id) {
-        identity.label = label;
+        identity.label = convert_empty_to_option(label);
         identity.username = username;
-        identity.password = password;
-        identity.key = key;
+        identity.password = convert_empty_to_option(password);
+        identity.public_key = convert_empty_to_option(public_key);
     } else {
         return Err(ApiError::NotFound {
             item: "identity".to_string(),

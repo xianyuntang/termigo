@@ -1,70 +1,72 @@
-import { FiPlusCircle } from "solid-icons/fi";
-import { createResource, createSignal, For } from "solid-js";
+import AddIcon from "@mui/icons-material/Add";
+import { Box, Button, Grid2, Toolbar } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { Identity } from "../../../interfaces";
 import { identityService } from "../../../services";
-import IconButton from "../../shared/icon-button";
-import Toolbar from "../../shared/toolbar";
 import IdentityCard from "./identity-card";
-import IdentitySidebar from "./identity-sidebar";
+import Sidebar from "./sidebar";
 
-const IdentitiesPage = () => {
-  const [open, setOpen] = createSignal<boolean>(false);
-  const [selectedIdentity, setSelectedIdentity] = createSignal<Identity>();
+const PublicKeysPage = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [selected, setSelected] = useState<Identity | undefined>(undefined);
 
-  const [identities, { refetch }] = createResource(
-    identityService.listIdentities
-  );
+  const { data, refetch } = useQuery({
+    queryKey: ["identities"],
+    queryFn: identityService.list,
+  });
 
-  const handleAddNewClick = () => {
-    setSelectedIdentity(undefined);
-    setOpen(true);
+  const handleAddClick = () => {
+    setSelected(undefined);
+    setIsSidebarOpen(true);
   };
 
-  const handleIdentityEditClick = (identity: Identity) => {
-    setSelectedIdentity(identity);
-    setOpen(true);
+  const handleSidebarClose = () => {
+    setIsSidebarOpen(false);
   };
-
-  const handleSave = async () => {
+  const handleSaveClick = () => {
+    setIsSidebarOpen(false);
     refetch();
-    setOpen(false);
+  };
+  const handleDeleteClick = () => {
+    setIsSidebarOpen(false);
+    refetch();
   };
 
-  const handleDelete = async () => {
+  const handleEditClick = (identity: Identity) => {
+    setIsSidebarOpen(true);
+    setSelected(identity);
     refetch();
-    setOpen(false);
   };
 
   return (
-    <>
-      <div class="flex w-full flex-col">
-        <Toolbar>
-          <IconButton tooltip="Add new host" onClick={handleAddNewClick}>
-            <FiPlusCircle class="size-full" />
-          </IconButton>
-        </Toolbar>
+    <Box>
+      <Toolbar>
+        <Button endIcon={<AddIcon />} onClick={handleAddClick}>
+          add new
+        </Button>
+      </Toolbar>
+      <Grid2 container spacing={2} sx={{ flexGrow: 1 }}>
+        {data?.map((e) => (
+          <Grid2 key={e.id}>
+            <IdentityCard
+              identity={e}
+              onEditClicked={() => handleEditClick(e)}
+            />
+          </Grid2>
+        ))}
+      </Grid2>
 
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
-          <For each={identities()}>
-            {(identity) => (
-              <IdentityCard
-                identity={identity}
-                onEdit={handleIdentityEditClick}
-              />
-            )}
-          </For>
-        </div>
-      </div>
-      <IdentitySidebar
-        open={open()}
-        identity={selectedIdentity()}
-        class="fixed -right-80 top-12 z-50 h-[calc(100vh-3rem)] w-80"
-        onSave={handleSave}
-        onDelete={handleDelete}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        identity={selected}
+        onClose={handleSidebarClose}
+        onSave={handleSaveClick}
+        onDelete={handleDeleteClick}
       />
-    </>
+    </Box>
   );
 };
 
-export default IdentitiesPage;
+export default PublicKeysPage;
