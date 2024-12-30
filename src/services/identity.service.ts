@@ -7,14 +7,14 @@ class identityService {
   };
 
   add = async (
-    username: string,
     label: string,
+    username: string,
     password: string,
     publicKey: string
   ) => {
     return invoker<OKMessage>("add_identity", {
-      username,
       label,
+      username,
       password,
       publicKey,
     });

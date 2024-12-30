@@ -110,7 +110,13 @@ export const Sidebar = ({
               rules={{ required: true }}
               render={({ field }) => (
                 <FormControl fullWidth>
-                  <TextField {...field} label="Label" size="small" />
+                  <TextField
+                    {...field}
+                    label="Label"
+                    size="small"
+                    autoCapitalize="off"
+                    autoComplete="off"
+                  />
                 </FormControl>
               )}
             />
@@ -129,6 +135,8 @@ export const Sidebar = ({
                     minRows={4}
                     label="Content"
                     size="small"
+                    autoCapitalize="off"
+                    autoComplete="off"
                   />
                 </FormControl>
               )}

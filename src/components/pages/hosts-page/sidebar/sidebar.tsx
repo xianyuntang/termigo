@@ -167,7 +167,13 @@ export const Sidebar = ({
               rules={{ required: true }}
               render={({ field }) => (
                 <FormControl fullWidth>
-                  <TextField {...field} label="Label" size="small" />
+                  <TextField
+                    {...field}
+                    label="Label"
+                    size="small"
+                    autoCapitalize="off"
+                    autoComplete="off"
+                  />
                 </FormControl>
               )}
             />
@@ -180,7 +186,13 @@ export const Sidebar = ({
               rules={{ required: true }}
               render={({ field }) => (
                 <FormControl fullWidth>
-                  <TextField {...field} label="Address" size="small" />
+                  <TextField
+                    {...field}
+                    label="Address"
+                    size="small"
+                    autoCapitalize="off"
+                    autoComplete="off"
+                  />
                 </FormControl>
               )}
             />
@@ -195,6 +207,8 @@ export const Sidebar = ({
                     label="Port"
                     size="small"
                     type="number"
+                    autoCapitalize="off"
+                    autoComplete="off"
                   />
                 </FormControl>
               )}
@@ -252,7 +266,13 @@ export const Sidebar = ({
                   control={control}
                   render={({ field }) => (
                     <FormControl fullWidth>
-                      <TextField {...field} label="Username" size="small" />
+                      <TextField
+                        {...field}
+                        label="Username"
+                        size="small"
+                        autoCapitalize="off"
+                        autoComplete="off"
+                      />
                     </FormControl>
                   )}
                 />
@@ -266,6 +286,8 @@ export const Sidebar = ({
                         label="Password"
                         size="small"
                         type="password"
+                        autoCapitalize="off"
+                        autoComplete="off"
                       />
                     </FormControl>
                   )}

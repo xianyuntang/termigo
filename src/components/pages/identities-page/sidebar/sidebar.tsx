@@ -132,7 +132,13 @@ export const Sidebar = ({
               control={control}
               render={({ field }) => (
                 <FormControl fullWidth>
-                  <TextField {...field} label="Label" size="small" />
+                  <TextField
+                    {...field}
+                    label="Label"
+                    size="small"
+                    autoCapitalize="off"
+                    autoComplete="off"
+                  />
                 </FormControl>
               )}
             />
@@ -144,7 +150,13 @@ export const Sidebar = ({
               control={control}
               render={({ field }) => (
                 <FormControl fullWidth>
-                  <TextField {...field} label="Username" size="small" />
+                  <TextField
+                    {...field}
+                    label="Username"
+                    size="small"
+                    autoCapitalize="off"
+                    autoComplete="off"
+                  />
                 </FormControl>
               )}
             />
@@ -153,7 +165,13 @@ export const Sidebar = ({
               control={control}
               render={({ field }) => (
                 <FormControl fullWidth>
-                  <TextField {...field} label="Password" size="small" />
+                  <TextField
+                    {...field}
+                    label="Password"
+                    size="small"
+                    autoCapitalize="off"
+                    autoComplete="off"
+                  />
                 </FormControl>
               )}
             />
