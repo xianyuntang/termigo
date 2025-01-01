@@ -52,19 +52,32 @@ const TerminalShortcuts = () => {
               display: "flex",
               justifyContent: "center",
               borderRadius: theme.spacing(0.5),
+              position: "relative",
+              "&:hover .MuiListItemIcon-root": {
+                visibility: "visible", // hover 时显示 CloseIcon
+                opacity: 1, // 配合动画效果
+              },
             })}
             onClick={() => handleShortcutClick(terminal)}
             selected={terminal === activeTerminal}
           >
-            <ListItemIcon
-              onClick={(evt) => handleCloseClick(evt, terminal)}
-              sx={{ minWidth: "2rem" }}
-            >
-              <CloseIcon />
-            </ListItemIcon>
             <ListItemText
               primary={getHost(terminal).label || getHost(terminal).address}
             ></ListItemText>
+            <ListItemIcon
+              onClick={(evt) => handleCloseClick(evt, terminal)}
+              sx={(theme) => ({
+                minWidth: "1em",
+                marginLeft: "0.5em",
+                opacity: 0,
+                transition: "opacity 0.3s ease",
+                "&:hover": {
+                  backgroundColor: theme.palette.action.hover,
+                },
+              })}
+            >
+              <CloseIcon fontSize="small" />
+            </ListItemIcon>
           </ListItemButton>
         </ListItem>
       ))}
