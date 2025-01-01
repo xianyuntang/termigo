@@ -18,7 +18,7 @@ pub struct Host {
     pub identity: Option<String>,
     pub username: Option<String>,
     pub password: Option<String>,
-    pub public_key: Option<String>,
+    pub private_key: Option<String>,
 }
 
 impl Host {
@@ -31,7 +31,7 @@ impl Host {
         identity: Option<String>,
         username: Option<String>,
         password: Option<String>,
-        public_key: Option<String>,
+        private_key: Option<String>,
     ) -> Self {
         Self {
             id: nanoid!(),
@@ -42,7 +42,7 @@ impl Host {
             identity,
             username,
             password,
-            public_key,
+            private_key,
         }
     }
 }

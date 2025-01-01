@@ -9,7 +9,7 @@ import IdentityCard from "./identity-card";
 import Sidebar from "./sidebar";
 import { IdentityForm } from "./sidebar/sidebar";
 
-const PublicKeysPage = () => {
+const PrivateKeysPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [selected, setSelected] = useState<Identity | undefined>(undefined);
 
@@ -33,14 +33,14 @@ const PublicKeysPage = () => {
         form.label,
         form.username,
         form.password,
-        form.publicKey
+        form.privateKey
       );
     } else {
       await identityService.add(
         form.label,
         form.username,
         form.password,
-        form.publicKey
+        form.privateKey
       );
     }
     setIsSidebarOpen(false);
@@ -86,4 +86,4 @@ const PublicKeysPage = () => {
   );
 };
 
-export default PublicKeysPage;
+export default PrivateKeysPage;

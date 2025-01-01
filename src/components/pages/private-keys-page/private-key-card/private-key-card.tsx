@@ -7,23 +7,23 @@ import {
   Tooltip,
 } from "@mui/material";
 
-import { PublicKey } from "../../../../interfaces";
+import { PrivateKey } from "../../../../interfaces";
 
 interface CardProps {
-  publicKey: PublicKey;
-  onEditClicked?: (publicKey: PublicKey) => void;
+  privateKey: PrivateKey;
+  onEditClicked?: (privateKey: PrivateKey) => void;
 }
 
-const PublicKeyCard = ({ publicKey, onEditClicked }: CardProps) => {
+const PrivateKeyCard = ({ privateKey, onEditClicked }: CardProps) => {
   const handleEditClick = () => {
     if (typeof onEditClicked === "function") {
-      onEditClicked(publicKey);
+      onEditClicked(privateKey);
     }
   };
 
   return (
     <Card sx={{ width: "15rem" }}>
-      <CardHeader title={publicKey.label} />
+      <CardHeader title={privateKey.label} />
       <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
         <Tooltip title="Edit">
           <IconButton onClick={handleEditClick}>
@@ -35,4 +35,4 @@ const PublicKeyCard = ({ publicKey, onEditClicked }: CardProps) => {
   );
 };
 
-export default PublicKeyCard;
+export default PrivateKeyCard;

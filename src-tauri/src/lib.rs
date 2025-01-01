@@ -9,8 +9,8 @@ use crate::domain::host::commands::{
 use crate::domain::identity::command::{
     add_identity, delete_identity, list_identities, update_identity,
 };
-use crate::domain::public_keys::command::{
-    add_public_key, delete_public_key, list_public_keys, update_public_key,
+use crate::domain::private_keys::command::{
+    add_private_key, delete_private_key, list_private_keys, update_private_key,
 };
 use crate::infrastructure::app::AppData;
 
@@ -52,11 +52,11 @@ pub fn run() {
             delete_identity,
             list_identities,
             update_identity,
-            // Public Keys
-            add_public_key,
-            delete_public_key,
-            list_public_keys,
-            update_public_key,
+            // Private Keys
+            add_private_key,
+            delete_private_key,
+            list_private_keys,
+            update_private_key,
             // Future
             stop_future
         ])

@@ -12,5 +12,5 @@ export interface Host {
   identity?: string;
   username?: string;
   password?: string;
-  publicKey?: string;
+  privateKey?: string;
 }

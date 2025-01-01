@@ -59,7 +59,7 @@ const HostsPage = () => {
         form.identity,
         form.username,
         form.password,
-        form.publicKey
+        form.privateKey
       );
     } else {
       await hostService.add(
@@ -70,7 +70,7 @@ const HostsPage = () => {
         form.identity,
         form.username,
         form.password,
-        form.publicKey
+        form.privateKey
       );
     }
     setIsSidebarOpen(false);

@@ -1,4 +1,4 @@
-use crate::domain::identity::lib::Identity;
+use crate::domain::identity::models::Identity;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
@@ -25,7 +25,7 @@ pub async fn add_identity(
     label: String,
     username: String,
     password: String,
-    public_key: String,
+    private_key: String,
 ) -> Result<Response, ApiError> {
     log::debug!("add_identity called");
 
@@ -38,7 +38,7 @@ pub async fn add_identity(
         convert_empty_to_option(label),
         username,
         convert_empty_to_option(password),
-        convert_empty_to_option(public_key),
+        convert_empty_to_option(private_key),
     );
 
     identities.push(identity);
@@ -55,7 +55,7 @@ pub async fn update_identity(
     label: String,
     username: String,
     password: String,
-    public_key: String,
+    private_key: String,
 ) -> Result<Response, ApiError> {
     log::debug!("add_identity called");
 
@@ -68,7 +68,7 @@ pub async fn update_identity(
         identity.label = convert_empty_to_option(label);
         identity.username = username;
         identity.password = convert_empty_to_option(password);
-        identity.public_key = convert_empty_to_option(public_key);
+        identity.private_key = convert_empty_to_option(private_key);
     } else {
         return Err(ApiError::NotFound {
             item: "identity".to_string(),

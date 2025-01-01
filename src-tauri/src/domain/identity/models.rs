@@ -8,7 +8,7 @@ pub struct Identity {
     pub label: Option<String>,
     pub username: String,
     pub password: Option<String>,
-    pub public_key: Option<String>,
+    pub private_key: Option<String>,
 }
 
 impl Identity {
@@ -16,14 +16,14 @@ impl Identity {
         label: Option<String>,
         username: String,
         password: Option<String>,
-        public_key: Option<String>,
+        private_key: Option<String>,
     ) -> Self {
         Self {
             id: nanoid!(),
             label,
             username,
             password,
-            public_key,
+            private_key,
         }
     }
 }

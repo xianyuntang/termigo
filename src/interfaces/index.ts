@@ -1,4 +1,4 @@
 export * from "./host";
 export * from "./identity";
-export * from "./public-key";
+export * from "./private-key";
 export * from "./response";

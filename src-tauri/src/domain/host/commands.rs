@@ -43,7 +43,7 @@ pub async fn add_host(
     identity: String,
     username: String,
     password: String,
-    public_key: String,
+    private_key: String,
 ) -> Result<Response, ApiError> {
     log::debug!("add_host called");
 
@@ -57,7 +57,7 @@ pub async fn add_host(
         convert_empty_to_option(identity),
         convert_empty_to_option(username),
         convert_empty_to_option(password),
-        convert_empty_to_option(public_key),
+        convert_empty_to_option(private_key),
     );
     let mut hosts = serde_json::from_value::<Vec<Host>>(store.get("hosts").unwrap_or(json!([])))?;
 
@@ -79,7 +79,7 @@ pub async fn update_host(
     identity: String,
     username: String,
     password: String,
-    public_key: String,
+    private_key: String,
 ) -> Result<Response, ApiError> {
     log::debug!("update_host called");
 
@@ -95,7 +95,7 @@ pub async fn update_host(
         host.identity = convert_empty_to_option(identity);
         host.username = convert_empty_to_option(username);
         host.password = convert_empty_to_option(password);
-        host.public_key = convert_empty_to_option(public_key);
+        host.private_key = convert_empty_to_option(private_key);
 
         Some(host.clone())
     } else {
@@ -149,7 +149,7 @@ pub async fn start_terminal_stream(
         return Ok(Response::new_ok_message());
     }
 
-    let (host, username, password, public_key) = get_session_credential(&state, host).await?;
+    let (host, username, password, private_key) = get_session_credential(&state, host).await?;
 
     let cancel_token = CancellationToken::new();
     let cloned_cancel_token = cancel_token.clone();
@@ -196,9 +196,9 @@ pub async fn start_terminal_stream(
         if let Some(password) = password {
             log::debug!("Trying authenticate password");
             auth_res = session.authenticate_password(username, password).await?;
-        } else if let Some(public_key) = public_key {
-            log::debug!("Trying authenticate public key");
-            let key_pair = decode_secret_key(&public_key, None)?;
+        } else if let Some(private_key) = private_key {
+            log::debug!("Trying authenticate private key");
+            let key_pair = decode_secret_key(&private_key, None)?;
             auth_res = session
                 .authenticate_publickey(username, Arc::new(key_pair))
                 .await?;
@@ -304,7 +304,7 @@ pub async fn start_tunnel_stream(
         return Ok(Response::new_ok_message());
     }
 
-    let (host, username, password, public_key) = get_session_credential(&state, host).await?;
+    let (host, username, password, private_key) = get_session_credential(&state, host).await?;
 
     let cancel_token = CancellationToken::new();
     let cloned_cancel_token = cancel_token.clone();
@@ -355,9 +355,9 @@ pub async fn start_tunnel_stream(
                 .await
                 .authenticate_password(username, password)
                 .await?;
-        } else if let Some(public_key) = public_key {
-            log::debug!("Trying authenticate public key");
-            let key_pair = decode_secret_key(&public_key, None)?;
+        } else if let Some(private_key) = private_key {
+            log::debug!("Trying authenticate private key");
+            let key_pair = decode_secret_key(&private_key, None)?;
             auth_res = session
                 .lock()
                 .await

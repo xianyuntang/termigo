@@ -12,19 +12,19 @@ import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
 import { readFile } from "../../../../core";
-import { PublicKey } from "../../../../interfaces";
+import { PrivateKey } from "../../../../interfaces";
 import Dropzone from "../../../shared/dropzone";
 import SidebarCard from "../../../shared/sidebar-card";
 
 interface SidebarProps {
   isOpen: boolean;
-  publicKey?: PublicKey;
+  privateKey?: PrivateKey;
   onClose?: () => void;
-  onSave?: (form: PublicKeyForm) => void;
+  onSave?: (form: PrivateKeyForm) => void;
   onDelete?: (id?: string) => void;
 }
 
-export interface PublicKeyForm {
+export interface PrivateKeyForm {
   id?: string;
   label: string;
   content: string;
@@ -32,13 +32,13 @@ export interface PublicKeyForm {
 
 export const Sidebar = ({
   isOpen,
-  publicKey,
+  privateKey,
   onClose,
   onSave,
   onDelete,
 }: SidebarProps) => {
   const { handleSubmit, control, setValue, reset, watch } =
-    useForm<PublicKeyForm>({
+    useForm<PrivateKeyForm>({
       defaultValues: {
         label: "",
         content: "",
@@ -47,17 +47,17 @@ export const Sidebar = ({
 
   const id = watch("id");
 
-  const onSubmit: SubmitHandler<PublicKeyForm> = async (data) => {
+  const onSubmit: SubmitHandler<PrivateKeyForm> = async (data) => {
     if (typeof onSave === "function") {
       onSave(data);
     }
   };
 
   useEffect(() => {
-    setValue("id", publicKey?.id);
-    setValue("label", publicKey?.label || "");
-    setValue("content", publicKey?.content || "");
-  }, [publicKey, setValue, isOpen]);
+    setValue("id", privateKey?.id);
+    setValue("label", privateKey?.label || "");
+    setValue("content", privateKey?.content || "");
+  }, [privateKey, setValue, isOpen]);
 
   const handleClose = () => {
     if (typeof onClose === "function") {
@@ -135,7 +135,7 @@ export const Sidebar = ({
             )}
           />
           <Dropzone
-            text="Drag and drop to import public key"
+            text="Drag and drop to import private key"
             onFilesDrop={handleFilesDrop}
           />
         </SidebarCard>

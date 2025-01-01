@@ -3,5 +3,5 @@ export interface Identity {
   label: string;
   username: string;
   password: string;
-  publicKey: string;
+  privateKey: string;
 }

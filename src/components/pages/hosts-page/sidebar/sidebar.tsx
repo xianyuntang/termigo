@@ -16,7 +16,7 @@ import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
 import { AuthType, Host } from "../../../../interfaces";
-import { identityService, publicKeyService } from "../../../../services";
+import { identityService, privateKeyService } from "../../../../services";
 import SidebarCard from "../../../shared/sidebar-card";
 
 interface SidebarProps {
@@ -36,7 +36,7 @@ export interface HostForm {
   identity: string;
   username: string;
   password: string;
-  publicKey: string;
+  privateKey: string;
 }
 
 export const Sidebar = ({
@@ -55,7 +55,7 @@ export const Sidebar = ({
       identity: "",
       username: "",
       password: "",
-      publicKey: "",
+      privateKey: "",
     },
   });
 
@@ -72,9 +72,9 @@ export const Sidebar = ({
     queryFn: identityService.list,
   });
 
-  const { data: publicKeys } = useQuery({
-    queryKey: ["publicKeys"],
-    queryFn: publicKeyService.list,
+  const { data: privateKeys } = useQuery({
+    queryKey: ["privateKeys"],
+    queryFn: privateKeyService.list,
   });
 
   const authType = watch("authType");
@@ -90,7 +90,7 @@ export const Sidebar = ({
     } else {
       setValue("username", host?.username || "");
       setValue("password", host?.password || "");
-      setValue("publicKey", host?.publicKey || "");
+      setValue("privateKey", host?.privateKey || "");
     }
   }, [host, setValue, isOpen]);
 
@@ -255,19 +255,19 @@ export const Sidebar = ({
                 )}
               />
               <Controller
-                name="publicKey"
+                name="privateKey"
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth size="small">
-                    <InputLabel id="public-key-select">Public Key</InputLabel>
+                    <InputLabel id="private-key-select">Private Key</InputLabel>
                     <Select
-                      labelId="public-key-select"
-                      label="Public Key"
+                      labelId="private-key-select"
+                      label="Private Key"
                       {...field}
                     >
-                      {publicKeys?.map((publicKey) => (
-                        <MenuItem key={publicKey.id} value={publicKey.id}>
-                          {publicKey.label}
+                      {privateKeys?.map((privateKey) => (
+                        <MenuItem key={privateKey.id} value={privateKey.id}>
+                          {privateKey.label}
                         </MenuItem>
                       ))}
                     </Select>

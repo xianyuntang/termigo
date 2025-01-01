@@ -36,7 +36,7 @@ class HostService {
     identity?: string,
     username?: string,
     password?: string,
-    publicKey?: string
+    privateKey?: string
   ) => {
     return invoker<Host>("add_host", {
       label,
@@ -46,7 +46,7 @@ class HostService {
       identity,
       username,
       password,
-      publicKey,
+      privateKey,
     });
   };
 
@@ -63,7 +63,7 @@ class HostService {
     identity?: string,
     username?: string,
     password?: string,
-    publicKey?: string
+    privateKey?: string
   ) => {
     return invoker<Host>("update_host", {
       id,
@@ -74,7 +74,7 @@ class HostService {
       identity,
       username,
       password,
-      publicKey,
+      privateKey,
     });
   };
 }

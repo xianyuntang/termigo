@@ -27,7 +27,7 @@ const SideMenu = () => {
   const items = [
     { icon: <ComputerIcon />, text: "Hosts", url: "/hosts" },
     { icon: <PermIdentityIcon />, text: "Identities", url: "/identities" },
-    { icon: <KeyIcon />, text: "Public Keys", url: "/public-keys" },
+    { icon: <KeyIcon />, text: "Private Keys", url: "/private-keys" },
   ];
 
   const handleClick = (index: number, url: string) => {

@@ -1,6 +1,5 @@
 use async_trait::async_trait;
-use russh::client;
-use russh::keys::key::PublicKey;
+use russh::{client, keys::key::PublicKey};
 
 #[derive(Clone)]
 pub struct SshClient {}
@@ -17,7 +16,7 @@ impl client::Handler for SshClient {
 
     async fn check_server_key(
         &mut self,
-        _server_public_key: &PublicKey,
+        _server_private_key: &PublicKey,
     ) -> Result<bool, Self::Error> {
         Ok(true)
     }
