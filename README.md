@@ -1,7 +1,15 @@
-# Tauri + Solid + Typescript
+# Termigo
 
-This template should help get you started developing with Tauri, Solid and Typescript in Vite.
+_Termigo is a terminal emulator built with Tauri and React. It is lightweight, customizable, and designed to provide a fast and simple experience for developers and power users._
 
-## Recommended IDE Setup
+## Features ✨
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+1. Cross-Platform: Runs seamlessly on Windows, macOS, and Linux.
+
+2. Lightweight and Efficient: Powered by Tauri, Termigo consumes minimal system resources while delivering high performance.
+
+3. Multiple Tabs: Manage multiple terminal sessions effortlessly.
+
+## License
+
+This project is licensed under the MIT License. Feel free to use, modify, and contribute to Termigo!
