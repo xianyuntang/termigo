@@ -7,11 +7,15 @@ use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
 use crate::infrastructure::transform::convert_empty_to_option;
+
 use log;
-use russh::keys::decode_secret_key;
+
+use russh::keys::{decode_secret_key, key::PrivateKeyWithHashAlg, HashAlg};
+
 use russh::{client, ChannelMsg, Error};
 use serde_json::json;
 use std::sync::Arc;
+use std::time::Duration;
 use tauri::{Emitter, Event, Listener, State, Window};
 use tokio::io::{self, AsyncWriteExt};
 use tokio::net::TcpListener;
@@ -159,6 +163,7 @@ pub async fn start_terminal_stream(
         log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
 
         let config = Arc::new(client::Config {
+            inactivity_timeout: Some(Duration::from_secs(5)),
             ..Default::default()
         });
 
@@ -196,11 +201,16 @@ pub async fn start_terminal_stream(
         if let Some(password) = password {
             log::debug!("Trying authenticate password");
             auth_res = session.authenticate_password(username, password).await?;
-        } else if let Some(private_key) = private_key {
-            log::debug!("Trying authenticate private key");
-            let key_pair = decode_secret_key(&private_key, None)?;
+        } else if let Some(content) = private_key {
+            log::debug!("Trying authenticate public key");
+
+            let private_key = decode_secret_key(&content, None)?;
+
             auth_res = session
-                .authenticate_publickey(username, Arc::new(key_pair))
+                .authenticate_publickey(
+                    username,
+                    PrivateKeyWithHashAlg::new(Arc::new(private_key), Some(HashAlg::Sha512))?,
+                )
                 .await?;
         }
 
@@ -361,7 +371,10 @@ pub async fn start_tunnel_stream(
             auth_res = session
                 .lock()
                 .await
-                .authenticate_publickey(username, Arc::new(key_pair))
+                .authenticate_publickey(
+                    username,
+                    PrivateKeyWithHashAlg::new(Arc::new(key_pair), Some(HashAlg::Sha512))?,
+                )
                 .await?;
         }
 
@@ -421,7 +434,7 @@ pub async fn start_tunnel_stream(
                 _ = cloned_cancel_token.cancelled() =>{
                     return Ok(())
                 }
-            };
+            }
         }
     });
 

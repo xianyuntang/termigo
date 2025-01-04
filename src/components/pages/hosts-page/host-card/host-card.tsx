@@ -2,6 +2,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import EditIcon from "@mui/icons-material/Edit";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import {
+  Badge,
   Card,
   CardActions,
   CardHeader,
@@ -16,6 +17,7 @@ interface CardProps {
   onEditClicked?: (host: Host) => void;
   onConnectClicked?: (host: Host) => void;
   onTunnelClicked?: (host: Host) => void;
+  portforwardCount?: number;
 }
 
 const HostCard = ({
@@ -23,6 +25,7 @@ const HostCard = ({
   onEditClicked,
   onConnectClicked,
   onTunnelClicked,
+  portforwardCount,
 }: CardProps) => {
   const handleEditClick = () => {
     if (typeof onEditClicked === "function") {
@@ -52,9 +55,11 @@ const HostCard = ({
           </IconButton>
         </Tooltip>
         <Tooltip title="Port Forward">
-          <IconButton onClick={handleTunnelClick}>
-            <ArrowForwardIcon />
-          </IconButton>
+          <Badge badgeContent={portforwardCount}>
+            <IconButton onClick={handleTunnelClick}>
+              <ArrowForwardIcon />
+            </IconButton>
+          </Badge>
         </Tooltip>
         <Tooltip title="Connect">
           <IconButton onClick={handleConnectClick}>

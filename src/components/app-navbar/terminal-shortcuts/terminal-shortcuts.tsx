@@ -13,7 +13,7 @@ import { useTerminalStore } from "../../../stores";
 const TerminalShortcuts = () => {
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal
+    (state) => state.setActiveTerminal,
   );
   const openedTerminals = useTerminalStore((state) => state.openedTerminals);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
@@ -25,7 +25,7 @@ const TerminalShortcuts = () => {
 
   const handleCloseClick = async (
     event: React.MouseEvent,
-    terminal: string
+    terminal: string,
   ) => {
     event.stopPropagation();
     event.preventDefault();
@@ -62,7 +62,7 @@ const TerminalShortcuts = () => {
             selected={terminal === activeTerminal}
           >
             <ListItemText
-              primary={getHost(terminal).label || getHost(terminal).address}
+              primary={getHost(terminal)?.label || getHost(terminal)?.address}
             ></ListItemText>
             <ListItemIcon
               onClick={(evt) => handleCloseClick(evt, terminal)}

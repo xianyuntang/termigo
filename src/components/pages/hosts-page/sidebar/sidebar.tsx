@@ -46,7 +46,7 @@ export const Sidebar = ({
   onSave,
   onDelete,
 }: SidebarProps) => {
-  const { handleSubmit, control, setValue, reset, watch } = useForm<HostForm>({
+  const { handleSubmit, control, setValue, watch } = useForm<HostForm>({
     defaultValues: {
       label: "",
       address: "",
@@ -97,7 +97,6 @@ export const Sidebar = ({
   const handleClose = () => {
     if (typeof onClose === "function") {
       onClose();
-      reset();
     }
   };
 

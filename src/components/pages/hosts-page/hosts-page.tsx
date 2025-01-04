@@ -5,22 +5,29 @@ import { nanoid } from "nanoid";
 import { useState } from "react";
 
 import { Host } from "../../../interfaces";
-import { hostService } from "../../../services";
-import { useTerminalStore } from "../../../stores";
+import { futureService, hostService } from "../../../services";
+import { usePortforwardStore, useTerminalStore } from "../../../stores";
 import HostCard from "./host-card";
 import Sidebar from "./sidebar";
 import { HostForm } from "./sidebar/sidebar";
-import TunnelDialog from "./tunnel-dialog";
-import { StartTunnelForm } from "./tunnel-dialog/tunnel-dialog";
+import TunnelSidebar from "./tunnel-sidebar";
+import { StartTunnelForm } from "./tunnel-sidebar/tunnel-sidebar";
 
 const HostsPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-  const [isTunnelDialogOpen, setIsTunnelDialogOpen] = useState<boolean>(false);
+  const [isTunnelSidebarOpen, setIsTunnelSidebarOpen] =
+    useState<boolean>(false);
   const [selected, setSelected] = useState<Host | undefined>(undefined);
 
   const addTerminal = useTerminalStore((state) => state.addTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal
+    (state) => state.setActiveTerminal,
+  );
+
+  const addPortforward = usePortforwardStore((state) => state.addPortforward);
+  const portforwards = usePortforwardStore((state) => state.portforwards);
+  const removePortforward = usePortforwardStore(
+    (state) => state.removePortforward,
   );
 
   const { data, refetch } = useQuery({
@@ -59,7 +66,7 @@ const HostsPage = () => {
         form.identity,
         form.username,
         form.password,
-        form.privateKey
+        form.privateKey,
       );
     } else {
       await hostService.add(
@@ -70,7 +77,7 @@ const HostsPage = () => {
         form.identity,
         form.username,
         form.password,
-        form.privateKey
+        form.privateKey,
       );
     }
     setIsSidebarOpen(false);
@@ -88,7 +95,7 @@ const HostsPage = () => {
 
   const handleTunnelClick = async (host: Host) => {
     setSelected(host);
-    setIsTunnelDialogOpen(true);
+    setIsTunnelSidebarOpen(true);
   };
 
   const handleTunnelStart = async (form: StartTunnelForm) => {
@@ -100,16 +107,28 @@ const HostsPage = () => {
         form.localAddress,
         parseInt(form.localPort),
         form.destinationAddress,
-        parseInt(form.destinationPort)
+        parseInt(form.destinationPort),
       );
+      addPortforward(selected.id, {
+        tunnel,
+        localAddress: form.localAddress,
+        localPort: form.localPort,
+        destinationAddress: form.destinationAddress,
+        destinationPort: form.destinationPort,
+      });
     }
-    setIsTunnelDialogOpen(false);
+  };
+
+  const handleTunnelSidebarClose = () => {
+    setIsTunnelSidebarOpen(false);
     setSelected(undefined);
   };
 
-  const handleDialogClose = () => {
-    setIsTunnelDialogOpen(false);
-    setSelected(undefined);
+  const handleTunnelStop = async (tunnel: string) => {
+    if (selected) {
+      removePortforward(selected.id, tunnel);
+      await futureService.stopFuture(tunnel);
+    }
   };
 
   return (
@@ -127,17 +146,19 @@ const HostsPage = () => {
               onEditClicked={handleEditClick}
               onConnectClicked={handleConnectClick}
               onTunnelClicked={handleTunnelClick}
+              portforwardCount={portforwards[host.id]?.length || 0}
             />
           </Grid2>
         ))}
       </Grid2>
-      {selected && (
-        <TunnelDialog
-          isOpen={isTunnelDialogOpen}
-          onClose={handleDialogClose}
-          onTunnelStart={handleTunnelStart}
-        ></TunnelDialog>
-      )}
+
+      <TunnelSidebar
+        isOpen={isTunnelSidebarOpen}
+        onClose={handleTunnelSidebarClose}
+        onTunnelStart={handleTunnelStart}
+        onTunnelStop={handleTunnelStop}
+        portforwards={portforwards[selected?.id || ""]}
+      />
 
       <Sidebar
         isOpen={isSidebarOpen}
