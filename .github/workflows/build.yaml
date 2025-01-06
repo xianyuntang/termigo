@@ -47,12 +47,13 @@ jobs:
           security import signing_certificate.p12 -P "$CERTIFICATE_PASSWORD" -A
           security find-identity -p codesigning -v
 
+
       - name: Configure keychain permissions
         env:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         run: |
-          security set-keychain-password -p "YourPassword" ~/Library/Keychains/login.keychain-db
-          security unlock-keychain -p "$CERTIFICATE_PASSWORD" ~/Library/Keychains/login.keychain-db
+          security create-keychain -p "$CERTIFICATE_PASSWORD" build.keychain
+          security unlock-keychain -p "$CERTIFICATE_PASSWORD" build.keychain
           security set-key-partition-list -S apple-tool:,apple: -s -k "$CERTIFICATE_PASSWORD" ~/Library/Keychains/login.keychain-db
 
       - name: Build Termigo
@@ -77,7 +78,7 @@ jobs:
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         run: |
           echo "Notarizing file: ${{ env.DMG_FILE }}"
-          xcrun altool --notarize-app --primary-bundle-id "com.example.yourapp" --username "$APPLE_ID" --password "$APPLE_ID_PASSWORD" --file "${{ env.DMG_FILE }}"
+          xcrun altool --notarize-app --primary-bundle-id "com.termigo.app" --username "$APPLE_ID" --password "$APPLE_ID_PASSWORD" --file "${{ env.DMG_FILE }}"
 
       - name: Staple Notarization
         if: success()
@@ -91,10 +92,6 @@ jobs:
           name: termigo-macos-${{ matrix.target }}
           path: ${{ env.DMG_FILE }}
 
-      - name: Cleanup Keychain
-        if: always()
-        run: |
-          security delete-keychain build.keychain || true
   windows:
     strategy:
       matrix:
