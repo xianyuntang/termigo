@@ -23,6 +23,7 @@ import { Terminal as Xterm } from "@xterm/xterm";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebounceCallback } from "usehooks-ts";
 
+import { Host } from "../../../../interfaces";
 import { futureService, hostService } from "../../../../services";
 import { useTerminalStore } from "../../../../stores";
 import {
@@ -39,8 +40,9 @@ interface TerminalViewProps {
 }
 
 export const TerminalView = ({ terminal }: TerminalViewProps) => {
+  const [host, setHost] = useState<Host | undefined>(undefined);
   const [containerRef, setContainerRef] = useState<HTMLDivElement | undefined>(
-    undefined
+    undefined,
   );
   const [xterm, setXterm] = useState<Xterm | undefined>(undefined);
   const [fitAddon, setFitAddon] = useState<FitAddon | undefined>(undefined);
@@ -53,17 +55,33 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
 
   const resize = useDebounceCallback(() => fitAddon?.fit(), 100);
 
-  const getHost = useTerminalStore((state) => state.getHost);
-  const host = getHost(terminal);
+  const hostMapper = useTerminalStore((state) => state.hostMapper);
+
+  useEffect(() => {
+    if (terminal in hostMapper) {
+      setHost(hostMapper[terminal]);
+    } else {
+      setHost(undefined);
+    }
+  }, [terminal, hostMapper]);
 
   const { refetch } = useQuery({
     queryKey: [terminal, host],
-    queryFn: () => hostService.starTerminalStream(host.id, terminal),
+    queryFn: async () => {
+      if (host) {
+        return hostService.starTerminalStream(host.id, terminal);
+      }
+      return null;
+    },
+    refetchInterval: 0,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const ERROR_STATUS = useMemo(
     () => [StatusType.ConnectionTimeout, StatusType.AuthFailed],
-    []
+    [],
   );
 
   useEffect(() => {
@@ -94,7 +112,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
 
       return xterm;
     },
-    [theme.palette.background.paper]
+    [theme.palette.background.paper],
   );
 
   useEffect(() => {
@@ -161,7 +179,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
               await futureService.stopFuture(terminal);
             }
           }
-        }
+        },
       );
     })();
 
@@ -205,7 +223,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
       <Dialog open={status !== StatusType.StartStreaming}>
         <Box sx={{ width: "fit" }}>
           <DialogTitle>
-            Trying to connect to {host.label || host.address}
+            Trying to connect to {host?.label || host?.address}
           </DialogTitle>
           <DialogContent>
             <DialogContentText>

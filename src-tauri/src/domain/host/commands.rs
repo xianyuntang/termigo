@@ -15,7 +15,6 @@ use russh::keys::{decode_secret_key, key::PrivateKeyWithHashAlg, HashAlg};
 use russh::{client, ChannelMsg, Error};
 use serde_json::json;
 use std::sync::Arc;
-use std::time::Duration;
 use tauri::{Emitter, Event, Listener, State, Window};
 use tokio::io::{self, AsyncWriteExt};
 use tokio::net::TcpListener;
@@ -163,7 +162,6 @@ pub async fn start_terminal_stream(
         log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
 
         let config = Arc::new(client::Config {
-            inactivity_timeout: Some(Duration::from_secs(5)),
             ..Default::default()
         });
 
@@ -246,12 +244,13 @@ pub async fn start_terminal_stream(
             }),
         )?;
 
-        let (tx, mut rx) = mpsc::unbounded_channel::<Data>();
+        let (tx, mut rx) = mpsc::channel::<Data>(1024);
 
+        let cloned_tx = tx.clone();
         let event_id = window.listen(&cloned_terminal, move |event: Event| {
             let event_data =
                 serde_json::from_str::<EventData>(event.payload()).expect("Invalid Event");
-            tx.send(event_data.data).unwrap();
+            cloned_tx.try_send(event_data.data).unwrap();
         });
 
         window.emit_to(
@@ -272,7 +271,7 @@ pub async fn start_terminal_stream(
                 Some(data) = rx.recv() => {
                     match data {
                         Data::In(in_data) => {
-                            channel.make_writer().write_all(&in_data.into_bytes()).await?
+                            channel.make_writer().write_all(&in_data.into_bytes()).await?;
                         },
                         Data::Size(size_data) => {
                             channel.window_change(size_data.0,size_data.1,0,0).await?

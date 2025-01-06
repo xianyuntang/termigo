@@ -10,11 +10,10 @@ interface TerminalState {
   setActiveTerminal: (activeTerminal: string | null) => void;
   addTerminal: (terminal: string, host: Host) => void;
   removeTerminal: (terminal: string) => void;
-  getHost: (terminal: string) => Host | undefined;
 }
 
 const useTerminalStore = create<TerminalState>()(
-  immer((set, get) => ({
+  immer((set) => ({
     activeTerminal: null,
     openedTerminals: [],
     hostMapper: {},
@@ -34,9 +33,6 @@ const useTerminalStore = create<TerminalState>()(
           1,
         );
       });
-    },
-    getHost: (terminal: string) => {
-      return get().hostMapper[terminal];
     },
   })),
 );

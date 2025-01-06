@@ -6,6 +6,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
+import { MouseEvent } from "react";
 
 import { futureService } from "../../../services";
 import { useTerminalStore } from "../../../stores";
@@ -17,16 +18,13 @@ const TerminalShortcuts = () => {
   );
   const openedTerminals = useTerminalStore((state) => state.openedTerminals);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
-  const getHost = useTerminalStore((state) => state.getHost);
+  const hostMapper = useTerminalStore((state) => state.hostMapper);
 
   const handleShortcutClick = (terminal: string) => {
     setActiveTerminal(terminal);
   };
 
-  const handleCloseClick = async (
-    event: React.MouseEvent,
-    terminal: string,
-  ) => {
+  const handleCloseClick = async (event: MouseEvent, terminal: string) => {
     event.stopPropagation();
     event.preventDefault();
 
@@ -62,7 +60,9 @@ const TerminalShortcuts = () => {
             selected={terminal === activeTerminal}
           >
             <ListItemText
-              primary={getHost(terminal)?.label || getHost(terminal)?.address}
+              primary={
+                hostMapper[terminal]?.label || hostMapper[terminal]?.address
+              }
             ></ListItemText>
             <ListItemIcon
               onClick={(evt) => handleCloseClick(evt, terminal)}
