@@ -45,6 +45,7 @@ jobs:
         run: |
           echo "$SIGNING_CERTIFICATE" | base64 --decode > signing_certificate.p12
           security import signing_certificate.p12 -P "$CERTIFICATE_PASSWORD" -A
+          security find-identity -p codesigning -v
 
       - name: Configure keychain permissions
         env:
@@ -62,6 +63,10 @@ jobs:
       - name: Find and Upload macOS Artifact
         run: |
           DMG_FILE=$(find src-tauri/target/${{ matrix.target }}/release/bundle/dmg -name "*.dmg")
+          if [ -z "$DMG_FILE" ]; then
+            echo "Error: DMG file not found!"
+            exit 1
+          fi
           echo "DMG_FILE=$DMG_FILE" >> $GITHUB_ENV
 
       - name: Notarize App
@@ -70,55 +75,22 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         run: |
-          xcrun altool --notarize-app --primary-bundle-id "com.example.yourapp" --username "$APPLE_ID" --password "$APPLE_ID_PASSWORD" --file ${{ env.DMG_FILE }}
+          echo "Notarizing file: ${{ env.DMG_FILE }}"
+          xcrun altool --notarize-app --primary-bundle-id "com.example.yourapp" --username "$APPLE_ID" --password "$APPLE_ID_PASSWORD" --file "${{ env.DMG_FILE }}"
 
       - name: Staple Notarization
         if: success()
         run: |
-          xcrun stapler staple "$DMG_FILE"
+          echo "Stapling notarization for file: ${{ env.DMG_FILE }}"
+          xcrun stapler staple "${{ env.DMG_FILE }}"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: termigo-macos-${{ matrix.target }}
           path: ${{ env.DMG_FILE }}
-  windows:
-    strategy:
-      matrix:
-        target:
-          - x86_64-pc-windows-msvc
 
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          target: ${{ matrix.target }}
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20.9.0"
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build termigo
-        run: npm run tauri build
-
-      - name: Find Windows Artifact
+      - name: Cleanup Keychain
+        if: always()
         run: |
-          EXE_FILE=$(find src-tauri/target/release/bundle/nsis -name "*.exe")
-          echo "EXE_FILE=$EXE_FILE" >> $GITHUB_ENV
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: termigo-windows-${{ matrix.target }}
-          path: ${{ env.EXE_FILE }}
+          security delete-keychain build.keychain || true
