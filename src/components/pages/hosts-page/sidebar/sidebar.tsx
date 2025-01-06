@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -14,6 +15,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { AuthType, Host } from "../../../../interfaces";
 import { identityService, privateKeyService } from "../../../../services";
@@ -23,21 +25,25 @@ interface SidebarProps {
   isOpen: boolean;
   host?: Host;
   onClose?: () => void;
-  onSave?: (form: HostForm) => void;
+  onSave?: (form: HostSchema) => void;
   onDelete?: (id?: string) => void;
 }
 
-export interface HostForm {
-  id?: string;
-  label: string;
-  address: string;
-  port: string;
-  authType: AuthType;
-  identity: string;
-  username: string;
-  password: string;
-  privateKey: string;
-}
+const hostSchema = z.object({
+  id: z.string().optional(),
+  label: z.string().nonempty(),
+  address: z.string().nonempty(),
+  port: z.string().refine((value) => !isNaN(Number(value)), {
+    message: "Must be a valid number",
+  }),
+  authType: z.string(),
+  identity: z.string(),
+  username: z.string(),
+  password: z.string(),
+  privateKey: z.string(),
+});
+
+type HostSchema = z.infer<typeof hostSchema>;
 
 export const Sidebar = ({
   isOpen,
@@ -46,7 +52,14 @@ export const Sidebar = ({
   onSave,
   onDelete,
 }: SidebarProps) => {
-  const { handleSubmit, control, setValue, watch } = useForm<HostForm>({
+  const {
+    formState: { errors },
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    reset,
+  } = useForm<HostSchema>({
     defaultValues: {
       label: "",
       address: "",
@@ -57,11 +70,13 @@ export const Sidebar = ({
       password: "",
       privateKey: "",
     },
+    resolver: zodResolver(hostSchema),
+    reValidateMode: "onChange",
   });
 
   const id = watch("id");
 
-  const onSubmit: SubmitHandler<HostForm> = async (data) => {
+  const onSubmit: SubmitHandler<HostSchema> = async (data) => {
     if (typeof onSave === "function") {
       onSave(data);
     }
@@ -97,6 +112,7 @@ export const Sidebar = ({
   const handleClose = () => {
     if (typeof onClose === "function") {
       onClose();
+      reset();
     }
   };
 
@@ -129,7 +145,6 @@ export const Sidebar = ({
           <Controller
             name="label"
             control={control}
-            rules={{ required: true }}
             render={({ field }) => (
               <FormControl fullWidth>
                 <TextField
@@ -138,6 +153,9 @@ export const Sidebar = ({
                   size="small"
                   autoCapitalize="off"
                   autoComplete="off"
+                  autoCorrect="off"
+                  error={!!errors.label}
+                  helperText={errors.label?.message}
                 />
               </FormControl>
             )}
@@ -148,7 +166,6 @@ export const Sidebar = ({
           <Controller
             name="address"
             control={control}
-            rules={{ required: true }}
             render={({ field }) => (
               <FormControl fullWidth>
                 <TextField
@@ -157,6 +174,8 @@ export const Sidebar = ({
                   size="small"
                   autoCapitalize="off"
                   autoComplete="off"
+                  error={!!errors.address}
+                  helperText={errors.address?.message}
                 />
               </FormControl>
             )}
@@ -164,14 +183,12 @@ export const Sidebar = ({
           <Controller
             name="port"
             control={control}
-            rules={{ required: true }}
             render={({ field }) => (
               <FormControl fullWidth>
                 <TextField
                   {...field}
                   label="Port"
                   size="small"
-                  type="number"
                   autoCapitalize="off"
                   autoComplete="off"
                 />
@@ -184,7 +201,6 @@ export const Sidebar = ({
           <Controller
             name="authType"
             control={control}
-            rules={{ required: true }}
             render={({ field }) => (
               <FormControl fullWidth size="small">
                 <InputLabel id="auth-type-select">Credential from</InputLabel>
@@ -233,6 +249,8 @@ export const Sidebar = ({
                       size="small"
                       autoCapitalize="off"
                       autoComplete="off"
+                      error={!!errors.username}
+                      helperText={errors.username?.message}
                     />
                   </FormControl>
                 )}
@@ -284,7 +302,7 @@ export const Sidebar = ({
           <Button
             endIcon={<DeleteIcon />}
             color="error"
-            disabled={!watch()}
+            disabled={!watch("id")}
             onClick={handleDelete}
           >
             delete

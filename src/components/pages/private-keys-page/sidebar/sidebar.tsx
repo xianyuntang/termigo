@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -10,6 +11,7 @@ import {
 } from "@mui/material";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { readFile } from "../../../../core";
 import { PrivateKey } from "../../../../interfaces";
@@ -20,15 +22,17 @@ interface SidebarProps {
   isOpen: boolean;
   privateKey?: PrivateKey;
   onClose?: () => void;
-  onSave?: (form: PrivateKeyForm) => void;
+  onSave?: (form: PrivateKeySchema) => void;
   onDelete?: (id?: string) => void;
 }
 
-export interface PrivateKeyForm {
-  id?: string;
-  label: string;
-  content: string;
-}
+const privateKeySchema = z.object({
+  id: z.string().optional(),
+  label: z.string().nonempty(),
+  content: z.string(),
+});
+
+type PrivateKeySchema = z.infer<typeof privateKeySchema>;
 
 export const Sidebar = ({
   isOpen,
@@ -37,17 +41,25 @@ export const Sidebar = ({
   onSave,
   onDelete,
 }: SidebarProps) => {
-  const { handleSubmit, control, setValue, reset, watch } =
-    useForm<PrivateKeyForm>({
-      defaultValues: {
-        label: "",
-        content: "",
-      },
-    });
+  const {
+    handleSubmit,
+    control,
+    setValue,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<PrivateKeySchema>({
+    defaultValues: {
+      label: "",
+      content: "",
+    },
+    resolver: zodResolver(privateKeySchema),
+    reValidateMode: "onChange",
+  });
 
   const id = watch("id");
 
-  const onSubmit: SubmitHandler<PrivateKeyForm> = async (data) => {
+  const onSubmit: SubmitHandler<PrivateKeySchema> = async (data) => {
     if (typeof onSave === "function") {
       onSave(data);
     }
@@ -100,7 +112,6 @@ export const Sidebar = ({
           <Controller
             name="label"
             control={control}
-            rules={{ required: true }}
             render={({ field }) => (
               <FormControl fullWidth>
                 <TextField
@@ -109,6 +120,8 @@ export const Sidebar = ({
                   size="small"
                   autoCapitalize="off"
                   autoComplete="off"
+                  error={!!errors.label}
+                  helperText={errors.label?.message}
                 />
               </FormControl>
             )}
@@ -119,7 +132,6 @@ export const Sidebar = ({
           <Controller
             name="content"
             control={control}
-            rules={{ required: true }}
             render={({ field }) => (
               <FormControl fullWidth>
                 <TextField
@@ -130,6 +142,8 @@ export const Sidebar = ({
                   size="small"
                   autoCapitalize="off"
                   autoComplete="off"
+                  error={!!errors.content}
+                  helperText={errors.content?.message}
                 />
               </FormControl>
             )}

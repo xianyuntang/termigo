@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -14,6 +15,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Identity } from "../../../../interfaces";
 import { privateKeyService } from "../../../../services";
@@ -23,17 +25,19 @@ interface SidebarProps {
   isOpen: boolean;
   identity?: Identity;
   onClose?: () => void;
-  onSave?: (form: IdentityForm) => void;
+  onSave?: (form: IdentitySchema) => void;
   onDelete?: (id?: string) => void;
 }
 
-export interface IdentityForm {
-  id?: string;
-  label: string;
-  username: string;
-  password: string;
-  privateKey: string;
-}
+const identitySchema = z.object({
+  id: z.string().optional(),
+  label: z.string().nonempty(),
+  username: z.string().nonempty(),
+  password: z.string(),
+  privateKey: z.string(),
+});
+
+type IdentitySchema = z.infer<typeof identitySchema>;
 
 export const Sidebar = ({
   isOpen,
@@ -47,19 +51,27 @@ export const Sidebar = ({
     queryFn: privateKeyService.list,
   });
 
-  const { handleSubmit, control, setValue, reset, watch } =
-    useForm<IdentityForm>({
-      defaultValues: {
-        label: "",
-        username: "",
-        password: "",
-        privateKey: "",
-      },
-    });
+  const {
+    handleSubmit,
+    control,
+    setValue,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<IdentitySchema>({
+    defaultValues: {
+      label: "",
+      username: "",
+      password: "",
+      privateKey: "",
+    },
+    resolver: zodResolver(identitySchema),
+    reValidateMode: "onChange",
+  });
 
   const id = watch("id");
 
-  const onSubmit: SubmitHandler<IdentityForm> = async (data) => {
+  const onSubmit: SubmitHandler<IdentitySchema> = async (data) => {
     if (typeof onSave === "function") {
       onSave(data);
     }
@@ -117,6 +129,8 @@ export const Sidebar = ({
                   size="small"
                   autoCapitalize="off"
                   autoComplete="off"
+                  error={!!errors.label}
+                  helperText={errors.label?.message}
                 />
               </FormControl>
             )}
@@ -135,6 +149,8 @@ export const Sidebar = ({
                   size="small"
                   autoCapitalize="off"
                   autoComplete="off"
+                  error={!!errors.username}
+                  helperText={errors.username?.message}
                 />
               </FormControl>
             )}
