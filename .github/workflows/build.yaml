@@ -11,17 +11,35 @@ on:
       - main
 
 jobs:
-  macos:
-    strategy:
-      matrix:
-        target:
-          - aarch64-apple-darwin
-          - x86_64-apple-darwin
+  build-and-notarize:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout code
+      - name: Check out code
         uses: actions/checkout@v3
+
+      - name: Create & unlock keychain
+        env:
+          CERT_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+        run: |
+          security create-keychain -p "$CERT_PASSWORD" build.keychain
+          security unlock-keychain -p "$CERT_PASSWORD" build.keychain
+          # 讓 codesign / xcode 可以使用這個 keychain
+          security set-keychain-settings build.keychain
+
+      - name: Import certificate
+        env:
+          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+          CERT_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$SIGNING_CERTIFICATE" | base64 --decode > signing_certificate.p12
+          security import signing_certificate.p12 -k build.keychain -P "$CERT_PASSWORD" -A
+          security set-key-partition-list -S apple-tool:,apple: -k "$CERT_PASSWORD" build.keychain
+          security find-identity -p codesigning -v build.keychain
+
+      - name: Configure keychain search path
+        run: |
+          security list-keychains -d user -s build.keychain $(security list-keychains -d user | sed 's/\"//g')
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -38,59 +56,47 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Import signing certificate
-        env:
-          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
-          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+      - name: Build macOS App
+        run: npm run tauri build
+
+      - name: Find DMG file
+        id: find-dmg
         run: |
-          echo "$SIGNING_CERTIFICATE" | base64 --decode > signing_certificate.p12
-          security import signing_certificate.p12 -P "$CERTIFICATE_PASSWORD" -A
-          security find-identity -p codesigning -v
-
-
-      - name: Configure keychain permissions
-        env:
-          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
-        run: |
-          security create-keychain -p "$CERTIFICATE_PASSWORD" build.keychain
-          security unlock-keychain -p "$CERTIFICATE_PASSWORD" build.keychain
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$CERTIFICATE_PASSWORD" ~/Library/Keychains/login.keychain-db
-
-      - name: Build Termigo
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-        run: npm run tauri build -- --target ${{ matrix.target }}
-
-      - name: Find and Upload macOS Artifact
-        run: |
-          DMG_FILE=$(find src-tauri/target/${{ matrix.target }}/release/bundle/dmg -name "*.dmg")
+          DMG_FILE=$(find src-tauri/target/release/bundle/dmg -name "*.dmg")
           if [ -z "$DMG_FILE" ]; then
             echo "Error: DMG file not found!"
             exit 1
           fi
           echo "DMG_FILE=$DMG_FILE" >> $GITHUB_ENV
 
-      - name: Notarize App
-        if: success()
+      - name: Notarize with notarytool
         env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-        run: |
-          echo "Notarizing file: ${{ env.DMG_FILE }}"
-          xcrun altool --notarize-app --primary-bundle-id "com.termigo.app" --username "$APPLE_ID" --password "$APPLE_ID_PASSWORD" --file "${{ env.DMG_FILE }}"
+          NOTARIZE_USERNAME: ${{ secrets.APPLE_ID }}
+          NOTARIZE_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-      - name: Staple Notarization
-        if: success()
         run: |
-          echo "Stapling notarization for file: ${{ env.DMG_FILE }}"
+          echo "Start notarization for: $DMG_FILE"
+          xcrun notarytool submit "${{ env.DMG_FILE }}" \
+            --apple-id "$NOTARIZE_USERNAME" \
+            --password "$NOTARIZE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \        
+            --wait
+
+      - name: Staple
+        run: |
           xcrun stapler staple "${{ env.DMG_FILE }}"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: termigo-macos-${{ matrix.target }}
+          name: myapp-macos
           path: ${{ env.DMG_FILE }}
+
+      - name: Cleanup Keychain
+        if: always()
+        run: |
+          security delete-keychain build.keychain || true
 
   windows:
     strategy:
@@ -119,7 +125,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Termigo
+      - name: Build Windows
         run: npm run tauri build -- --target ${{ matrix.target }}
 
       - name: Find Windows Artifact
