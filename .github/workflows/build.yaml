@@ -48,6 +48,7 @@ jobs:
 
       - name: Configure keychain permissions
         run: |
+          security unlock-keychain -p "$CERTIFICATE_PASSWORD" ~/Library/Keychains/login.keychain-db
           security set-key-partition-list -S apple-tool:,apple: -s -k "$CERTIFICATE_PASSWORD" ~/Library/Keychains/login.keychain-db
 
       - name: Build Termigo
