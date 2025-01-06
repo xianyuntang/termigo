@@ -29,7 +29,6 @@ jobs:
         run: |
           security create-keychain -p "$CERT_PASSWORD" build.keychain
           security unlock-keychain -p "$CERT_PASSWORD" build.keychain
-          # 讓 codesign / xcode 可以使用這個 keychain
           security set-keychain-settings build.keychain
 
       - name: Import certificate
@@ -43,8 +42,7 @@ jobs:
           security find-identity -p codesigning -v build.keychain
 
       - name: Configure keychain search path
-        run: |
-          security list-keychains -d user -s build.keychain $(security list-keychains -d user | sed 's/\"//g')
+        run: security list-keychains -d user -s build.keychain $(security list-keychains -d user | sed 's/\"//g')
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -80,9 +78,7 @@ jobs:
           NOTARIZE_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-        run: |
-          echo "Start notarization for: $DMG_FILE"
-          xcrun notarytool submit "${{ env.DMG_FILE }}" --apple-id "$NOTARIZE_USERNAME" --password "$NOTARIZE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+        run: xcrun notarytool submit "${{ env.DMG_FILE }}" --apple-id "$NOTARIZE_USERNAME" --password "$NOTARIZE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
 
       - name: Staple
         run: |
@@ -130,13 +126,15 @@ jobs:
         run: npm run tauri build -- --target ${{ matrix.target }}
 
       - name: Find Windows Artifact
+        shell: pwsh
         run: |
-          EXE_FILE=$(find src-tauri/target/release/bundle/nsis -name "*.exe" | head -n 1)
-          if [ -z "$EXE_FILE" ]; then
-            echo "Error: EXE file not found!"
+          $exeFile = Get-ChildItem -Path 'src-tauri/target/release/bundle/nsis' -Recurse -Filter '*.exe' | Select-Object -First 1
+          if (-not $exeFile) {
+            Write-Host "Error: EXE file not found!"
             exit 1
-          fi
-          echo "EXE_FILE=$EXE_FILE" >> $GITHUB_ENV
+          }
+          Write-Host "EXE_FILE=$($exeFile.FullName)" | Out-File -FilePath $Env:GITHUB_ENV -Append
+          Write-Host "Found EXE_FILE: $($exeFile.FullName)"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
