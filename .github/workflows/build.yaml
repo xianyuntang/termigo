@@ -51,6 +51,7 @@ jobs:
         env:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         run: |
+          security set-keychain-password -p "YourPassword" ~/Library/Keychains/login.keychain-db
           security unlock-keychain -p "$CERTIFICATE_PASSWORD" ~/Library/Keychains/login.keychain-db
           security set-key-partition-list -S apple-tool:,apple: -s -k "$CERTIFICATE_PASSWORD" ~/Library/Keychains/login.keychain-db
 
