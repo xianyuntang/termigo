@@ -61,6 +61,7 @@ const TunnelDialog = ({
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<TunnelSchema>({
     defaultValues: {
@@ -89,6 +90,7 @@ const TunnelDialog = ({
     if (typeof onClose === "function") {
       onClose();
     }
+    reset();
   };
 
   const handleStopPortforward = (tunnel: string) => {
