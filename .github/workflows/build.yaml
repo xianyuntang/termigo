@@ -47,6 +47,8 @@ jobs:
           security import signing_certificate.p12 -P "$CERTIFICATE_PASSWORD" -A
 
       - name: Configure keychain permissions
+        env:
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         run: |
           security unlock-keychain -p "$CERTIFICATE_PASSWORD" ~/Library/Keychains/login.keychain-db
           security set-key-partition-list -S apple-tool:,apple: -s -k "$CERTIFICATE_PASSWORD" ~/Library/Keychains/login.keychain-db
