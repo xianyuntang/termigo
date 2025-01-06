@@ -32,7 +32,7 @@ const privateKeySchema = z.object({
   content: z.string(),
 });
 
-type PrivateKeySchema = z.infer<typeof privateKeySchema>;
+export type PrivateKeySchema = z.infer<typeof privateKeySchema>;
 
 export const Sidebar = ({
   isOpen,

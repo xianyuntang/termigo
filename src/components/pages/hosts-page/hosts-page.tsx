@@ -9,9 +9,9 @@ import { futureService, hostService } from "../../../services";
 import { usePortforwardStore, useTerminalStore } from "../../../stores";
 import HostCard from "./host-card";
 import Sidebar from "./sidebar";
-import { HostForm } from "./sidebar/sidebar";
+import { HostSchema } from "./sidebar/sidebar.tsx";
 import TunnelSidebar from "./tunnel-sidebar";
-import { StartTunnelForm } from "./tunnel-sidebar/tunnel-sidebar";
+import { TunnelSchema } from "./tunnel-sidebar/tunnel-sidebar";
 
 const HostsPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -55,7 +55,7 @@ const HostsPage = () => {
     setSelected(undefined);
   };
 
-  const handleSaveClick = async (form: HostForm) => {
+  const handleSaveClick = async (form: HostSchema) => {
     if (form.id) {
       await hostService.update(
         form.id,
@@ -81,7 +81,7 @@ const HostsPage = () => {
       );
     }
     setIsSidebarOpen(false);
-    refetch();
+    await refetch();
   };
 
   const handleDeleteClick = async (id?: string) => {
@@ -90,7 +90,7 @@ const HostsPage = () => {
     }
 
     setIsSidebarOpen(false);
-    refetch();
+    await refetch();
   };
 
   const handleTunnelClick = async (host: Host) => {
@@ -98,7 +98,7 @@ const HostsPage = () => {
     setIsTunnelSidebarOpen(true);
   };
 
-  const handleTunnelStart = async (form: StartTunnelForm) => {
+  const handleTunnelStart = async (form: TunnelSchema) => {
     if (selected) {
       const tunnel = nanoid();
       await hostService.startTunnelStream(

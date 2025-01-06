@@ -37,7 +37,7 @@ const identitySchema = z.object({
   privateKey: z.string(),
 });
 
-type IdentitySchema = z.infer<typeof identitySchema>;
+export type IdentitySchema = z.infer<typeof identitySchema>;
 
 export const Sidebar = ({
   isOpen,

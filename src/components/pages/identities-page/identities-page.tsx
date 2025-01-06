@@ -7,7 +7,7 @@ import { Identity } from "../../../interfaces";
 import { identityService } from "../../../services";
 import IdentityCard from "./identity-card";
 import Sidebar from "./sidebar";
-import { IdentityForm } from "./sidebar/sidebar";
+import { IdentitySchema } from "./sidebar/sidebar.tsx";
 
 const PrivateKeysPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -26,38 +26,38 @@ const PrivateKeysPage = () => {
   const handleSidebarClose = () => {
     setIsSidebarOpen(false);
   };
-  const handleSaveClick = async (form: IdentityForm) => {
+  const handleSaveClick = async (form: IdentitySchema) => {
     if (form.id) {
       await identityService.update(
         form.id,
         form.label,
         form.username,
         form.password,
-        form.privateKey
+        form.privateKey,
       );
     } else {
       await identityService.add(
         form.label,
         form.username,
         form.password,
-        form.privateKey
+        form.privateKey,
       );
     }
     setIsSidebarOpen(false);
-    refetch();
+    await refetch();
   };
   const handleDeleteClick = async (id?: string) => {
     if (id) {
       await identityService.delete(id);
     }
     setIsSidebarOpen(false);
-    refetch();
+    await refetch();
   };
 
-  const handleEditClick = (identity: Identity) => {
+  const handleEditClick = async (identity: Identity) => {
     setIsSidebarOpen(true);
     setSelected(identity);
-    refetch();
+    await refetch();
   };
 
   return (

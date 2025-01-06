@@ -6,7 +6,7 @@ import { useState } from "react";
 import { PrivateKey } from "../../../interfaces";
 import { privateKeyService } from "../../../services";
 import PrivateKeyCard from "./private-key-card";
-import { PrivateKeyForm, Sidebar } from "./sidebar";
+import { PrivateKeySchema, Sidebar } from "./sidebar";
 
 const PrivateKeysPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -25,27 +25,27 @@ const PrivateKeysPage = () => {
   const handleSidebarClose = () => {
     setIsSidebarOpen(false);
   };
-  const handleSaveClick = async (form: PrivateKeyForm) => {
+  const handleSaveClick = async (form: PrivateKeySchema) => {
     if (form.id) {
       await privateKeyService.update(form.id, form.label, form.content);
     } else {
       await privateKeyService.add(form.label, form.content);
     }
     setIsSidebarOpen(false);
-    refetch();
+    await refetch();
   };
   const handleDeleteClick = async (id?: string) => {
     if (id) {
       await privateKeyService.delete(id);
     }
     setIsSidebarOpen(false);
-    refetch();
+    await refetch();
   };
 
-  const handleEditClick = (privateKey: PrivateKey) => {
+  const handleEditClick = async (privateKey: PrivateKey) => {
     setIsSidebarOpen(true);
     setSelected(privateKey);
-    refetch();
+    await refetch();
   };
 
   return (

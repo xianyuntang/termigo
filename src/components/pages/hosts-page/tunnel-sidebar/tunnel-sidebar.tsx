@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ClearIcon from "@mui/icons-material/Clear";
 import StartIcon from "@mui/icons-material/Start";
@@ -16,6 +17,7 @@ import {
 } from "@mui/material";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Portforward } from "../../../../stores";
 import SidebarCard from "../../../shared/sidebar-card";
@@ -23,17 +25,29 @@ import SidebarCard from "../../../shared/sidebar-card";
 interface TunnelDialogProps {
   portforwards?: Portforward[];
   isOpen: boolean;
-  onTunnelStart?: (form: StartTunnelForm) => void;
+  onTunnelStart?: (form: TunnelSchema) => void;
   onTunnelStop?: (tunnel: string) => void;
   onClose?: () => void;
 }
 
-export interface StartTunnelForm {
-  localAddress: string;
-  localPort: string;
-  destinationAddress: string;
-  destinationPort: string;
-}
+const tunnelSchema = z.object({
+  localAddress: z.string(),
+  localPort: z
+    .string()
+    .nonempty()
+    .refine((value) => !isNaN(Number(value)), {
+      message: "Must be a valid number",
+    }),
+  destinationAddress: z.string(),
+  destinationPort: z
+    .string()
+    .nonempty()
+    .refine((value) => !isNaN(Number(value)), {
+      message: "Must be a valid number",
+    }),
+});
+
+export type TunnelSchema = z.infer<typeof tunnelSchema>;
 
 const TunnelDialog = ({
   portforwards,
@@ -42,13 +56,21 @@ const TunnelDialog = ({
   onTunnelStop,
   onClose,
 }: TunnelDialogProps) => {
-  const { control, handleSubmit, watch, setValue } = useForm<StartTunnelForm>({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<TunnelSchema>({
     defaultValues: {
       localAddress: "127.0.0.1",
       localPort: "",
       destinationAddress: "127.0.0.1",
       destinationPort: "",
     },
+    resolver: zodResolver(tunnelSchema),
+    reValidateMode: "onChange",
   });
 
   const destinationPort = watch("destinationPort");
@@ -57,7 +79,7 @@ const TunnelDialog = ({
     setValue("localPort", destinationPort);
   }, [setValue, destinationPort]);
 
-  const onSubmit: SubmitHandler<StartTunnelForm> = async (data) => {
+  const onSubmit: SubmitHandler<TunnelSchema> = async (data) => {
     if (typeof onTunnelStart === "function") {
       onTunnelStart(data);
     }
@@ -106,6 +128,8 @@ const TunnelDialog = ({
                   size="small"
                   autoCapitalize="off"
                   autoComplete="off"
+                  error={!!errors.destinationAddress}
+                  helperText={errors.destinationAddress?.message}
                 />
               </FormControl>
             )}
@@ -119,9 +143,10 @@ const TunnelDialog = ({
                   {...field}
                   label="Destination Port"
                   size="small"
-                  type="number"
                   autoCapitalize="off"
                   autoComplete="off"
+                  error={!!errors.destinationPort}
+                  helperText={errors.destinationPort?.message}
                 />
               </FormControl>
             )}
@@ -137,6 +162,8 @@ const TunnelDialog = ({
                   size="small"
                   autoCapitalize="off"
                   autoComplete="off"
+                  error={!!errors.localAddress}
+                  helperText={errors.localAddress?.message}
                 />
               </FormControl>
             )}
@@ -150,9 +177,10 @@ const TunnelDialog = ({
                   {...field}
                   label="Local Port"
                   size="small"
-                  type="number"
                   autoCapitalize="off"
                   autoComplete="off"
+                  error={!!errors.localPort}
+                  helperText={errors.localPort?.message}
                 />
               </FormControl>
             )}

@@ -33,17 +33,20 @@ const hostSchema = z.object({
   id: z.string().optional(),
   label: z.string().nonempty(),
   address: z.string().nonempty(),
-  port: z.string().refine((value) => !isNaN(Number(value)), {
-    message: "Must be a valid number",
-  }),
-  authType: z.string(),
+  port: z
+    .string()
+    .nonempty()
+    .refine((value) => !isNaN(Number(value)), {
+      message: "Must be a valid number",
+    }),
+  authType: z.nativeEnum(AuthType),
   identity: z.string(),
   username: z.string(),
   password: z.string(),
   privateKey: z.string(),
 });
 
-type HostSchema = z.infer<typeof hostSchema>;
+export type HostSchema = z.infer<typeof hostSchema>;
 
 export const Sidebar = ({
   isOpen,
