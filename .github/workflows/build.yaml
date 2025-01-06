@@ -67,7 +67,7 @@ jobs:
       - name: Find DMG file
         id: find-dmg
         run: |
-          DMG_FILE=$(find src-tauri/target/**/bundle/dmg -name "*.dmg")
+          DMG_FILE=$(find src-tauri/target/release/bundle/dmg -name "*.dmg")
           if [ -z "$DMG_FILE" ]; then
             echo "Error: DMG file not found!"
             exit 1
@@ -82,11 +82,7 @@ jobs:
 
         run: |
           echo "Start notarization for: $DMG_FILE"
-          xcrun notarytool submit "${{ env.DMG_FILE }}" \
-            --apple-id "$NOTARIZE_USERNAME" \
-            --password "$NOTARIZE_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID" \        
-            --wait
+          xcrun notarytool submit "${{ env.DMG_FILE }}" --apple-id "$NOTARIZE_USERNAME" --password "$NOTARIZE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
 
       - name: Staple
         run: |
