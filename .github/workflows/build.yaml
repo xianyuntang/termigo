@@ -94,3 +94,47 @@ jobs:
         if: always()
         run: |
           security delete-keychain build.keychain || true
+  windows:
+    strategy:
+      matrix:
+        target:
+          - x86_64-pc-windows-msvc
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          target: ${{ matrix.target }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.9.0"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Termigo
+        run: npm run tauri build -- --target ${{ matrix.target }}
+
+      - name: Find Windows Artifact
+        run: |
+          EXE_FILE=$(find src-tauri/target/release/bundle/nsis -name "*.exe" | head -n 1)
+          if [ -z "$EXE_FILE" ]; then
+            echo "Error: EXE file not found!"
+            exit 1
+          fi
+          echo "EXE_FILE=$EXE_FILE" >> $GITHUB_ENV
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: termigo-windows-${{ matrix.target }}
+          path: ${{ env.EXE_FILE }}
