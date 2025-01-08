@@ -47,17 +47,18 @@ jobs:
         run: npm install
 
       - name: set version
+        if: runner.os == 'Windows'
         run: |
-          if [[ "${RUNNER_OS}" == "Windows" ]]; then
-            $VERSION = $env:GITHUB_REF -replace '^refs/tags/v', ''
-            Write-Output "Extracted version: $VERSION"
-            npm version $VERSION --no-git-tag-version
-          else
-            VERSION=$(echo "${GITHUB_REF##*/}" | sed 's/^v//')
-            echo "Extracted version: $VERSION"
-            npm version $VERSION --no-git-tag-version
-          fi
-        shell: pwsh
+          $VERSION = $env:GITHUB_REF -replace '^refs/tags/v', ''
+          Write-Output "Extracted version: $VERSION"
+          npm version $VERSION --no-git-tag-version
+
+      - name: set version
+        if: runner.os != 'Windows'
+        run: |
+          VERSION=$(echo "${GITHUB_REF##*/}" | sed 's/^v//')
+          echo "Extracted version: $VERSION"
+          npm version $VERSION --no-git-tag-version
 
 
       - uses: tauri-apps/tauri-action@v0
