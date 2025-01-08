@@ -45,7 +45,7 @@ jobs:
           echo "Extracted version: $VERSION"
           npm version $VERSION --no-git-tag-version
 
-      - name: Import Apple Developer Certificate
+      - name: import apple developer certificate
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -58,14 +58,15 @@ jobs:
           security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
           security find-identity -v -p codesigning build.keychain
-      - name: Verify Certificate
+      - name: verify certificate
         run: |
           CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Apple Development")
           CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
           echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
           echo "Certificate imported."
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: publish
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -116,8 +117,8 @@ jobs:
           echo "Extracted version: $VERSION"
           npm version $VERSION --no-git-tag-version
 
-
-      - uses: tauri-apps/tauri-action@v0
+      - name: publish
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -160,7 +161,8 @@ jobs:
           Write-Output "Extracted version: $VERSION"
           npm version $VERSION --no-git-tag-version
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: publish
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
