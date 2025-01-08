@@ -12,7 +12,7 @@ class HostService {
     localAddress: string,
     localPort: number,
     destinationAddress: string,
-    destinationPort: number
+    destinationPort: number,
   ) => {
     return invoker<OKMessage>("start_tunnel_stream", {
       host,
@@ -36,7 +36,7 @@ class HostService {
     identity?: string,
     username?: string,
     password?: string,
-    privateKey?: string
+    privateKey?: string,
   ) => {
     return invoker<Host>("add_host", {
       label,
@@ -63,7 +63,7 @@ class HostService {
     identity?: string,
     username?: string,
     password?: string,
-    privateKey?: string
+    privateKey?: string,
   ) => {
     return invoker<Host>("update_host", {
       id,
@@ -79,4 +79,4 @@ class HostService {
   };
 }
 
-export default HostService;
+export default new HostService();

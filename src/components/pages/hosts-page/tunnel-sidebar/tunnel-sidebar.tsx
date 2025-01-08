@@ -20,7 +20,7 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Portforward } from "../../../../stores";
-import SidebarCard from "../../../shared/sidebar-card";
+import Card from "../../../shared/card";
 
 interface TunnelDialogProps {
   portforwards?: Portforward[];
@@ -118,7 +118,7 @@ const TunnelDialog = ({
           gap: theme.spacing(2),
         })}
       >
-        <SidebarCard title="Port Forward">
+        <Card title="Port Forward">
           <Controller
             name="destinationAddress"
             control={control}
@@ -128,8 +128,13 @@ const TunnelDialog = ({
                   {...field}
                   label="Destination Address"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   error={!!errors.destinationAddress}
                   helperText={errors.destinationAddress?.message}
                 />
@@ -145,8 +150,13 @@ const TunnelDialog = ({
                   {...field}
                   label="Destination Port"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   error={!!errors.destinationPort}
                   helperText={errors.destinationPort?.message}
                 />
@@ -162,8 +172,13 @@ const TunnelDialog = ({
                   {...field}
                   label="Local Address"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   error={!!errors.localAddress}
                   helperText={errors.localAddress?.message}
                 />
@@ -179,15 +194,20 @@ const TunnelDialog = ({
                   {...field}
                   label="Local Port"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   error={!!errors.localPort}
                   helperText={errors.localPort?.message}
                 />
               </FormControl>
             )}
           />
-        </SidebarCard>
+        </Card>
         <ButtonGroup
           size="small"
           sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
@@ -197,7 +217,7 @@ const TunnelDialog = ({
           </Button>
         </ButtonGroup>
 
-        <SidebarCard title="Current forwarding">
+        <Card title="Current forwarding">
           <List dense>
             {portforwards?.map((pf) => (
               <ListItem key={pf.tunnel} disablePadding>
@@ -231,7 +251,7 @@ const TunnelDialog = ({
               </ListItem>
             ))}
           </List>
-        </SidebarCard>
+        </Card>
       </Box>
     </Drawer>
   );

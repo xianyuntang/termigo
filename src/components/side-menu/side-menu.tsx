@@ -1,6 +1,7 @@
 import ComputerIcon from "@mui/icons-material/Computer";
 import KeyIcon from "@mui/icons-material/Key";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
+import SettingsIcon from "@mui/icons-material/Settings";
 import {
   Drawer,
   drawerClasses,
@@ -19,7 +20,7 @@ const SideMenu = () => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal
+    (state) => state.setActiveTerminal,
   );
 
   const navigate = useNavigate();
@@ -28,12 +29,13 @@ const SideMenu = () => {
     { icon: <ComputerIcon />, text: "Hosts", url: "/hosts" },
     { icon: <PermIdentityIcon />, text: "Identities", url: "/identities" },
     { icon: <KeyIcon />, text: "Private Keys", url: "/private-keys" },
+    { icon: <SettingsIcon />, text: "Settings", url: "/settings" },
   ];
 
-  const handleClick = (index: number, url: string) => {
-    navigate({ to: url });
+  const handleClick = async (index: number, url: string) => {
     setActiveIndex(index);
     setActiveTerminal(null);
+    await navigate({ to: url });
   };
 
   return (

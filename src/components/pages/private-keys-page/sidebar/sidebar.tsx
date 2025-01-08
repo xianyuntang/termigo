@@ -15,8 +15,8 @@ import { z } from "zod";
 
 import { readFile } from "../../../../core";
 import { PrivateKey } from "../../../../interfaces";
+import Card from "../../../shared/card";
 import Dropzone from "../../../shared/dropzone";
-import SidebarCard from "../../../shared/sidebar-card";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -108,7 +108,7 @@ export const Sidebar = ({
           gap: theme.spacing(2),
         })}
       >
-        <SidebarCard title="General">
+        <Card title="General">
           <Controller
             name="label"
             control={control}
@@ -118,17 +118,22 @@ export const Sidebar = ({
                   {...field}
                   label="Label"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   error={!!errors.label}
                   helperText={errors.label?.message}
                 />
               </FormControl>
             )}
           />
-        </SidebarCard>
+        </Card>
 
-        <SidebarCard title="Key Information">
+        <Card title="Key Information">
           <Controller
             name="content"
             control={control}
@@ -140,8 +145,13 @@ export const Sidebar = ({
                   minRows={4}
                   label="Content"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   error={!!errors.content}
                   helperText={errors.content?.message}
                 />
@@ -152,7 +162,7 @@ export const Sidebar = ({
             text="Drag and drop to import private key"
             onFilesDrop={handleFilesDrop}
           />
-        </SidebarCard>
+        </Card>
 
         <ButtonGroup
           size="small"

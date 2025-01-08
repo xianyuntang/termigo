@@ -26,4 +26,4 @@ class PrivateKeyService {
   };
 }
 
-export default PrivateKeyService;
+export default new PrivateKeyService();

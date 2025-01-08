@@ -1,11 +1,15 @@
-import FutureServiceClass from "./future.service";
-import HostServiceClass from "./host.service";
-import identityServiceClass from "./identity.service";
-import PrivateKeyServiceClass from "./private-key.service";
+import futureService from "./future.service.ts";
+import gptService from "./gpt.service.ts";
+import hostService from "./host.service.ts";
+import identityService from "./identity.service.ts";
+import privateKeyService from "./private-key.service.ts";
+import settingService from "./setting.service.ts";
 
-const privateKeyService = new PrivateKeyServiceClass();
-const hostService = new HostServiceClass();
-const identityService = new identityServiceClass();
-const futureService = new FutureServiceClass();
-
-export { futureService, hostService, identityService, privateKeyService };
+export {
+  futureService,
+  gptService,
+  hostService,
+  identityService,
+  privateKeyService,
+  settingService,
+};

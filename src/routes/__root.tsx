@@ -37,7 +37,7 @@ function RouteComponent() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate({ to: "/hosts" });
+    void navigate({ to: "/hosts" });
   }, [navigate]);
 
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);

@@ -1,13 +1,14 @@
-import { Card, CardContent, CardHeader } from "@mui/material";
+import { Card as MuiCard, CardContent, CardHeader } from "@mui/material";
+import { ReactNode } from "react";
 
 interface SidebarCardProps {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-const SidebarCard = ({ title, children }: SidebarCardProps) => {
+const Card = ({ title, children }: SidebarCardProps) => {
   return (
-    <Card sx={{ width: "20rem" }}>
+    <MuiCard sx={{ width: "20rem" }}>
       <CardHeader title={title} />
       <CardContent
         sx={(theme) => ({
@@ -18,8 +19,8 @@ const SidebarCard = ({ title, children }: SidebarCardProps) => {
       >
         {children}
       </CardContent>
-    </Card>
+    </MuiCard>
   );
 };
 
-export default SidebarCard;
+export default Card;

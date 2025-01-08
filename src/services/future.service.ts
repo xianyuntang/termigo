@@ -7,4 +7,4 @@ class FutureService {
   };
 }
 
-export default FutureService;
+export default new FutureService();

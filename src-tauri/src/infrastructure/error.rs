@@ -1,7 +1,7 @@
-use std::string::FromUtf8Error;
-
+use async_openai::error::OpenAIError;
 use log;
 use serde_json::json;
+use std::string::FromUtf8Error;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ApiError {
@@ -29,8 +29,14 @@ pub enum ApiError {
     #[error(transparent)]
     RusshKey(#[from] russh::keys::Error),
 
+    #[error(transparent)]
+    OpenAi(#[from] OpenAIError),
+
     #[error("The specified {item} was not found.")]
     NotFound { item: String },
+
+    #[error("Api key is not set")]
+    ApiKeyIsNotSet,
 }
 
 impl serde::Serialize for ApiError {

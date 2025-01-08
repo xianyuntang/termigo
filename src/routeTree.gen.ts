@@ -11,11 +11,18 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SettingsIndexImport } from './routes/settings/index'
 import { Route as PrivateKeysIndexImport } from './routes/private-keys/index'
 import { Route as IdentitiesIndexImport } from './routes/identities/index'
 import { Route as HostsIndexImport } from './routes/hosts/index'
 
 // Create/Update Routes
+
+const SettingsIndexRoute = SettingsIndexImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const PrivateKeysIndexRoute = PrivateKeysIndexImport.update({
   id: '/private-keys/',
@@ -60,6 +67,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateKeysIndexImport
       parentRoute: typeof rootRoute
     }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -69,12 +83,14 @@ export interface FileRoutesByFullPath {
   '/hosts': typeof HostsIndexRoute
   '/identities': typeof IdentitiesIndexRoute
   '/private-keys': typeof PrivateKeysIndexRoute
+  '/settings': typeof SettingsIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/hosts': typeof HostsIndexRoute
   '/identities': typeof IdentitiesIndexRoute
   '/private-keys': typeof PrivateKeysIndexRoute
+  '/settings': typeof SettingsIndexRoute
 }
 
 export interface FileRoutesById {
@@ -82,14 +98,15 @@ export interface FileRoutesById {
   '/hosts/': typeof HostsIndexRoute
   '/identities/': typeof IdentitiesIndexRoute
   '/private-keys/': typeof PrivateKeysIndexRoute
+  '/settings/': typeof SettingsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/hosts' | '/identities' | '/private-keys'
+  fullPaths: '/hosts' | '/identities' | '/private-keys' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/hosts' | '/identities' | '/private-keys'
-  id: '__root__' | '/hosts/' | '/identities/' | '/private-keys/'
+  to: '/hosts' | '/identities' | '/private-keys' | '/settings'
+  id: '__root__' | '/hosts/' | '/identities/' | '/private-keys/' | '/settings/'
   fileRoutesById: FileRoutesById
 }
 
@@ -97,12 +114,14 @@ export interface RootRouteChildren {
   HostsIndexRoute: typeof HostsIndexRoute
   IdentitiesIndexRoute: typeof IdentitiesIndexRoute
   PrivateKeysIndexRoute: typeof PrivateKeysIndexRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   HostsIndexRoute: HostsIndexRoute,
   IdentitiesIndexRoute: IdentitiesIndexRoute,
   PrivateKeysIndexRoute: PrivateKeysIndexRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -117,7 +136,8 @@ export const routeTree = rootRoute
       "children": [
         "/hosts/",
         "/identities/",
-        "/private-keys/"
+        "/private-keys/",
+        "/settings/"
       ]
     },
     "/hosts/": {
@@ -128,6 +148,9 @@ export const routeTree = rootRoute
     },
     "/private-keys/": {
       "filePath": "private-keys/index.tsx"
+    },
+    "/settings/": {
+      "filePath": "settings/index.tsx"
     }
   }
 }

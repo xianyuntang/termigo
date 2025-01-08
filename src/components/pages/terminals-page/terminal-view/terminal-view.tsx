@@ -1,31 +1,22 @@
 import "@xterm/xterm/css/xterm.css";
 import "./xterm.css";
 
-import CloseIcon from "@mui/icons-material/Close";
-import ReplayIcon from "@mui/icons-material/Replay";
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  LinearProgress,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Box, useTheme } from "@mui/material";
+import { useDebounceCallback } from "@react-hook/debounce";
+import useResizeObserver from "@react-hook/resize-observer";
 import { useQuery } from "@tanstack/react-query";
 import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal as Xterm } from "@xterm/xterm";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDebounceCallback } from "usehooks-ts";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Host } from "../../../../interfaces";
-import { futureService, hostService } from "../../../../services";
+import { useGlobalShortcut } from "../../../../hooks/global-shortcut.ts";
+import { futureService, gptService, hostService } from "../../../../services";
 import { useTerminalStore } from "../../../../stores";
+import AgentDialog from "../agent-dialog";
+import StatusDialog from "../status-dialog";
+import { ERROR_STATUS } from "./constant.ts";
 import {
   InEventData,
   isOutEventData,
@@ -40,30 +31,35 @@ interface TerminalViewProps {
 }
 
 export const TerminalView = ({ terminal }: TerminalViewProps) => {
-  const [host, setHost] = useState<Host | undefined>(undefined);
-  const [containerRef, setContainerRef] = useState<HTMLDivElement | undefined>(
-    undefined,
-  );
+  const [ref, setRef] = useState<HTMLDivElement | null>(null);
+  const [agentOpen, setAgentOpen] = useState<boolean>(false);
+  const [statusOpen, setStatusOpen] = useState<boolean>(true);
+
   const [xterm, setXterm] = useState<Xterm | undefined>(undefined);
-  const [fitAddon, setFitAddon] = useState<FitAddon | undefined>(undefined);
+  const fitAddon = useRef<FitAddon>(new FitAddon());
+  const webglAddon = useRef<WebglAddon>(new WebglAddon());
   const [status, setStatus] = useState<StatusType>(StatusType.Pending);
 
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
 
   const theme = useTheme();
-
-  const resize = useDebounceCallback(() => fitAddon?.fit(), 100);
-
+  const resize = useDebounceCallback(() => fitAddon.current.fit(), 100);
   const hostMapper = useTerminalStore((state) => state.hostMapper);
 
-  useEffect(() => {
-    if (terminal in hostMapper) {
-      setHost(hostMapper[terminal]);
-    } else {
-      setHost(undefined);
-    }
-  }, [terminal, hostMapper]);
+  useResizeObserver(ref, resize);
+
+  const host = useMemo(() => {
+    return hostMapper[terminal];
+  }, [hostMapper, terminal]);
+
+  const isTerminalActive = useMemo(() => {
+    return activeTerminal === terminal;
+  }, [activeTerminal, terminal]);
+
+  useGlobalShortcut("CommandOrControl+I", () => {
+    setAgentOpen((v) => !v);
+  });
 
   const { refetch } = useQuery({
     queryKey: [terminal, host],
@@ -79,16 +75,11 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     refetchOnWindowFocus: false,
   });
 
-  const ERROR_STATUS = useMemo(
-    () => [StatusType.ConnectionTimeout, StatusType.AuthFailed],
-    [],
-  );
-
   useEffect(() => {
-    if (activeTerminal === terminal) {
+    if (isTerminalActive) {
       xterm?.focus();
     }
-  }, [activeTerminal, terminal, xterm]);
+  }, [activeTerminal, isTerminalActive, terminal, xterm]);
 
   const initXterm = useCallback(
     (element: HTMLDivElement) => {
@@ -99,15 +90,12 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
           background: theme.palette.background.paper,
         },
       });
-      const fitAddon = new FitAddon();
-      const webglAddon = new WebglAddon();
 
-      xterm.loadAddon(fitAddon);
-      xterm.loadAddon(webglAddon);
+      xterm.loadAddon(fitAddon.current);
+      xterm.loadAddon(webglAddon.current);
 
       xterm.open(element);
 
-      setFitAddon(fitAddon);
       setXterm(xterm);
 
       return xterm;
@@ -116,27 +104,14 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   );
 
   useEffect(() => {
-    if (!containerRef) return;
-    const xterm = initXterm(containerRef);
+    if (!ref) return;
+    const xterm = initXterm(ref);
+
     return () => {
       xterm.dispose();
       setXterm(undefined);
     };
-  }, [containerRef, initXterm]);
-
-  useEffect(() => {
-    if (!fitAddon || !containerRef) return;
-
-    const observer = new ResizeObserver(() => {
-      resize();
-    });
-
-    observer.observe(containerRef);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [fitAddon, containerRef, resize]);
+  }, [ref, initXterm]);
 
   useEffect(() => {
     if (!xterm) return;
@@ -175,6 +150,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
                   size: [xterm.cols, xterm.rows],
                 } as WindowChangeEventData,
               });
+              setStatusOpen(false);
             } else if (ERROR_STATUS.includes(payload.data.status)) {
               await futureService.stopFuture(terminal);
             }
@@ -188,74 +164,45 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         unlistenOutFn();
       }
     };
-  }, [xterm, ERROR_STATUS, terminal]);
+  }, [xterm, terminal]);
 
-  const progress = useMemo(() => {
-    switch (status) {
-      case StatusType.Pending:
-        return 0;
-      case StatusType.Connecting:
-        return 25;
-      case StatusType.Connected:
-        return 50;
-      case StatusType.ChannelOpened:
-        return 75;
-      case StatusType.StartStreaming:
-        return 100;
-      default:
-        return 0;
-    }
-  }, [status]);
-
-  const handleReconnectClick = async () => {
-    if (!containerRef) return;
-    refetch();
+  const handleReconnect = async () => {
+    if (!ref) return;
+    await refetch();
     setStatus(StatusType.Pending);
-    initXterm(containerRef);
+    initXterm(ref);
   };
 
-  const handleCloseClick = async () => {
+  const handleTerminalClose = async () => {
     removeTerminal(terminal);
   };
 
+  const handleAgentClose = async () => {
+    setAgentOpen(false);
+  };
+
+  const handleAgentSubmit = async (text: string) => {
+    const response = await gptService.getAgentResponse(text);
+    await emit(terminal, {
+      data: { in: response.text } as InEventData,
+    });
+    setAgentOpen(false);
+  };
+
   return (
-    <Box ref={setContainerRef} sx={{ height: "100%" }}>
-      <Dialog open={status !== StatusType.StartStreaming}>
-        <Box sx={{ width: "fit" }}>
-          <DialogTitle>
-            Trying to connect to {host?.label || host?.address}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              <LinearProgress
-                color={ERROR_STATUS.includes(status) ? "error" : "primary"}
-                variant="determinate"
-                value={progress}
-              />
-              <Typography component="span" variant="body2">
-                {status}
-              </Typography>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              disabled={!ERROR_STATUS.includes(status)}
-              endIcon={<ReplayIcon />}
-              onClick={handleReconnectClick}
-            >
-              retry
-            </Button>
-            <Button
-              disabled={!ERROR_STATUS.includes(status)}
-              color="error"
-              endIcon={<CloseIcon />}
-              onClick={handleCloseClick}
-            >
-              close
-            </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
+    <Box ref={setRef} sx={{ height: "100%" }}>
+      <AgentDialog
+        open={agentOpen}
+        onSubmit={handleAgentSubmit}
+        onClose={handleAgentClose}
+      />
+      <StatusDialog
+        title={host?.label || host?.address || ""}
+        open={statusOpen}
+        status={status}
+        onReconnect={handleReconnect}
+        onClose={handleTerminalClose}
+      />
     </Box>
   );
 };

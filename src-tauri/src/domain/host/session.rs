@@ -3,7 +3,7 @@ use tauri::State;
 use tokio::sync::Mutex;
 
 use crate::{
-    domain::{identity::models::Identity, private_keys::models::PrivateKey},
+    domain::{identity::models::Identity, private_key::models::PrivateKey},
     infrastructure::{app::AppData, error::ApiError},
 };
 

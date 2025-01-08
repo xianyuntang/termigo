@@ -1,7 +1,7 @@
 import { invoker } from "../core";
 import { Identity, OKMessage } from "../interfaces";
 
-class identityService {
+class IdentityService {
   list = async () => {
     return invoker<Identity[]>("list_identities");
   };
@@ -10,7 +10,7 @@ class identityService {
     label: string,
     username: string,
     password: string,
-    privateKey: string
+    privateKey: string,
   ) => {
     return invoker<OKMessage>("add_identity", {
       label,
@@ -25,7 +25,7 @@ class identityService {
     label: string,
     username: string,
     password: string,
-    privateKey: string
+    privateKey: string,
   ) => {
     return invoker<OKMessage>("update_identity", {
       id,
@@ -41,4 +41,4 @@ class identityService {
   };
 }
 
-export default identityService;
+export default new IdentityService();

@@ -19,7 +19,7 @@ import { z } from "zod";
 
 import { AuthType, Host } from "../../../../interfaces";
 import { identityService, privateKeyService } from "../../../../services";
-import SidebarCard from "../../../shared/sidebar-card";
+import Card from "../../../shared/card";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -144,7 +144,7 @@ export const Sidebar = ({
           gap: theme.spacing(2),
         })}
       >
-        <SidebarCard title="General">
+        <Card title="General">
           <Controller
             name="label"
             control={control}
@@ -154,8 +154,13 @@ export const Sidebar = ({
                   {...field}
                   label="Label"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   autoCorrect="off"
                   error={!!errors.label}
                   helperText={errors.label?.message}
@@ -163,9 +168,9 @@ export const Sidebar = ({
               </FormControl>
             )}
           />
-        </SidebarCard>
+        </Card>
 
-        <SidebarCard title="Connection Information">
+        <Card title="Connection Information">
           <Controller
             name="address"
             control={control}
@@ -175,8 +180,13 @@ export const Sidebar = ({
                   {...field}
                   label="Address"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   error={!!errors.address}
                   helperText={errors.address?.message}
                 />
@@ -192,15 +202,20 @@ export const Sidebar = ({
                   {...field}
                   label="Port"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                 />
               </FormControl>
             )}
           />
-        </SidebarCard>
+        </Card>
 
-        <SidebarCard title="Credential">
+        <Card title="Credential">
           <Controller
             name="authType"
             control={control}
@@ -296,7 +311,7 @@ export const Sidebar = ({
               />
             </>
           )}
-        </SidebarCard>
+        </Card>
 
         <ButtonGroup
           size="small"

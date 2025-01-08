@@ -19,7 +19,7 @@ import { z } from "zod";
 
 import { Identity } from "../../../../interfaces";
 import { privateKeyService } from "../../../../services";
-import SidebarCard from "../../../shared/sidebar-card";
+import Card from "../../../shared/card";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -117,7 +117,7 @@ export const Sidebar = ({
           gap: theme.spacing(2),
         })}
       >
-        <SidebarCard title="General">
+        <Card title="General">
           <Controller
             name="label"
             control={control}
@@ -127,17 +127,22 @@ export const Sidebar = ({
                   {...field}
                   label="Label"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   error={!!errors.label}
                   helperText={errors.label?.message}
                 />
               </FormControl>
             )}
           />
-        </SidebarCard>
+        </Card>
 
-        <SidebarCard title="Key Information">
+        <Card title="Key Information">
           <Controller
             name="username"
             control={control}
@@ -147,8 +152,13 @@ export const Sidebar = ({
                   {...field}
                   label="Username"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                   error={!!errors.username}
                   helperText={errors.username?.message}
                 />
@@ -164,8 +174,13 @@ export const Sidebar = ({
                   {...field}
                   label="Password"
                   size="small"
-                  autoCapitalize="off"
-                  autoComplete="off"
+                  slotProps={{
+                    input: {
+                      autoCapitalize: "none",
+                      spellCheck: false,
+                      autoComplete: "off",
+                    },
+                  }}
                 />
               </FormControl>
             )}
@@ -191,7 +206,7 @@ export const Sidebar = ({
               </FormControl>
             )}
           />
-        </SidebarCard>
+        </Card>
 
         <ButtonGroup
           size="small"
