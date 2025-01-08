@@ -31,20 +31,6 @@ jobs:
         with:
           node-version: "20.9.0"
 
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-
-      - name: install frontend dependencies
-        run: npm install
-
-      - name: set version
-        run: |
-          VERSION=$(echo "${GITHUB_REF##*/}" | sed 's/^v//')
-          echo "Extracted version: $VERSION"
-          npm version $VERSION --no-git-tag-version
-
       - name: import apple developer certificate
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -64,6 +50,20 @@ jobs:
           CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
           echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
           echo "Certificate imported."
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: install frontend dependencies
+        run: npm install
+
+      - name: set version
+        run: |
+          VERSION=$(echo "${GITHUB_REF##*/}" | sed 's/^v//')
+          echo "Extracted version: $VERSION"
+          npm version $VERSION --no-git-tag-version
 
       - name: publish
         uses: tauri-apps/tauri-action@v0
@@ -100,8 +100,6 @@ jobs:
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies
         run: |
@@ -149,8 +147,6 @@ jobs:
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install frontend dependencies
         run: npm install
