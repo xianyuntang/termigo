@@ -57,6 +57,8 @@ jobs:
             echo "Extracted version: $VERSION"
             npm version $VERSION --no-git-tag-version
           fi
+        shell: pwsh
+
 
       - uses: tauri-apps/tauri-action@v0
         env:
