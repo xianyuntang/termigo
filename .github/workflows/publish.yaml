@@ -78,7 +78,7 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
-  macos:
+  ubuntu:
     permissions:
       contents: write
     strategy:
