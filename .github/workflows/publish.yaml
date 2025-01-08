@@ -49,7 +49,7 @@ jobs:
       - name: set version
         run: |
           VERSION=$(echo "${GITHUB_REF##*/}" | sed 's/^v//')
-          npm version $VERSION
+          npm version $VERSION --no-git-tag-version
 
 
       - uses: tauri-apps/tauri-action@v0
