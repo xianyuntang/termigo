@@ -2,8 +2,8 @@ name: 'publish'
 
 on:
   push:
-    branches:
-      - release
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 
 jobs:
@@ -45,6 +45,10 @@ jobs:
 
       - name: install frontend dependencies
         run: npm install
+
+      - name: set version
+        run: npm version ${GITHUB_REF##*/}
+
 
       - uses: tauri-apps/tauri-action@v0
         env:
