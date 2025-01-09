@@ -76,10 +76,10 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   });
 
   useEffect(() => {
-    if (isTerminalActive) {
-      xterm?.focus();
+    if (xterm && isTerminalActive && !statusOpen && !agentOpen) {
+      xterm.focus();
     }
-  }, [activeTerminal, isTerminalActive, terminal, xterm]);
+  }, [agentOpen, isTerminalActive, statusOpen, xterm]);
 
   const initXterm = useCallback(
     (element: HTMLDivElement) => {
