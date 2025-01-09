@@ -1,4 +1,5 @@
 use crate::domain::private_key::models::PrivateKey;
+use crate::domain::store::StoreKey;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
@@ -13,7 +14,9 @@ pub async fn list_private_keys(state: State<'_, Mutex<AppData>>) -> Result<Respo
 
     let store = &mut state.lock().await.store;
 
-    let private_keys = store.get("private_key").unwrap_or(json!([]));
+    let private_keys = store
+        .get(StoreKey::PrivateKeys.as_str())
+        .unwrap_or(json!([]));
 
     Ok(Response::from_value(private_keys))
 }
@@ -28,8 +31,11 @@ pub async fn add_private_key(
 
     let store = &mut state.lock().await.store;
 
-    let mut private_keys =
-        serde_json::from_value::<Vec<PrivateKey>>(store.get("private_key").unwrap_or(json!([])))?;
+    let mut private_keys = serde_json::from_value::<Vec<PrivateKey>>(
+        store
+            .get(StoreKey::PrivateKeys.as_str())
+            .unwrap_or(json!([])),
+    )?;
 
     let private_key = PrivateKey::new(label, content);
 
@@ -51,8 +57,11 @@ pub async fn update_private_key(
 
     let store = &mut state.lock().await.store;
 
-    let mut private_keys =
-        serde_json::from_value::<Vec<PrivateKey>>(store.get("private_key").unwrap_or(json!([])))?;
+    let mut private_keys = serde_json::from_value::<Vec<PrivateKey>>(
+        store
+            .get(StoreKey::PrivateKeys.as_str())
+            .unwrap_or(json!([])),
+    )?;
 
     let private_key = if let Some(private_key) = private_keys
         .iter_mut()
@@ -84,8 +93,11 @@ pub async fn delete_private_key(
 
     let store = &mut state.lock().await.store;
 
-    let mut private_keys =
-        serde_json::from_value::<Vec<PrivateKey>>(store.get("private_key").unwrap_or(json!([])))?;
+    let mut private_keys = serde_json::from_value::<Vec<PrivateKey>>(
+        store
+            .get(StoreKey::PrivateKeys.as_str())
+            .unwrap_or(json!([])),
+    )?;
 
     if let Some(position) = private_keys
         .iter()
@@ -98,7 +110,7 @@ pub async fn delete_private_key(
         });
     };
 
-    store.set("private_key", json!(private_keys));
+    store.set(StoreKey::PrivateKeys.as_str(), json!(private_keys));
 
     Ok(Response::new_ok_message())
 }

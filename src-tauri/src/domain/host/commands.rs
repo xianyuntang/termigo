@@ -12,6 +12,8 @@ use log;
 
 use russh::keys::{decode_secret_key, key::PrivateKeyWithHashAlg, HashAlg};
 
+use super::models::AuthType;
+use crate::domain::store::StoreKey;
 use russh::{client, ChannelMsg, Error};
 use serde_json::json;
 use std::sync::Arc;
@@ -23,14 +25,12 @@ use tokio::task::JoinHandle;
 use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
 
-use super::models::AuthType;
-
 #[tauri::command]
 pub async fn list_hosts(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
     log::debug!("list_hosts called");
 
     let store = &mut state.lock().await.store;
-    let hosts = store.get("hosts").unwrap_or(json!([]));
+    let hosts = store.get(StoreKey::Hosts.as_str()).unwrap_or(json!([]));
 
     Ok(Response::from_value(hosts))
 }
@@ -62,10 +62,12 @@ pub async fn add_host(
         convert_empty_to_option(password),
         convert_empty_to_option(private_key),
     );
-    let mut hosts = serde_json::from_value::<Vec<Host>>(store.get("hosts").unwrap_or(json!([])))?;
+    let mut hosts = serde_json::from_value::<Vec<Host>>(
+        store.get(StoreKey::Hosts.as_str()).unwrap_or(json!([])),
+    )?;
 
     hosts.push(host.clone());
-    store.set("hosts", json!(hosts));
+    store.set(StoreKey::Hosts.as_str(), json!(hosts));
 
     Ok(Response::from_value(json!(host)))
 }
@@ -88,7 +90,9 @@ pub async fn update_host(
 
     let store = &mut state.lock().await.store;
 
-    let mut hosts = serde_json::from_value::<Vec<Host>>(store.get("hosts").unwrap_or(json!([])))?;
+    let mut hosts = serde_json::from_value::<Vec<Host>>(
+        store.get(StoreKey::Hosts.as_str()).unwrap_or(json!([])),
+    )?;
 
     let host = if let Some(host) = hosts.iter_mut().find(|host| host.id == id) {
         host.label = convert_empty_to_option(label);
@@ -105,7 +109,7 @@ pub async fn update_host(
         None
     };
 
-    store.set("hosts", json!(hosts));
+    store.set(StoreKey::Hosts.as_str(), json!(hosts));
 
     if let Some(host) = host {
         Ok(Response::from_value(json!(host)))
@@ -125,7 +129,9 @@ pub async fn delete_host(
 
     let store = &mut state.lock().await.store;
 
-    let mut hosts = serde_json::from_value::<Vec<Host>>(store.get("hosts").unwrap_or(json!([])))?;
+    let mut hosts = serde_json::from_value::<Vec<Host>>(
+        store.get(StoreKey::Hosts.as_str()).unwrap_or(json!([])),
+    )?;
     if let Some(position) = hosts.iter().position(|host| host.id == id) {
         hosts.remove(position);
     } else {
@@ -134,7 +140,7 @@ pub async fn delete_host(
         });
     }
 
-    store.set("hosts", json!(hosts));
+    store.set(StoreKey::Hosts.as_str(), json!(hosts));
 
     Ok(Response::new_ok_message())
 }

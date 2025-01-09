@@ -1,4 +1,5 @@
 use crate::domain::identity::models::Identity;
+use crate::domain::store::StoreKey;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
@@ -14,7 +15,9 @@ pub async fn list_identities(state: State<'_, Mutex<AppData>>) -> Result<Respons
 
     let store = &mut state.lock().await.store;
 
-    let identities = store.get("identities").unwrap_or(json!([]));
+    let identities = store
+        .get(StoreKey::Identities.as_str())
+        .unwrap_or(json!([]));
 
     Ok(Response::from_value(identities))
 }
@@ -31,8 +34,11 @@ pub async fn add_identity(
 
     let store = &mut state.lock().await.store;
 
-    let mut identities =
-        serde_json::from_value::<Vec<Identity>>(store.get("identities").unwrap_or(json!([])))?;
+    let mut identities = serde_json::from_value::<Vec<Identity>>(
+        store
+            .get(StoreKey::Identities.as_str())
+            .unwrap_or(json!([])),
+    )?;
 
     let identity = Identity::new(
         convert_empty_to_option(label),
@@ -43,7 +49,7 @@ pub async fn add_identity(
 
     identities.push(identity);
 
-    store.set("identities", json!(identities));
+    store.set(StoreKey::Identities.as_str(), json!(identities));
 
     Ok(Response::new_ok_message())
 }
@@ -61,8 +67,11 @@ pub async fn update_identity(
 
     let store = &mut state.lock().await.store;
 
-    let mut identities =
-        serde_json::from_value::<Vec<Identity>>(store.get("identities").unwrap_or(json!([])))?;
+    let mut identities = serde_json::from_value::<Vec<Identity>>(
+        store
+            .get(StoreKey::Identities.as_str())
+            .unwrap_or(json!([])),
+    )?;
 
     if let Some(identity) = identities.iter_mut().find(|identity| identity.id == id) {
         identity.label = convert_empty_to_option(label);
@@ -75,7 +84,7 @@ pub async fn update_identity(
         });
     };
 
-    store.set("identities", json!(identities));
+    store.set(StoreKey::Identities.as_str(), json!(identities));
 
     Ok(Response::new_ok_message())
 }
@@ -89,8 +98,11 @@ pub async fn delete_identity(
 
     let store = &mut state.lock().await.store;
 
-    let mut identities =
-        serde_json::from_value::<Vec<Identity>>(store.get("identities").unwrap_or(json!([])))?;
+    let mut identities = serde_json::from_value::<Vec<Identity>>(
+        store
+            .get(StoreKey::Identities.as_str())
+            .unwrap_or(json!([])),
+    )?;
 
     if let Some(position) = identities.iter().position(|identity| identity.id == id) {
         identities.remove(position)
@@ -100,7 +112,7 @@ pub async fn delete_identity(
         });
     };
 
-    store.set("identities", json!(identities));
+    store.set(StoreKey::Identities.as_str(), json!(identities));
 
     Ok(Response::new_ok_message())
 }

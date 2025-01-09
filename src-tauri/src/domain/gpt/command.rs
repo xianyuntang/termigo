@@ -1,3 +1,4 @@
+use crate::domain::store::StoreKey;
 use crate::infrastructure::app::{AppData, Settings};
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
@@ -23,7 +24,7 @@ pub async fn get_agent_response(
                 .lock()
                 .await
                 .store
-                .get("settings")
+                .get(StoreKey::Settings.as_str())
                 .unwrap_or(json!(Settings::default())),
         )?;
 

@@ -2,12 +2,12 @@ use serde_json::json;
 use tauri::State;
 use tokio::sync::Mutex;
 
+use super::models::{AuthType, Host};
+use crate::domain::store::StoreKey;
 use crate::{
     domain::{identity::models::Identity, private_key::models::PrivateKey},
     infrastructure::{app::AppData, error::ApiError},
 };
-
-use super::models::{AuthType, Host};
 
 pub async fn get_session_credential(
     state: &State<'_, Mutex<AppData>>,
@@ -16,10 +16,18 @@ pub async fn get_session_credential(
     let (hosts, identities, private_keys) = {
         let store = &mut state.lock().await.store;
         (
-            serde_json::from_value::<Vec<Host>>(store.get("hosts").unwrap_or(json!([])))?,
-            serde_json::from_value::<Vec<Identity>>(store.get("identities").unwrap_or(json!([])))?,
+            serde_json::from_value::<Vec<Host>>(
+                store.get(StoreKey::Hosts.as_str()).unwrap_or(json!([])),
+            )?,
+            serde_json::from_value::<Vec<Identity>>(
+                store
+                    .get(StoreKey::Identities.as_str())
+                    .unwrap_or(json!([])),
+            )?,
             serde_json::from_value::<Vec<PrivateKey>>(
-                store.get("private_keys").unwrap_or(json!([])),
+                store
+                    .get(StoreKey::PrivateKeys.as_str())
+                    .unwrap_or(json!([])),
             )?,
         )
     };
