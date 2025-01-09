@@ -1,12 +1,16 @@
 # Termigo
 
-_Termigo is a terminal emulator built with Tauri and React. It is lightweight, customizable, and designed to provide a fast and simple experience for developers and power users._
+![img.png](./src-tauri/icons/128x128@2x.png)
+
+Termigo is a modern terminal client management tool. Built with Tauri and React, it focuses on providing a seamless and
+efficient experience for developers and system administrators.
 
 ## Features ✨
 
 1. Cross-Platform: Runs seamlessly on Windows, macOS, and Linux.
 
-2. Lightweight and Efficient: Powered by Tauri, Termigo consumes minimal system resources while delivering high performance.
+2. Lightweight and Efficient: Powered by Tauri, Termigo consumes minimal system resources while delivering high
+   performance.
 
 3. Multiple Tabs: Manage multiple terminal sessions effortlessly.
 
