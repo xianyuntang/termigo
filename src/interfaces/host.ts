@@ -1,16 +1,28 @@
 export enum AuthType {
-  Username = "Username",
-  Identity = "Identity",
+  Local = "local",
+  Identity = "identity",
 }
+
+export interface LocalAuth {
+  type: AuthType.Local;
+  data: {
+    username: string;
+    password?: string;
+    privateKeyRef?: string;
+  };
+}
+
+export interface IdentityAuth {
+  type: AuthType.Identity;
+  data: string;
+}
+
+export type AuthMethod = LocalAuth | IdentityAuth;
 
 export interface Host {
   id: string;
   address: string;
   port: number;
   label?: string;
-  authType: AuthType;
-  identity?: string;
-  username?: string;
-  password?: string;
-  privateKey?: string;
+  authMethod: AuthMethod;
 }

@@ -1,5 +1,4 @@
 pub mod commands;
-mod event;
+pub mod event;
 mod models;
-mod session;
-mod ssh;
+pub mod ssh_client;

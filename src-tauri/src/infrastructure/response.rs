@@ -15,4 +15,11 @@ impl Response {
     pub fn from_value(data: Value) -> Self {
         Self { data }
     }
+
+    pub fn from_data<T>(data: T) -> Self
+    where
+        T: serde::ser::Serialize,
+    {
+        Self { data: json!(data) }
+    }
 }

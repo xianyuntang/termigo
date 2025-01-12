@@ -7,7 +7,7 @@ import useResizeObserver from "@react-hook/resize-observer";
 import { useQuery } from "@tanstack/react-query";
 import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
 import { FitAddon } from "@xterm/addon-fit";
-import { WebglAddon } from "@xterm/addon-webgl";
+import { WebLinksAddon } from "@xterm/addon-web-links";
 import { Terminal as Xterm } from "@xterm/xterm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -15,9 +15,10 @@ import { useGlobalShortcut } from "../../../../hooks/global-shortcut.ts";
 import { futureService, gptService, hostService } from "../../../../services";
 import { useTerminalStore } from "../../../../stores";
 import AgentDialog from "../agent-dialog";
-import StatusDialog from "../status-dialog";
+import StatusDialog from "../status-overlay/index.ts";
 import { ERROR_STATUS } from "./constant.ts";
 import {
+  ConfirmPublicKeyEventData,
   InEventData,
   isOutEventData,
   isStatusEventData,
@@ -34,10 +35,12 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
   const [agentOpen, setAgentOpen] = useState<boolean>(false);
   const [statusOpen, setStatusOpen] = useState<boolean>(true);
+  const [fingerprint, setFingerprint] = useState<string | null>(null);
 
   const [xterm, setXterm] = useState<Xterm | undefined>(undefined);
   const fitAddon = useRef<FitAddon>(new FitAddon());
-  const webglAddon = useRef<WebglAddon>(new WebglAddon());
+  const webLinkAddon = useRef<WebLinksAddon>(new WebLinksAddon());
+
   const [status, setStatus] = useState<StatusType>(StatusType.Pending);
 
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
@@ -92,7 +95,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
       });
 
       xterm.loadAddon(fitAddon.current);
-      xterm.loadAddon(webglAddon.current);
+      xterm.loadAddon(webLinkAddon.current);
 
       xterm.open(element);
 
@@ -100,7 +103,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
 
       return xterm;
     },
-    [theme.palette.background.paper],
+    [theme.palette.background.paper]
   );
 
   useEffect(() => {
@@ -140,22 +143,33 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
       unlistenOutFn = await listen<TerminalEvent>(
         terminal,
         async ({ payload }) => {
+          console.log(payload);
           if (isOutEventData(payload)) {
             xterm.write(payload.data.out);
           } else if (isStatusEventData(payload)) {
-            setStatus(payload.data.status);
-            if (payload.data.status === StatusType.StartStreaming) {
+            setStatus(payload.data.status.type);
+            if (payload.data.status.type === StatusType.StartStreaming) {
               await emit(terminal, {
                 data: {
                   size: [xterm.cols, xterm.rows],
                 } as WindowChangeEventData,
               });
               setStatusOpen(false);
-            } else if (ERROR_STATUS.includes(payload.data.status)) {
+            } else if (
+              payload.data.status.type === StatusType.PublicKeyVerified
+            ) {
+              await emit(terminal, {
+                data: { confirm: true } as ConfirmPublicKeyEventData,
+              });
+            } else if (
+              payload.data.status.type === StatusType.NewPublicKeyFound
+            ) {
+              setFingerprint(payload.data.status.data as string);
+            } else if (ERROR_STATUS.includes(payload.data.status.type)) {
               await futureService.stopFuture(terminal);
             }
           }
-        },
+        }
       );
     })();
 
@@ -189,6 +203,19 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     setAgentOpen(false);
   };
 
+  const handleConfirmPublicKey = async (
+    confirm: boolean,
+    fingerprint: string
+  ) => {
+    await emit(terminal, {
+      data: { confirm } as ConfirmPublicKeyEventData,
+    });
+
+    if (confirm) {
+      hostService.updateFingerprint(host.id, fingerprint);
+    }
+  };
+
   return (
     <Box ref={setRef} sx={{ height: "100%" }}>
       <AgentDialog
@@ -197,11 +224,12 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         onClose={handleAgentClose}
       />
       <StatusDialog
-        title={host?.label || host?.address || ""}
+        fingerprint={fingerprint}
         open={statusOpen}
         status={status}
         onReconnect={handleReconnect}
         onClose={handleTerminalClose}
+        onPublicKeyConfirm={handleConfirmPublicKey}
       />
     </Box>
   );

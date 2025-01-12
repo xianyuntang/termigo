@@ -1,10 +1,8 @@
 use crate::domain::identity::models::Identity;
-use crate::domain::store::StoreKey;
+use crate::domain::store::r#enum::StoreKey;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
-use crate::infrastructure::transform::convert_empty_to_option;
-use serde_json::json;
 use tauri;
 use tauri::State;
 use tokio::sync::Mutex;
@@ -13,13 +11,11 @@ use tokio::sync::Mutex;
 pub async fn list_identities(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
     log::debug!("list_identities called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let identities = store
-        .get(StoreKey::Identities.as_str())
-        .unwrap_or(json!([]));
+    let identities = store_manager.get_data::<Vec<Identity>>(StoreKey::Identities)?;
 
-    Ok(Response::from_value(identities))
+    Ok(Response::from_data(identities))
 }
 
 #[tauri::command]
@@ -28,28 +24,19 @@ pub async fn add_identity(
     label: String,
     username: String,
     password: String,
-    private_key: String,
+    private_key_ref: String,
 ) -> Result<Response, ApiError> {
     log::debug!("add_identity called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let mut identities = serde_json::from_value::<Vec<Identity>>(
-        store
-            .get(StoreKey::Identities.as_str())
-            .unwrap_or(json!([])),
-    )?;
+    let mut identities = store_manager.get_data::<Vec<Identity>>(StoreKey::Identities)?;
 
-    let identity = Identity::new(
-        convert_empty_to_option(label),
-        username,
-        convert_empty_to_option(password),
-        convert_empty_to_option(private_key),
-    );
+    let identity = Identity::new(Some(label), username, Some(password), Some(private_key_ref));
 
     identities.push(identity);
 
-    store.set(StoreKey::Identities.as_str(), json!(identities));
+    store_manager.update_data(StoreKey::Identities, identities)?;
 
     Ok(Response::new_ok_message())
 }
@@ -61,30 +48,26 @@ pub async fn update_identity(
     label: String,
     username: String,
     password: String,
-    private_key: String,
+    private_key_ref: String,
 ) -> Result<Response, ApiError> {
     log::debug!("add_identity called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let mut identities = serde_json::from_value::<Vec<Identity>>(
-        store
-            .get(StoreKey::Identities.as_str())
-            .unwrap_or(json!([])),
-    )?;
+    let mut identities = store_manager.get_data::<Vec<Identity>>(StoreKey::Identities)?;
 
     if let Some(identity) = identities.iter_mut().find(|identity| identity.id == id) {
-        identity.label = convert_empty_to_option(label);
+        identity.label = Some(label);
         identity.username = username;
-        identity.password = convert_empty_to_option(password);
-        identity.private_key = convert_empty_to_option(private_key);
+        identity.password = Some(password);
+        identity.private_key_ref = Some(private_key_ref);
     } else {
         return Err(ApiError::NotFound {
             item: "identity".to_string(),
         });
     };
 
-    store.set(StoreKey::Identities.as_str(), json!(identities));
+    store_manager.update_data(StoreKey::Identities, identities)?;
 
     Ok(Response::new_ok_message())
 }
@@ -96,13 +79,9 @@ pub async fn delete_identity(
 ) -> Result<Response, ApiError> {
     log::debug!("delete_identity called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let mut identities = serde_json::from_value::<Vec<Identity>>(
-        store
-            .get(StoreKey::Identities.as_str())
-            .unwrap_or(json!([])),
-    )?;
+    let mut identities = store_manager.get_data::<Vec<Identity>>(StoreKey::Identities)?;
 
     if let Some(position) = identities.iter().position(|identity| identity.id == id) {
         identities.remove(position)
@@ -112,7 +91,7 @@ pub async fn delete_identity(
         });
     };
 
-    store.set(StoreKey::Identities.as_str(), json!(identities));
+    store_manager.update_data(StoreKey::Identities, identities)?;
 
     Ok(Response::new_ok_message())
 }

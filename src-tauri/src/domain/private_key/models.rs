@@ -1,7 +1,9 @@
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+use crate::domain::traits::Identifiable;
+
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct PrivateKey {
     pub id: String,
@@ -16,5 +18,11 @@ impl PrivateKey {
             label,
             content,
         }
+    }
+}
+
+impl Identifiable for PrivateKey {
+    fn id(&self) -> &str {
+        &self.id
     }
 }

@@ -2,6 +2,7 @@ use nanoid::nanoid;
 use std::collections::HashMap;
 use tokio_util::sync::CancellationToken;
 
+#[derive(Clone)]
 pub struct FutureManager {
     cancel_tokens: HashMap<String, CancellationToken>,
 }

@@ -40,10 +40,10 @@ const hostSchema = z.object({
       message: "Must be a valid number",
     }),
   authType: z.nativeEnum(AuthType),
-  identity: z.string(),
+  identityRef: z.string(),
   username: z.string(),
   password: z.string(),
-  privateKey: z.string(),
+  privateKeyRef: z.string(),
 });
 
 export type HostSchema = z.infer<typeof hostSchema>;
@@ -67,11 +67,11 @@ export const Sidebar = ({
       label: "",
       address: "",
       port: "22",
-      authType: AuthType.Username,
-      identity: "",
+      authType: AuthType.Local,
+      identityRef: "",
       username: "",
       password: "",
-      privateKey: "",
+      privateKeyRef: "",
     },
     resolver: zodResolver(hostSchema),
     reValidateMode: "onChange",
@@ -102,13 +102,12 @@ export const Sidebar = ({
     setValue("label", host?.label || "");
     setValue("address", host?.address || "");
     setValue("port", host?.port.toString() || "22");
-    setValue("authType", host?.authType || AuthType.Username);
-    if (host?.authType === AuthType.Identity) {
-      setValue("identity", host?.identity || "");
-    } else {
-      setValue("username", host?.username || "");
-      setValue("password", host?.password || "");
-      setValue("privateKey", host?.privateKey || "");
+    if (host?.authMethod.type === AuthType.Local) {
+      setValue("username", host.authMethod.data.username);
+      setValue("password", host.authMethod.data.password || "");
+      setValue("privateKeyRef", host.authMethod.data.privateKeyRef || "");
+    } else if (host?.authMethod.type === AuthType.Identity) {
+      setValue("identityRef", host.authMethod.data);
     }
   }, [host, setValue, isOpen]);
 
@@ -227,9 +226,7 @@ export const Sidebar = ({
                   label="Credential from"
                   {...field}
                 >
-                  <MenuItem value={AuthType.Username}>
-                    Username and password
-                  </MenuItem>
+                  <MenuItem value={AuthType.Local}>Local</MenuItem>
                   <MenuItem value={AuthType.Identity}>Identity</MenuItem>
                 </Select>
               </FormControl>
@@ -238,12 +235,16 @@ export const Sidebar = ({
 
           {authType === AuthType.Identity && (
             <Controller
-              name="identity"
+              name="identityRef"
               control={control}
               render={({ field }) => (
                 <FormControl fullWidth size="small">
-                  <InputLabel id="identity-select">Identity</InputLabel>
-                  <Select {...field} labelId="identity-select" label="Identity">
+                  <InputLabel id="identity-ref-select">Identity Ref</InputLabel>
+                  <Select
+                    {...field}
+                    labelId="identity-ref-select"
+                    label="identity Ref"
+                  >
                     {identities?.map((identity) => (
                       <MenuItem key={identity.id} value={identity.id}>
                         {identity.label || identity.username}
@@ -254,7 +255,7 @@ export const Sidebar = ({
               )}
             />
           )}
-          {authType === AuthType.Username && (
+          {authType === AuthType.Local && (
             <>
               <Controller
                 name="username"
@@ -265,8 +266,13 @@ export const Sidebar = ({
                       {...field}
                       label="Username"
                       size="small"
-                      autoCapitalize="off"
-                      autoComplete="off"
+                      slotProps={{
+                        input: {
+                          autoCapitalize: "none",
+                          spellCheck: false,
+                          autoComplete: "off",
+                        },
+                      }}
                       error={!!errors.username}
                       helperText={errors.username?.message}
                     />
@@ -283,21 +289,28 @@ export const Sidebar = ({
                       label="Password"
                       size="small"
                       type="password"
-                      autoCapitalize="off"
-                      autoComplete="off"
+                      slotProps={{
+                        input: {
+                          autoCapitalize: "none",
+                          spellCheck: false,
+                          autoComplete: "off",
+                        },
+                      }}
                     />
                   </FormControl>
                 )}
               />
               <Controller
-                name="privateKey"
+                name="privateKeyRef"
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth size="small">
-                    <InputLabel id="private-key-select">Private Key</InputLabel>
+                    <InputLabel id="private-key-ref-select">
+                      Private Key Ref
+                    </InputLabel>
                     <Select
-                      labelId="private-key-select"
-                      label="Private Key"
+                      labelId="private-key-ref-select"
+                      label="Private Key Ref"
                       {...field}
                     >
                       {privateKeys?.map((privateKey) => (

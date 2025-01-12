@@ -1,5 +1,6 @@
-use crate::domain::store::StoreKey;
-use crate::infrastructure::app::{AppData, Settings};
+use crate::domain::setting::models::Settings;
+use crate::domain::store::r#enum::StoreKey;
+use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
 use async_openai::types::{
@@ -18,24 +19,15 @@ pub async fn get_agent_response(
 ) -> Result<Response, ApiError> {
     log::debug!("get_agent_response called");
 
-    let api_key = {
-        let config = serde_json::from_value::<Settings>(
-            state
-                .lock()
-                .await
-                .store
-                .get(StoreKey::Settings.as_str())
-                .unwrap_or(json!(Settings::default())),
-        )?;
+    let store_manager = &state.lock().await.store_manager;
 
-        config.gpt_api_key.to_string()
-    };
+    let settings = store_manager.get_data::<Settings>(StoreKey::Settings)?;
 
-    if api_key.is_empty() {
+    if settings.gpt_api_key.is_empty() {
         return Err(ApiError::ApiKeyIsNotSet);
     }
 
-    let config = OpenAIConfig::new().with_api_key(api_key);
+    let config = OpenAIConfig::new().with_api_key(settings.gpt_api_key);
     let client = Client::with_config(config);
 
     let request = CreateChatCompletionRequestArgs::default().max_tokens(512u32)

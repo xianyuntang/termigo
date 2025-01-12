@@ -1,22 +1,22 @@
 import { invoker } from "../core";
-import { AuthType, Host, OKMessage } from "../interfaces";
+import { AuthMethod, Host, OKMessage } from "../interfaces";
 
 class HostService {
-  starTerminalStream = async (host: string, terminal: string) => {
-    return invoker<OKMessage>("start_terminal_stream", { host, terminal });
+  starTerminalStream = async (hostId: string, eventId: string) => {
+    return invoker<OKMessage>("start_terminal_stream", { hostId, eventId });
   };
 
   startTunnelStream = async (
-    host: string,
-    tunnel: string,
+    hostId: string,
+    eventId: string,
     localAddress: string,
     localPort: number,
     destinationAddress: string,
-    destinationPort: number,
+    destinationPort: number
   ) => {
     return invoker<OKMessage>("start_tunnel_stream", {
-      host,
-      tunnel,
+      hostId,
+      eventId,
       localAddress,
       localPort,
       destinationAddress,
@@ -31,22 +31,14 @@ class HostService {
   add = async (
     address: string,
     port: number,
-    authType: AuthType,
-    label?: string,
-    identity?: string,
-    username?: string,
-    password?: string,
-    privateKey?: string,
+    authMethod: AuthMethod,
+    label?: string
   ) => {
     return invoker<Host>("add_host", {
       label,
       address,
       port,
-      authType,
-      identity,
-      username,
-      password,
-      privateKey,
+      authMethod,
     });
   };
 
@@ -58,24 +50,20 @@ class HostService {
     id: string,
     address: string,
     port: number,
-    authType: AuthType,
-    label?: string,
-    identity?: string,
-    username?: string,
-    password?: string,
-    privateKey?: string,
+    authMethod: AuthMethod,
+    label?: string
   ) => {
     return invoker<Host>("update_host", {
       id,
       label,
       address,
       port,
-      authType,
-      identity,
-      username,
-      password,
-      privateKey,
+      authMethod,
     });
+  };
+
+  updateFingerprint = async (id: string, fingerprint: string) => {
+    return invoker<OKMessage>("update_host_fingerprint", { id, fingerprint });
   };
 }
 

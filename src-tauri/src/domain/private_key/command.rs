@@ -1,5 +1,5 @@
 use crate::domain::private_key::models::PrivateKey;
-use crate::domain::store::StoreKey;
+use crate::domain::store::r#enum::StoreKey;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
@@ -12,13 +12,11 @@ use tokio::sync::Mutex;
 pub async fn list_private_keys(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
     log::debug!("list_private_keys called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let private_keys = store
-        .get(StoreKey::PrivateKeys.as_str())
-        .unwrap_or(json!([]));
+    let private_keys = store_manager.get_data::<Vec<PrivateKey>>(StoreKey::PrivateKeys)?;
 
-    Ok(Response::from_value(private_keys))
+    Ok(Response::from_data(private_keys))
 }
 
 #[tauri::command]
@@ -29,19 +27,15 @@ pub async fn add_private_key(
 ) -> Result<Response, ApiError> {
     log::debug!("add_private_key called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let mut private_keys = serde_json::from_value::<Vec<PrivateKey>>(
-        store
-            .get(StoreKey::PrivateKeys.as_str())
-            .unwrap_or(json!([])),
-    )?;
+    let mut private_keys = store_manager.get_data::<Vec<PrivateKey>>(StoreKey::PrivateKeys)?;
 
     let private_key = PrivateKey::new(label, content);
 
     private_keys.push(private_key.clone());
 
-    store.set("private_key", json!(private_keys));
+    store_manager.update_data(StoreKey::PrivateKeys, private_keys)?;
 
     Ok(Response::from_value(json!(private_key)))
 }
@@ -55,13 +49,9 @@ pub async fn update_private_key(
 ) -> Result<Response, ApiError> {
     log::debug!("update_private_key called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let mut private_keys = serde_json::from_value::<Vec<PrivateKey>>(
-        store
-            .get(StoreKey::PrivateKeys.as_str())
-            .unwrap_or(json!([])),
-    )?;
+    let mut private_keys = store_manager.get_data::<Vec<PrivateKey>>(StoreKey::PrivateKeys)?;
 
     let private_key = if let Some(private_key) = private_keys
         .iter_mut()
@@ -74,7 +64,7 @@ pub async fn update_private_key(
         None
     };
 
-    store.set("private_key", json!(private_keys));
+    store_manager.update_data(StoreKey::PrivateKeys, private_keys)?;
     if let Some(private_key) = private_key {
         Ok(Response::from_value(json!(private_key)))
     } else {
@@ -91,13 +81,9 @@ pub async fn delete_private_key(
 ) -> Result<Response, ApiError> {
     log::debug!("delete_private_key called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let mut private_keys = serde_json::from_value::<Vec<PrivateKey>>(
-        store
-            .get(StoreKey::PrivateKeys.as_str())
-            .unwrap_or(json!([])),
-    )?;
+    let mut private_keys = store_manager.get_data::<Vec<PrivateKey>>(StoreKey::PrivateKeys)?;
 
     if let Some(position) = private_keys
         .iter()
@@ -110,7 +96,7 @@ pub async fn delete_private_key(
         });
     };
 
-    store.set(StoreKey::PrivateKeys.as_str(), json!(private_keys));
+    store_manager.update_data(StoreKey::PrivateKeys, private_keys)?;
 
     Ok(Response::new_ok_message())
 }

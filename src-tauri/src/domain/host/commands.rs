@@ -1,23 +1,17 @@
-use crate::domain::host::event::{Data, EventData, StatusType};
+use crate::domain::host::event::{Data, EventData, EventEmitter, StatusType};
 use crate::domain::host::models::Host;
-use crate::domain::host::session::get_session_credential;
-use crate::domain::host::ssh::SshClient;
-
+use crate::domain::host::ssh_client::SshClient;
+use crate::domain::store::r#enum::StoreKey;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
-use crate::infrastructure::transform::convert_empty_to_option;
-
 use log;
-
+use russh::client::Msg;
 use russh::keys::{decode_secret_key, key::PrivateKeyWithHashAlg, HashAlg};
-
-use super::models::AuthType;
-use crate::domain::store::StoreKey;
-use russh::{client, ChannelMsg, Error};
+use russh::{client, Channel, ChannelMsg, Error};
 use serde_json::json;
 use std::sync::Arc;
-use tauri::{Emitter, Event, Listener, State, Window};
+use tauri::{Event, Listener, State, Window};
 use tokio::io::{self, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::{mpsc, Mutex};
@@ -25,14 +19,16 @@ use tokio::task::JoinHandle;
 use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
 
+use super::models::AuthMethod;
+
 #[tauri::command]
 pub async fn list_hosts(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
     log::debug!("list_hosts called");
+    let store_manager = &state.lock().await.store_manager;
 
-    let store = &mut state.lock().await.store;
-    let hosts = store.get(StoreKey::Hosts.as_str()).unwrap_or(json!([]));
+    let hosts = store_manager.get_data::<Vec<Host>>(StoreKey::Hosts)?;
 
-    Ok(Response::from_value(hosts))
+    Ok(Response::from_data(hosts))
 }
 
 #[tauri::command]
@@ -42,32 +38,17 @@ pub async fn add_host(
     label: String,
     address: String,
     port: u32,
-    auth_type: AuthType,
-    identity: String,
-    username: String,
-    password: String,
-    private_key: String,
+    auth_method: AuthMethod,
 ) -> Result<Response, ApiError> {
     log::debug!("add_host called");
+    let store_manager = &state.lock().await.store_manager;
 
-    let store = &mut state.lock().await.store;
-
-    let host = Host::new(
-        convert_empty_to_option(label),
-        address,
-        port,
-        auth_type,
-        convert_empty_to_option(identity),
-        convert_empty_to_option(username),
-        convert_empty_to_option(password),
-        convert_empty_to_option(private_key),
-    );
-    let mut hosts = serde_json::from_value::<Vec<Host>>(
-        store.get(StoreKey::Hosts.as_str()).unwrap_or(json!([])),
-    )?;
+    let host = Host::new(Some(label), address, port, auth_method, None);
+    let mut hosts = store_manager.get_data::<Vec<Host>>(StoreKey::Hosts)?;
 
     hosts.push(host.clone());
-    store.set(StoreKey::Hosts.as_str(), json!(hosts));
+
+    store_manager.update_data(StoreKey::Hosts, hosts)?;
 
     Ok(Response::from_value(json!(host)))
 }
@@ -80,44 +61,52 @@ pub async fn update_host(
     label: String,
     address: String,
     port: u32,
-    auth_type: AuthType,
-    identity: String,
-    username: String,
-    password: String,
-    private_key: String,
+    auth_method: AuthMethod,
 ) -> Result<Response, ApiError> {
     log::debug!("update_host called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let mut hosts = serde_json::from_value::<Vec<Host>>(
-        store.get(StoreKey::Hosts.as_str()).unwrap_or(json!([])),
-    )?;
+    let mut hosts = store_manager.get_data::<Vec<Host>>(StoreKey::Hosts)?;
 
     let host = if let Some(host) = hosts.iter_mut().find(|host| host.id == id) {
-        host.label = convert_empty_to_option(label);
+        host.label = Some(label);
         host.address = address;
         host.port = port;
-        host.auth_type = auth_type;
-        host.identity = convert_empty_to_option(identity);
-        host.username = convert_empty_to_option(username);
-        host.password = convert_empty_to_option(password);
-        host.private_key = convert_empty_to_option(private_key);
-
-        Some(host.clone())
+        host.auth_method = auth_method;
+        host
     } else {
-        None
+        return Err(ApiError::NotFound {
+            item: format!("hostId {}", id),
+        });
     };
 
-    store.set(StoreKey::Hosts.as_str(), json!(hosts));
+    Ok(Response::from_data(host))
+}
 
-    if let Some(host) = host {
-        Ok(Response::from_value(json!(host)))
+#[tauri::command]
+pub async fn update_host_fingerprint(
+    state: State<'_, Mutex<AppData>>,
+    id: String,
+    fingerprint: String,
+) -> Result<Response, ApiError> {
+    log::debug!("update_host_fingerprint called");
+
+    let store_manager = &state.lock().await.store_manager;
+
+    let mut hosts = store_manager.get_data::<Vec<Host>>(StoreKey::Hosts)?;
+
+    if let Some(host) = hosts.iter_mut().find(|host| host.id == id) {
+        host.fingerprint = Some(fingerprint);
     } else {
-        Err(ApiError::NotFound {
+        return Err(ApiError::NotFound {
             item: format!("hostId {}", id),
-        })
+        });
     }
+
+    store_manager.update_data(StoreKey::Hosts, hosts)?;
+
+    Ok(Response::new_ok_message())
 }
 
 #[tauri::command]
@@ -127,11 +116,10 @@ pub async fn delete_host(
 ) -> Result<Response, ApiError> {
     log::debug!("delete_host called");
 
-    let store = &mut state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let mut hosts = serde_json::from_value::<Vec<Host>>(
-        store.get(StoreKey::Hosts.as_str()).unwrap_or(json!([])),
-    )?;
+    let mut hosts = store_manager.get_data::<Vec<Host>>(StoreKey::Hosts)?;
+
     if let Some(position) = hosts.iter().position(|host| host.id == id) {
         hosts.remove(position);
     } else {
@@ -140,7 +128,7 @@ pub async fn delete_host(
         });
     }
 
-    store.set(StoreKey::Hosts.as_str(), json!(hosts));
+    store_manager.update_data(StoreKey::Hosts, hosts)?;
 
     Ok(Response::new_ok_message())
 }
@@ -149,21 +137,45 @@ pub async fn delete_host(
 pub async fn start_terminal_stream(
     window: Window,
     state: State<'_, Mutex<AppData>>,
-    host: String,
-    terminal: String,
+    host_id: String,
+    event_id: String,
 ) -> Result<Response, ApiError> {
     log::debug!("start_terminal_stream called");
 
-    if state.lock().await.future_manager.exist(&terminal) {
-        return Ok(Response::new_ok_message());
+    {
+        let future_manager = &state.lock().await.future_manager;
+
+        if future_manager.exist(&event_id) {
+            return Ok(Response::new_ok_message());
+        }
     }
 
-    let (host, username, password, private_key) = get_session_credential(&state, host).await?;
+    let (host, username, password, private_key_content) = {
+        let store_manager = &state.lock().await.store_manager;
+
+        let host = if let Some(host) = store_manager.get_item::<Host>(StoreKey::Hosts, &host_id)? {
+            host
+        } else {
+            return Err(ApiError::NotFound { item: host_id });
+        };
+        let credentials = host.get_credential(store_manager)?;
+
+        (host, credentials.0, credentials.1, credentials.2)
+    };
+
+    let event_emitter = Arc::new(EventEmitter::new(window.clone(), event_id.clone()));
+
+    let (tx, mut rx) = mpsc::channel::<Data>(1024);
+
+    let cloned_tx = tx.clone();
+    let window_event_id = window.listen(&event_id, move |event: Event| {
+        let event_data = serde_json::from_str::<EventData>(event.payload()).expect("Invalid Event");
+        cloned_tx.try_send(event_data.data).unwrap();
+    });
 
     let cancel_token = CancellationToken::new();
     let cloned_cancel_token = cancel_token.clone();
 
-    let cloned_terminal = terminal.clone();
     let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
         log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
 
@@ -171,15 +183,11 @@ pub async fn start_terminal_stream(
             ..Default::default()
         });
 
-        let ssh_client = SshClient::new();
+        event_emitter
+            .emit(Data::Status(StatusType::Connecting))
+            .await?;
 
-        window.emit_to(
-            "main",
-            &cloned_terminal,
-            json!(EventData {
-                data: Data::Status(StatusType::Connecting)
-            }),
-        )?;
+        let ssh_client = SshClient::new(Arc::clone(&event_emitter), host.fingerprint);
 
         let mut session = match client::connect(
             config,
@@ -189,105 +197,103 @@ pub async fn start_terminal_stream(
         .await
         {
             Ok(session) => session,
-            Err(_) => {
-                window.emit_to(
-                    "main",
-                    &cloned_terminal,
-                    json!(EventData {
-                        data: Data::Status(StatusType::ConnectionTimeout)
-                    }),
-                )?;
-                return Err(ApiError::Russh(Error::ConnectionTimeout));
+            Err(error) => {
+                println!("{:#?}", error);
+                event_emitter
+                    .emit(Data::Status(StatusType::UnknownPublicKey))
+                    .await?;
+                return Err(ApiError::Russh(Error::UnknownKey));
             }
         };
-        let mut auth_res = false;
 
-        if let Some(password) = password {
-            log::debug!("Trying authenticate password");
-            auth_res = session.authenticate_password(username, password).await?;
-        } else if let Some(content) = private_key {
-            log::debug!("Trying authenticate public key");
-
-            let private_key = decode_secret_key(&content, None)?;
-
-            auth_res = session
-                .authenticate_publickey(
-                    username,
-                    PrivateKeyWithHashAlg::new(Arc::new(private_key), Some(HashAlg::Sha512))?,
-                )
-                .await?;
-        }
-
-        if !auth_res {
-            window.emit_to(
-                "main",
-                &cloned_terminal,
-                json!(EventData {
-                    data: Data::Status(StatusType::AuthFailed)
-                }),
-            )?;
-            return Err(ApiError::Russh(Error::NoAuthMethod));
-        }
-
-        window.emit_to(
-            "main",
-            &cloned_terminal,
-            json!(EventData {
-                data: Data::Status(StatusType::Connected)
-            }),
-        )?;
-
-        let mut channel = session.channel_open_session().await?;
-
-        channel.request_pty(true, "xterm", 0, 0, 0, 0, &[]).await?;
-        channel.request_shell(true).await?;
-
-        window.emit_to(
-            "main",
-            &cloned_terminal,
-            json!(EventData {
-                data: Data::Status(StatusType::ChannelOpened)
-            }),
-        )?;
-
-        let (tx, mut rx) = mpsc::channel::<Data>(1024);
-
-        let cloned_tx = tx.clone();
-        let event_id = window.listen(&cloned_terminal, move |event: Event| {
-            let event_data =
-                serde_json::from_str::<EventData>(event.payload()).expect("Invalid Event");
-            cloned_tx.try_send(event_data.data).unwrap();
-        });
-
-        window.emit_to(
-            "main",
-            &cloned_terminal,
-            json!(EventData {
-                data: Data::Status(StatusType::StartStreaming)
-            }),
-        )?;
+        let mut channel: Option<Channel<Msg>> = None;
 
         loop {
             tokio::select! {
-                Some(msg) = channel.wait() => {
-                    if let ChannelMsg::Data { ref data } = msg {
-                        window.emit_to("main",&cloned_terminal, json!(EventData {data:Data::Out(Bytes::from(data.to_vec()))}))?;
+                maybe_msg = async {
+                    if let Some(ref mut ch) = channel {
+                        ch.wait().await
+                    } else {
+                        None
+                    }
+                }, if channel.is_some() => {
+                    if let Some(ChannelMsg::Data { ref data }) = maybe_msg {
+                        event_emitter.emit(Data::Out(Bytes::from(data.to_vec()))).await?;
                     }
                 },
                 Some(data) = rx.recv() => {
                     match data {
                         Data::In(in_data) => {
-                            channel.make_writer().write_all(&in_data.into_bytes()).await?;
-                        },
-                        Data::Size(size_data) => {
-                            channel.window_change(size_data.0,size_data.1,0,0).await?
+                            if let Some(ref mut ch) = channel {
+                                ch.make_writer().write_all(&in_data.into_bytes()).await?;
+                            }
 
                         },
+                        Data::Size(size_data) => {
+                            if let Some(ref mut ch) = channel {
+                                ch.window_change(size_data.0,size_data.1,0,0).await?
+                            }
+                        },
+                        Data::Confirm(confirm) =>{
+                            if !confirm {
+                                return Err(ApiError::Russh(Error::UnknownKey));
+                            }
+
+                            let mut auth_res = false;
+
+                            if let Some(ref password) = password {
+                                log::debug!("Trying authenticate password");
+                                auth_res = session.authenticate_password(&username, password).await?;
+                            } else if let Some(ref content) = private_key_content.clone() {
+                                log::debug!("Trying authenticate public key");
+
+                                let private_key = decode_secret_key(content, None)?;
+
+                                auth_res = session
+                                    .authenticate_publickey(
+                                        &username,
+                                        PrivateKeyWithHashAlg::new(
+                                            Arc::new(private_key),
+                                            Some(HashAlg::Sha512),
+                                        )?,
+                                    )
+                                    .await?;
+                            }
+
+                            if !auth_res {
+                                event_emitter
+                                    .emit(Data::Status(StatusType::AuthFailed))
+                                    .await?;
+                                return Err(ApiError::Russh(Error::NoAuthMethod));
+                            }
+
+                            event_emitter
+                                .emit(Data::Status(StatusType::Connected))
+                                .await?;
+
+                                let new_channel = session.channel_open_session().await?;
+
+                                event_emitter
+                                .emit(Data::Status(StatusType::ChannelOpened))
+                                .await?;
+
+                                new_channel.request_pty(true, "xterm", 0, 0, 0, 0, &[]).await?;
+                                new_channel.request_shell(true).await?;
+
+
+                                event_emitter
+                                .emit(Data::Status(StatusType::StartStreaming))
+                                .await?;
+
+                                channel = Some(new_channel);
+
+
+                        }
                         _ => {}
                     };
                 },
                 _ = cloned_cancel_token.cancelled() =>{
-                    window.unlisten(event_id);
+                    window.unlisten(window_event_id);
                     return Ok(())
                 }
             }
@@ -296,7 +302,7 @@ pub async fn start_terminal_stream(
 
     {
         let future_manager = &mut state.lock().await.future_manager;
-        future_manager.add(cancel_token, Some(terminal.clone()));
+        future_manager.add(cancel_token, Some(event_id.clone()));
     }
     Ok(Response::new_ok_message())
 }
@@ -306,8 +312,8 @@ pub async fn start_terminal_stream(
 pub async fn start_tunnel_stream(
     window: Window,
     state: State<'_, Mutex<AppData>>,
-    host: String,
-    tunnel: String,
+    host_id: String,
+    event_id: String,
     local_address: String,
     local_port: u32,
     destination_address: String,
@@ -315,16 +321,31 @@ pub async fn start_tunnel_stream(
 ) -> Result<Response, ApiError> {
     log::debug!("start_tunnel_stream called");
 
-    if state.lock().await.future_manager.exist(&tunnel) {
-        return Ok(Response::new_ok_message());
+    {
+        let future_manager = &state.lock().await.future_manager;
+        if future_manager.exist(&event_id) {
+            return Ok(Response::new_ok_message());
+        }
     }
 
-    let (host, username, password, private_key) = get_session_credential(&state, host).await?;
+    let (host, username, password, private_key_content) = {
+        let store_manager = &state.lock().await.store_manager;
+
+        let host = if let Some(host) = store_manager.get_item::<Host>(StoreKey::Hosts, &host_id)? {
+            host
+        } else {
+            return Err(ApiError::NotFound { item: host_id });
+        };
+        let credentials = host.get_credential(store_manager)?;
+
+        (host, credentials.0, credentials.1, credentials.2)
+    };
 
     let cancel_token = CancellationToken::new();
     let cloned_cancel_token = cancel_token.clone();
 
-    let cloned_tunnel = tunnel.clone();
+    let event_emitter = Arc::new(EventEmitter::new(window.clone(), event_id.clone()));
+
     let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
         log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
 
@@ -332,15 +353,11 @@ pub async fn start_tunnel_stream(
             ..Default::default()
         });
 
-        let ssh_client = SshClient::new();
+        event_emitter
+            .emit(Data::Status(StatusType::Connecting))
+            .await?;
 
-        window.emit_to(
-            "main",
-            &cloned_tunnel,
-            json!(EventData {
-                data: Data::Status(StatusType::Connecting)
-            }),
-        )?;
+        let ssh_client = SshClient::new(Arc::clone(&event_emitter), host.fingerprint);
 
         let session = match client::connect(
             config,
@@ -351,13 +368,9 @@ pub async fn start_tunnel_stream(
         {
             Ok(session) => Arc::new(Mutex::new(session)),
             Err(_) => {
-                window.emit_to(
-                    "main",
-                    &cloned_tunnel,
-                    json!(EventData {
-                        data: Data::Status(StatusType::ConnectionTimeout)
-                    }),
-                )?;
+                event_emitter
+                    .emit(Data::Status(StatusType::ConnectionTimeout))
+                    .await?;
                 return Err(ApiError::Russh(Error::ConnectionTimeout));
             }
         };
@@ -370,37 +383,38 @@ pub async fn start_tunnel_stream(
                 .await
                 .authenticate_password(username, password)
                 .await?;
-        } else if let Some(private_key) = private_key {
-            log::debug!("Trying authenticate private key");
-            let key_pair = decode_secret_key(&private_key, None)?;
+        } else if let Some(content) = private_key_content {
+            log::debug!("Trying authenticate public key");
+
+            let private_key = decode_secret_key(&content, None)?;
+
             auth_res = session
                 .lock()
                 .await
                 .authenticate_publickey(
                     username,
-                    PrivateKeyWithHashAlg::new(Arc::new(key_pair), Some(HashAlg::Sha512))?,
+                    PrivateKeyWithHashAlg::new(Arc::new(private_key), Some(HashAlg::Sha512))?,
                 )
                 .await?;
         }
 
         if !auth_res {
-            window.emit_to(
-                "main",
-                &cloned_tunnel,
-                json!(EventData {
-                    data: Data::Status(StatusType::AuthFailed)
-                }),
-            )?;
+            event_emitter
+                .emit(Data::Status(StatusType::AuthFailed))
+                .await?;
             return Err(ApiError::Russh(Error::NoAuthMethod));
         }
 
-        window.emit_to(
-            "main",
-            &cloned_tunnel,
-            json!(EventData {
-                data: Data::Status(StatusType::Connected)
-            }),
-        )?;
+        if !auth_res {
+            event_emitter
+                .emit(Data::Status(StatusType::AuthFailed))
+                .await?;
+            return Err(ApiError::Russh(Error::NoAuthMethod));
+        }
+
+        event_emitter
+            .emit(Data::Status(StatusType::Connected))
+            .await?;
 
         let listener = TcpListener::bind(format!("{local_address}:{local_port}")).await?;
 
@@ -445,7 +459,7 @@ pub async fn start_tunnel_stream(
 
     {
         let future_manager = &mut state.lock().await.future_manager;
-        future_manager.add(cancel_token, Some(tunnel.clone()));
+        future_manager.add(cancel_token, Some(event_id.clone()));
     }
     Ok(Response::new_ok_message())
 }

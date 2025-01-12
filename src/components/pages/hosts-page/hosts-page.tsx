@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
 import { useState } from "react";
 
-import { Host } from "../../../interfaces";
+import { AuthType, Host } from "../../../interfaces";
 import { futureService, hostService } from "../../../services";
 import { usePortforwardStore, useTerminalStore } from "../../../stores";
 import HostCard from "./host-card";
@@ -21,13 +21,13 @@ const HostsPage = () => {
 
   const addTerminal = useTerminalStore((state) => state.addTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal,
+    (state) => state.setActiveTerminal
   );
 
   const addPortforward = usePortforwardStore((state) => state.addPortforward);
   const portforwards = usePortforwardStore((state) => state.portforwards);
   const removePortforward = usePortforwardStore(
-    (state) => state.removePortforward,
+    (state) => state.removePortforward
   );
 
   const { data, refetch } = useQuery({
@@ -57,28 +57,53 @@ const HostsPage = () => {
 
   const handleSaveClick = async (form: HostSchema) => {
     if (form.id) {
-      await hostService.update(
-        form.id,
-        form.address,
-        parseInt(form.port),
-        form.authType,
-        form.label,
-        form.identity,
-        form.username,
-        form.password,
-        form.privateKey,
-      );
+      if (form.authType === AuthType.Identity) {
+        await hostService.update(
+          form.id,
+          form.address,
+          parseInt(form.port),
+          { type: AuthType.Identity, data: form.identityRef },
+          form.label
+        );
+      } else {
+        await hostService.update(
+          form.id,
+          form.address,
+          parseInt(form.port),
+          {
+            type: AuthType.Local,
+            data: {
+              username: form.username,
+              password: form.password,
+              privateKeyRef: form.privateKeyRef,
+            },
+          },
+          form.label
+        );
+      }
     } else {
-      await hostService.add(
-        form.address,
-        parseInt(form.port),
-        form.authType,
-        form.label,
-        form.identity,
-        form.username,
-        form.password,
-        form.privateKey,
-      );
+      if (form.authType === AuthType.Identity) {
+        await hostService.add(
+          form.address,
+          parseInt(form.port),
+          { type: AuthType.Identity, data: form.identityRef },
+          form.label
+        );
+      } else {
+        await hostService.add(
+          form.address,
+          parseInt(form.port),
+          {
+            type: AuthType.Local,
+            data: {
+              username: form.username,
+              password: form.password,
+              privateKeyRef: form.privateKeyRef,
+            },
+          },
+          form.label
+        );
+      }
     }
     setIsSidebarOpen(false);
     await refetch();
@@ -107,7 +132,7 @@ const HostsPage = () => {
         form.localAddress,
         parseInt(form.localPort),
         form.destinationAddress,
-        parseInt(form.destinationPort),
+        parseInt(form.destinationPort)
       );
       addPortforward(selected.id, {
         tunnel,

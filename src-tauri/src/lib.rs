@@ -5,7 +5,7 @@ use crate::domain::future::commands::stop_future;
 use crate::domain::future::future_manager::FutureManager;
 use crate::domain::gpt::command::get_agent_response;
 use crate::domain::host::commands::{
-    add_host, delete_host, list_hosts, start_terminal_stream, update_host,
+    add_host, delete_host, list_hosts, start_terminal_stream, update_host, update_host_fingerprint,
 };
 use crate::domain::identity::command::{
     add_identity, delete_identity, list_identities, update_identity,
@@ -14,9 +14,8 @@ use crate::domain::private_key::command::{
     add_private_key, delete_private_key, list_private_keys, update_private_key,
 };
 use crate::domain::setting::command::{get_settings, update_settings};
-use crate::infrastructure::app::{AppData, Settings};
-use serde_json::json;
-
+use crate::domain::store::store_manager::StoreManager;
+use crate::infrastructure::app::AppData;
 use domain::host::commands::start_tunnel_stream;
 use tauri::Manager;
 use tauri_plugin_store::StoreExt;
@@ -36,11 +35,9 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let store = app.store("store.json")?;
-            if store.get("settings").is_none() {
-                store.set("settings", json!(Settings::default()))
-            }
+
             app.manage(Mutex::new(AppData {
-                store,
+                store_manager: StoreManager::new(store),
                 future_manager: FutureManager::new(),
             }));
 
@@ -52,6 +49,7 @@ pub fn run() {
             delete_host,
             list_hosts,
             update_host,
+            update_host_fingerprint,
             start_terminal_stream,
             start_tunnel_stream,
             // Identity

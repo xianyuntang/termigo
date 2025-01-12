@@ -21,7 +21,7 @@ export const invoker = async <T>(
     const { data } = await invoke<{ data: T }>(command, args);
     return data;
   } catch (e) {
-    console.log(e);
+    console.error(e);
     throw new InvokerError(JSON.parse(e as string).error);
   }
 };

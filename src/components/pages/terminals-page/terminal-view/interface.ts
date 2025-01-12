@@ -5,11 +5,18 @@ export enum StatusType {
   ChannelOpened = "ChannelOpened",
   StartStreaming = "StartStreaming",
   AuthFailed = "AuthFailed",
+  PublicKeyVerified = "PublicKeyVerified",
+  NewPublicKeyFound = "NewPublicKeyFound",
+  UnknownPublicKey = "UnknownPublicKey",
   ConnectionTimeout = "ConnectionTimeout",
 }
 
 export interface TerminalEvent {
-  data: OutEventData | WindowChangeEventData | StatusEventData;
+  data:
+    | OutEventData
+    | WindowChangeEventData
+    | StatusEventData
+    | FingerprintEventData;
 }
 
 export interface OutEventData {
@@ -25,7 +32,18 @@ export interface WindowChangeEventData {
 }
 
 export interface StatusEventData {
-  status: StatusType;
+  status: {
+    data: unknown;
+    type: StatusType;
+  };
+}
+
+export interface FingerprintEventData {
+  fingerprint: string;
+}
+
+export interface ConfirmPublicKeyEventData {
+  confirm: boolean;
 }
 
 export const isOutEventData = (

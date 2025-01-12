@@ -1,7 +1,8 @@
-use crate::infrastructure::app::{AppData, Settings};
+use crate::domain::setting::models::Settings;
+use crate::domain::store::r#enum::StoreKey;
+use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
-use serde_json::json;
 use tauri;
 use tauri::State;
 use tokio::sync::Mutex;
@@ -9,11 +10,11 @@ use tokio::sync::Mutex;
 #[tauri::command]
 pub async fn get_settings(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
     log::debug!("get_settings called");
-    let store = &state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let settings = store.get("settings").unwrap_or(json!(Settings::default()));
+    let settings = store_manager.get_data::<Settings>(StoreKey::Settings)?;
 
-    Ok(Response::from_value(settings))
+    Ok(Response::from_data(settings))
 }
 
 #[tauri::command]
@@ -22,13 +23,13 @@ pub async fn update_settings(
     gpt_api_key: String,
 ) -> Result<Response, ApiError> {
     log::debug!("update_settings called");
-    let store = &state.lock().await.store;
+    let store_manager = &state.lock().await.store_manager;
 
-    let mut settings = serde_json::from_value::<Settings>(store.get("settings").unwrap())?;
+    let mut settings = store_manager.get_data::<Settings>(StoreKey::Settings)?;
 
     settings.gpt_api_key = gpt_api_key;
 
-    store.set("settings", json!(settings));
+    store_manager.update_data(StoreKey::Settings, settings)?;
 
     Ok(Response::new_ok_message())
 }
