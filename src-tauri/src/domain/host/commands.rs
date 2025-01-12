@@ -105,7 +105,6 @@ pub async fn update_host_fingerprint(
     }
 
     store_manager.update_data(StoreKey::Hosts, hosts)?;
-
     Ok(Response::new_ok_message())
 }
 
@@ -170,41 +169,31 @@ pub async fn start_terminal_stream(
     let cloned_tx = tx.clone();
     let window_event_id = window.listen(&event_id, move |event: Event| {
         let event_data = serde_json::from_str::<EventData>(event.payload()).expect("Invalid Event");
-        cloned_tx.try_send(event_data.data).unwrap();
+        let _ = cloned_tx.try_send(event_data.data);
     });
 
     let cancel_token = CancellationToken::new();
     let cloned_cancel_token = cancel_token.clone();
 
+    let config = Arc::new(client::Config {
+        ..Default::default()
+    });
+
+    event_emitter
+        .emit(Data::Status(StatusType::Connecting))
+        .await?;
+
+    let ssh_client = SshClient::new(Arc::clone(&event_emitter), host.fingerprint);
+
+    let mut session = client::connect(
+        config,
+        format!("{}:{}", &host.address, &host.port),
+        ssh_client,
+    )
+    .await?;
+
     let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
         log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
-
-        let config = Arc::new(client::Config {
-            ..Default::default()
-        });
-
-        event_emitter
-            .emit(Data::Status(StatusType::Connecting))
-            .await?;
-
-        let ssh_client = SshClient::new(Arc::clone(&event_emitter), host.fingerprint);
-
-        let mut session = match client::connect(
-            config,
-            format!("{}:{}", &host.address, &host.port),
-            ssh_client,
-        )
-        .await
-        {
-            Ok(session) => session,
-            Err(error) => {
-                println!("{:#?}", error);
-                event_emitter
-                    .emit(Data::Status(StatusType::UnknownPublicKey))
-                    .await?;
-                return Err(ApiError::Russh(Error::UnknownKey));
-            }
-        };
 
         let mut channel: Option<Channel<Msg>> = None;
 

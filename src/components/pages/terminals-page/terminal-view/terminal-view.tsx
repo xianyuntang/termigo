@@ -20,6 +20,7 @@ import { ERROR_STATUS } from "./constant.ts";
 import {
   ConfirmPublicKeyEventData,
   InEventData,
+  isConfirmPublicKeyEventData,
   isOutEventData,
   isStatusEventData,
   StatusType,
@@ -64,14 +65,20 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     setAgentOpen((v) => !v);
   });
 
-  const { refetch } = useQuery({
+  const { refetch, isError } = useQuery({
     queryKey: [terminal, host],
     queryFn: async () => {
       if (host) {
-        return hostService.starTerminalStream(host.id, terminal);
+        try {
+          return hostService.starTerminalStream(host.id, terminal);
+        } catch (e) {
+          console.log(e);
+          throw e;
+        }
       }
       return null;
     },
+    retry: 0,
     refetchInterval: 0,
     refetchOnReconnect: false,
     refetchOnMount: false,
@@ -143,9 +150,12 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
       unlistenOutFn = await listen<TerminalEvent>(
         terminal,
         async ({ payload }) => {
-          console.log(payload);
           if (isOutEventData(payload)) {
             xterm.write(payload.data.out);
+          } else if (isConfirmPublicKeyEventData(payload)) {
+            if (fingerprint) {
+              await hostService.updateFingerprint(host.id, fingerprint);
+            }
           } else if (isStatusEventData(payload)) {
             setStatus(payload.data.status.type);
             if (payload.data.status.type === StatusType.StartStreaming) {
@@ -178,7 +188,13 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         unlistenOutFn();
       }
     };
-  }, [xterm, terminal]);
+  }, [xterm, terminal, fingerprint, host.id]);
+
+  useEffect(() => {
+    if (isError) {
+      setStatus(StatusType.ConnectionError)
+    }
+  }, [isError]);
 
   const handleReconnect = async () => {
     if (!ref) return;
@@ -203,16 +219,14 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     setAgentOpen(false);
   };
 
-  const handleConfirmPublicKey = async (
-    confirm: boolean,
-    fingerprint: string
-  ) => {
-    await emit(terminal, {
-      data: { confirm } as ConfirmPublicKeyEventData,
-    });
-
+  const handleConfirmPublicKey = async (confirm: boolean) => {
     if (confirm) {
-      hostService.updateFingerprint(host.id, fingerprint);
+      await emit(terminal, {
+        data: { confirm } as ConfirmPublicKeyEventData,
+      });
+    } else {
+      await futureService.stopFuture(terminal);
+      removeTerminal(terminal);
     }
   };
 

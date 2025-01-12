@@ -9,6 +9,7 @@ export enum StatusType {
   NewPublicKeyFound = "NewPublicKeyFound",
   UnknownPublicKey = "UnknownPublicKey",
   ConnectionTimeout = "ConnectionTimeout",
+  ConnectionError = "ConnectionError",
 }
 
 export interface TerminalEvent {
@@ -16,7 +17,8 @@ export interface TerminalEvent {
     | OutEventData
     | WindowChangeEventData
     | StatusEventData
-    | FingerprintEventData;
+    | FingerprintEventData
+    | ConfirmPublicKeyEventData;
 }
 
 export interface OutEventData {
@@ -56,4 +58,10 @@ export const isStatusEventData = (
   data: TerminalEvent
 ): data is { data: StatusEventData } => {
   return "data" in data && "status" in data.data;
+};
+
+export const isConfirmPublicKeyEventData = (
+  data: TerminalEvent
+): data is { data: ConfirmPublicKeyEventData } => {
+  return "data" in data && "confirm" in data.data;
 };

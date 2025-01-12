@@ -19,7 +19,7 @@ interface StatusOverlayProps {
   status: StatusType;
   onReconnect: () => void;
   onClose: () => void;
-  onPublicKeyConfirm: (confirm: boolean, fingerprint: string) => void;
+  onPublicKeyConfirm: (confirm: boolean) => void;
 }
 
 const StatusOverlay = ({
@@ -60,7 +60,7 @@ const StatusOverlay = ({
 
   const handlePublicKeyConfirm = async (confirm: boolean) => {
     if (fingerprint) {
-      onPublicKeyConfirm(confirm, fingerprint);
+      onPublicKeyConfirm(confirm);
     }
   };
   return (
@@ -89,35 +89,36 @@ const StatusOverlay = ({
         </Typography>
       </Box>
 
-      <Box sx={(theme) => ({ marginTop: theme.spacing(2) })}>
+      <Box sx={(theme) => ({ marginTop: theme.spacing(2), width: "50%" })}>
         {status === StatusType.NewPublicKeyFound && (
-          <ButtonGroup>
+          <ButtonGroup fullWidth>
+            <Button
+              color="error"
+              endIcon={<CloseIcon />}
+              onClick={() => handlePublicKeyConfirm(false)}
+            >
+              decline
+            </Button>
             <Button
               endIcon={<AddIcon />}
               onClick={() => handlePublicKeyConfirm(true)}
             >
               accept
             </Button>
-            <Button
-              endIcon={<CloseIcon />}
-              onClick={() => handlePublicKeyConfirm(false)}
-            >
-              decline
-            </Button>
           </ButtonGroup>
         )}
 
         {ERROR_STATUS.includes(status) && (
-          <ButtonGroup>
-            <Button endIcon={<ReplayIcon />} onClick={handleReconnectClick}>
-              retry
-            </Button>
+          <ButtonGroup fullWidth>
             <Button
               color="error"
               endIcon={<CloseIcon />}
               onClick={handleCloseClick}
             >
               close
+            </Button>
+            <Button endIcon={<ReplayIcon />} onClick={handleReconnectClick}>
+              retry
             </Button>
           </ButtonGroup>
         )}

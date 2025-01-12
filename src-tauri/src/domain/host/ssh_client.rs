@@ -9,7 +9,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct SshClient {
     event_emitter: Arc<EventEmitter>,
-    fingerprint: Option<String>,
+    pub fingerprint: Option<String>,
 }
 
 impl SshClient {
@@ -38,18 +38,13 @@ impl client::Handler for SshClient {
                 self.event_emitter
                     .emit(Data::Status(StatusType::PublicKeyVerified))
                     .await?;
-                Ok(true)
-            } else {
-                self.event_emitter
-                    .emit(Data::Status(StatusType::NewPublicKeyFound(fingerprint)))
-                    .await?;
-                Ok(true)
+                return Ok(true);
             }
-        } else {
-            self.event_emitter
-                .emit(Data::Status(StatusType::NewPublicKeyFound(fingerprint)))
-                .await?;
-            Ok(true)
         }
+
+        self.event_emitter
+            .emit(Data::Status(StatusType::NewPublicKeyFound(fingerprint)))
+            .await?;
+        Ok(true)
     }
 }

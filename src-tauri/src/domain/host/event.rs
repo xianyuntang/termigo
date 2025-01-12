@@ -17,6 +17,7 @@ pub enum StatusType {
     NewPublicKeyFound(String),
     AuthFailed,
     ConnectionTimeout,
+    ConnectionError,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

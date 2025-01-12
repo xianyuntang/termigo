@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Box, Button, Grid2, TextField } from "@mui/material";
+import { Box, Button, ButtonGroup, Grid2, TextField } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
@@ -77,8 +77,12 @@ const SettingsPage = () => {
           </Card>
         </Grid2>
       </Grid2>
-
-      <Button onClick={handleSubmit(onSubmit)}>save</Button>
+      <ButtonGroup fullWidth>
+        <Button onClick={handleSubmit(onSubmit)}>save</Button>
+        <Button color="error" onClick={handleSubmit(onSubmit)}>
+          factory reset
+        </Button>
+      </ButtonGroup>
     </Box>
   );
 };

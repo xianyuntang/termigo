@@ -165,6 +165,7 @@ export const Sidebar = ({
         </Card>
 
         <ButtonGroup
+          fullWidth
           size="small"
           sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
         >

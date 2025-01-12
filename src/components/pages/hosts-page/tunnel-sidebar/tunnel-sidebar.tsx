@@ -209,6 +209,7 @@ const TunnelDialog = ({
           />
         </Card>
         <ButtonGroup
+          fullWidth
           size="small"
           sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
         >
