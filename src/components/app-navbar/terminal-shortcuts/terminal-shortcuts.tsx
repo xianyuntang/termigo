@@ -14,7 +14,7 @@ import { useTerminalStore } from "../../../stores";
 const TerminalShortcuts = () => {
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal,
+    (state) => state.setActiveTerminal
   );
   const openedTerminals = useTerminalStore((state) => state.openedTerminals);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
@@ -52,8 +52,8 @@ const TerminalShortcuts = () => {
               borderRadius: theme.spacing(0.5),
               position: "relative",
               "&:hover .MuiListItemIcon-root": {
-                visibility: "visible", // hover 时显示 CloseIcon
-                opacity: 1, // 配合动画效果
+                visibility: "visible",
+                opacity: 1,
               },
             })}
             onClick={() => handleShortcutClick(terminal)}

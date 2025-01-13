@@ -5,9 +5,13 @@ import {
   ShortcutEvent,
   unregister,
 } from "@tauri-apps/plugin-global-shortcut";
-import { useEffect } from "react";
+import { DependencyList, useEffect } from "react";
 
-export const useGlobalShortcut = (shortcuts: string, onPressed: () => void) => {
+export const useGlobalShortcut = (
+  shortcuts: string,
+  onPressed: () => void,
+  deps?: DependencyList
+) => {
   const handleEvent = useThrottleCallback((event: ShortcutEvent) => {
     if (event.state === "Pressed") {
       onPressed();
@@ -30,5 +34,6 @@ export const useGlobalShortcut = (shortcuts: string, onPressed: () => void) => {
     return () => {
       void unregisterFn();
     };
-  }, [handleEvent, shortcuts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleEvent, shortcuts, ...(deps || [])]);
 };

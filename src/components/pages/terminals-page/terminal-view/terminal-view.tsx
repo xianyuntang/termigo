@@ -64,9 +64,15 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     return activeTerminal === terminal;
   }, [activeTerminal, terminal]);
 
-  useGlobalShortcut("CommandOrControl+I", () => {
-    setAgentOpen((v) => !v);
-  });
+  useGlobalShortcut(
+    "CommandOrControl+I",
+    () => {
+      if (isTerminalActive) {
+        setAgentOpen((v) => !v);
+      }
+    },
+    [isTerminalActive]
+  );
 
   const { refetch, isError } = useQuery({
     queryKey: [terminal, host],
