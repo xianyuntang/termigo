@@ -46,6 +46,9 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
 
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
+  const setActiveTerminal = useTerminalStore(
+    (state) => state.setActiveTerminal
+  );
 
   const theme = useTheme();
   const resize = useDebounceCallback(() => fitAddon.current.fit(), 100);
@@ -192,7 +195,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
 
   useEffect(() => {
     if (isError) {
-      setStatus(StatusType.ConnectionError)
+      setStatus(StatusType.ConnectionError);
     }
   }, [isError]);
 
@@ -205,6 +208,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
 
   const handleTerminalClose = async () => {
     removeTerminal(terminal);
+    setActiveTerminal(null);
   };
 
   const handleAgentClose = async () => {
@@ -227,6 +231,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     } else {
       await futureService.stopFuture(terminal);
       removeTerminal(terminal);
+      setActiveTerminal(null);
     }
   };
 
