@@ -13,19 +13,19 @@ use crate::domain::identity::command::{
 use crate::domain::private_key::command::{
     add_private_key, delete_private_key, list_private_keys, update_private_key,
 };
-use crate::domain::setting::command::{get_settings, update_settings};
+use crate::domain::setting::command::{clear_data, get_settings, update_settings};
 use crate::domain::store::store_manager::StoreManager;
 use crate::infrastructure::app::AppData;
 use domain::host::commands::start_tunnel_stream;
+use domain::store::r#enum::default_settings;
 use tauri::Manager;
-use tauri_plugin_store::StoreExt;
 use tokio::sync::Mutex;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(
             tauri_plugin_log::Builder::new()
                 .level(log::LevelFilter::Warn)
@@ -34,7 +34,9 @@ pub fn run() {
         )
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
-            let store = app.store("store.json")?;
+            let store = tauri_plugin_store::StoreBuilder::new(app, "store.json")
+                .defaults(default_settings())
+                .build()?;
 
             app.manage(Mutex::new(AppData {
                 store_manager: StoreManager::new(store),
@@ -67,6 +69,7 @@ pub fn run() {
             // Setting
             update_settings,
             get_settings,
+            clear_data,
             // Future
             stop_future
         ])

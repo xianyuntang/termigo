@@ -59,4 +59,8 @@ impl StoreManager {
     {
         Ok(self.store.set(key.as_str(), json!(data)))
     }
+
+    pub fn clear_data(&self) {
+        self.store.reset();
+    }
 }

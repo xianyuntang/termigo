@@ -34,7 +34,7 @@ const identitySchema = z.object({
   label: z.string().nonempty(),
   username: z.string().nonempty(),
   password: z.string(),
-  privateKey: z.string(),
+  privateKeyRef: z.string(),
 });
 
 export type IdentitySchema = z.infer<typeof identitySchema>;
@@ -63,7 +63,7 @@ export const Sidebar = ({
       label: "",
       username: "",
       password: "",
-      privateKey: "",
+      privateKeyRef: "",
     },
     resolver: zodResolver(identitySchema),
     reValidateMode: "onChange",
@@ -82,7 +82,7 @@ export const Sidebar = ({
     setValue("label", identity?.label || "");
     setValue("username", identity?.username || "");
     setValue("password", identity?.password || "");
-    setValue("privateKey", identity?.privateKey || "");
+    setValue("privateKeyRef", identity?.privateKeyRef || "");
   }, [identity, setValue, isOpen]);
 
   const handleClose = () => {
@@ -187,16 +187,19 @@ export const Sidebar = ({
           />
 
           <Controller
-            name="privateKey"
+            name="privateKeyRef"
             control={control}
             render={({ field }) => (
               <FormControl fullWidth size="small">
-                <InputLabel id="private-key-select">Private Key</InputLabel>
+                <InputLabel id="private-key-ref-select">
+                  Private Key Ref
+                </InputLabel>
                 <Select
-                  labelId="private-key-select"
-                  label="Private Key"
+                  labelId="private-key-ref-select"
+                  label="Private Key Ref"
                   {...field}
                 >
+                  <MenuItem value="">None</MenuItem>
                   {privateKeys?.map((privateKey) => (
                     <MenuItem key={privateKey.id} value={privateKey.id}>
                       {privateKey.label}

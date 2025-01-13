@@ -9,6 +9,10 @@ class SettingService {
   updateSettings(gptApiKey: string) {
     return invoker<OKMessage>("update_settings", { gptApiKey });
   }
+
+  clearData() {
+    return invoker<OKMessage>("clear_data");
+  }
 }
 
 export default new SettingService();

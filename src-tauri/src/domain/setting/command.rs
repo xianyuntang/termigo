@@ -33,3 +33,13 @@ pub async fn update_settings(
 
     Ok(Response::new_ok_message())
 }
+
+#[tauri::command]
+pub async fn clear_data(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
+    log::debug!("clear_data called");
+    let store_manager = &state.lock().await.store_manager;
+
+    store_manager.clear_data();
+
+    Ok(Response::new_ok_message())
+}

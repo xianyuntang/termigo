@@ -10,13 +10,13 @@ class IdentityService {
     label: string,
     username: string,
     password: string,
-    privateKey: string,
+    privateKeyRef: string
   ) => {
     return invoker<OKMessage>("add_identity", {
       label,
       username,
       password,
-      privateKey,
+      privateKeyRef,
     });
   };
 
@@ -25,14 +25,14 @@ class IdentityService {
     label: string,
     username: string,
     password: string,
-    privateKey: string,
+    privateKeyRef: string
   ) => {
     return invoker<OKMessage>("update_identity", {
       id,
       label,
       username,
       password,
-      privateKey,
+      privateKeyRef,
     });
   };
 

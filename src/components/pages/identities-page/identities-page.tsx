@@ -33,14 +33,14 @@ const PrivateKeysPage = () => {
         form.label,
         form.username,
         form.password,
-        form.privateKey,
+        form.privateKeyRef
       );
     } else {
       await identityService.add(
         form.label,
         form.username,
         form.password,
-        form.privateKey,
+        form.privateKeyRef
       );
     }
     setIsSidebarOpen(false);

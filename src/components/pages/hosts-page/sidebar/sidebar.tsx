@@ -245,6 +245,7 @@ export const Sidebar = ({
                     labelId="identity-ref-select"
                     label="identity Ref"
                   >
+                    <MenuItem value="">None</MenuItem>
                     {identities?.map((identity) => (
                       <MenuItem key={identity.id} value={identity.id}>
                         {identity.label || identity.username}
@@ -313,6 +314,7 @@ export const Sidebar = ({
                       label="Private Key Ref"
                       {...field}
                     >
+                      <MenuItem value="">None</MenuItem>
                       {privateKeys?.map((privateKey) => (
                         <MenuItem key={privateKey.id} value={privateKey.id}>
                           {privateKey.label}

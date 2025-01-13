@@ -74,12 +74,14 @@ pub async fn update_host(
         host.address = address;
         host.port = port;
         host.auth_method = auth_method;
-        host
+        host.clone()
     } else {
         return Err(ApiError::NotFound {
             item: format!("hostId {}", id),
         });
     };
+
+    store_manager.update_data(StoreKey::Hosts, hosts)?;
 
     Ok(Response::from_data(host))
 }
