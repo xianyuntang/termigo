@@ -102,12 +102,12 @@ export const Sidebar = ({
     setValue("label", host?.label || "");
     setValue("address", host?.address || "");
     setValue("port", host?.port.toString() || "22");
-    if (host?.authMethod.type === AuthType.Local) {
-      setValue("username", host.authMethod.data.username);
-      setValue("password", host.authMethod.data.password || "");
-      setValue("privateKeyRef", host.authMethod.data.privateKeyRef || "");
-    } else if (host?.authMethod.type === AuthType.Identity) {
-      setValue("identityRef", host.authMethod.data);
+    if (host?.credential.type === AuthType.Local) {
+      setValue("username", host.credential.data.username);
+      setValue("password", host.credential.data.password || "");
+      setValue("privateKeyRef", host.credential.data.privateKeyRef || "");
+    } else if (host?.credential.type === AuthType.Identity) {
+      setValue("identityRef", host.credential.data);
     }
   }, [host, setValue, isOpen]);
 

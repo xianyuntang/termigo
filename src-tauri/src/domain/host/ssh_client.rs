@@ -1,7 +1,7 @@
 use crate::domain::host::event::{Data, EventEmitter, StatusType};
 use crate::infrastructure::error::ApiError;
 use async_trait::async_trait;
-use russh::client;
+use russh::client::Handler;
 use russh::keys::HashAlg::Sha512;
 use russh::keys::PublicKey;
 use std::sync::Arc;
@@ -10,41 +10,48 @@ use std::sync::Arc;
 pub struct SshClient {
     event_emitter: Arc<EventEmitter>,
     pub fingerprint: Option<String>,
+    should_check_public_key: bool,
 }
 
 impl SshClient {
-    pub fn new(event_emitter: Arc<EventEmitter>, fingerprint: Option<String>) -> Self {
+    pub fn new(
+        event_emitter: Arc<EventEmitter>,
+        fingerprint: Option<String>,
+        should_check_public_key: bool,
+    ) -> Self {
         Self {
             event_emitter,
             fingerprint,
+            should_check_public_key,
         }
     }
 }
 
-impl SshClient {}
-
 #[async_trait]
-impl client::Handler for SshClient {
+impl Handler for SshClient {
     type Error = ApiError;
 
     async fn check_server_key(
         &mut self,
         server_public_key: &PublicKey,
     ) -> Result<bool, Self::Error> {
+        if !self.should_check_public_key {
+            return Ok(true);
+        }
+
         let fingerprint = server_public_key.fingerprint(Sha512).to_string();
 
         if let Some(fp) = &self.fingerprint {
             if fp == &fingerprint {
-                self.event_emitter
-                    .emit(Data::Status(StatusType::PublicKeyVerified))
-                    .await?;
+                self.event_emitter.emit(Data::TrustPublicKey(true)).await?;
                 return Ok(true);
             }
         }
 
         self.event_emitter
-            .emit(Data::Status(StatusType::NewPublicKeyFound(fingerprint)))
+            .emit_status(StatusType::NewPublicKeyFound(fingerprint.to_string()))
             .await?;
+
         Ok(true)
     }
 }

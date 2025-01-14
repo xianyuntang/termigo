@@ -6,18 +6,26 @@ use tokio_util::bytes::Bytes;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content = "data", rename_all = "PascalCase")]
+pub enum AuthMethod {
+    Password,
+    PublicKey,
+    KeyboardInteractive,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type", content = "data", rename_all = "PascalCase")]
 pub enum StatusType {
     Pending,
     Connecting,
     Connected,
+    SessionCreated,
+    TryingToAuthenticate(AuthMethod),
+    AuthSuccess,
     ChannelOpened,
     StartStreaming,
-    PublicKeyVerified,
-    UnknownPublicKey,
     NewPublicKeyFound(String),
     AuthFailed,
     ConnectionTimeout,
-    ConnectionError,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -35,8 +43,7 @@ pub enum Data {
     Out(Bytes),
     Size((u32, u32)),
     Status(StatusType),
-    // Fingerprint(String),
-    Confirm(bool),
+    TrustPublicKey(bool),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -61,5 +68,13 @@ impl EventEmitter {
         Ok(self
             .window
             .emit_to("main", &self.channel, json!(EventData { data }))?)
+    }
+
+    pub async fn emit_status(&self, status_type: StatusType) -> Result<(), ApiError> {
+        self.emit(Data::Status(status_type)).await
+    }
+
+    pub async fn emit_out(&self, bytes: Bytes) -> Result<(), ApiError> {
+        self.emit(Data::Out(bytes)).await
     }
 }

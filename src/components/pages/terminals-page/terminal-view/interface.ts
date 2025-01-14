@@ -6,6 +6,7 @@ export enum StatusType {
   StartStreaming = "StartStreaming",
   AuthFailed = "AuthFailed",
   PublicKeyVerified = "PublicKeyVerified",
+  AuthSuccess = "AuthSuccess",
   NewPublicKeyFound = "NewPublicKeyFound",
   UnknownPublicKey = "UnknownPublicKey",
   ConnectionTimeout = "ConnectionTimeout",
@@ -18,7 +19,7 @@ export interface TerminalEvent {
     | WindowChangeEventData
     | StatusEventData
     | FingerprintEventData
-    | ConfirmPublicKeyEventData;
+    | TrustPublicKeyEventData;
 }
 
 export interface OutEventData {
@@ -44,24 +45,24 @@ export interface FingerprintEventData {
   fingerprint: string;
 }
 
-export interface ConfirmPublicKeyEventData {
-  confirm: boolean;
+export interface TrustPublicKeyEventData {
+  trustPublicKey: boolean;
 }
 
 export const isOutEventData = (
-  data: TerminalEvent
+  data: TerminalEvent,
 ): data is { data: OutEventData } => {
   return "data" in data && "out" in data.data;
 };
 
 export const isStatusEventData = (
-  data: TerminalEvent
+  data: TerminalEvent,
 ): data is { data: StatusEventData } => {
   return "data" in data && "status" in data.data;
 };
 
-export const isConfirmPublicKeyEventData = (
-  data: TerminalEvent
-): data is { data: ConfirmPublicKeyEventData } => {
-  return "data" in data && "confirm" in data.data;
+export const isTrustPublicKeyEventData = (
+  data: TerminalEvent,
+): data is { data: TrustPublicKeyEventData } => {
+  return "data" in data && "trustPublicKey" in data.data;
 };

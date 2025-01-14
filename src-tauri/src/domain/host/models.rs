@@ -11,7 +11,7 @@ use crate::infrastructure::transform::empty_to_null;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(tag = "type", content = "data", rename_all = "camelCase")]
-pub enum AuthMethod {
+pub enum Credential {
     #[serde(rename = "local")]
     Local(LocalAuth),
     #[serde(rename = "identity")]
@@ -36,7 +36,7 @@ pub struct Host {
     pub label: Option<String>,
     pub address: String,
     pub port: u32,
-    pub auth_method: AuthMethod,
+    pub credential: Credential,
     #[serde(serialize_with = "empty_to_null")]
     pub fingerprint: Option<String>,
 }
@@ -47,7 +47,7 @@ impl Host {
         label: Option<String>,
         address: String,
         port: u32,
-        auth_method: AuthMethod,
+        credential: Credential,
         fingerprint: Option<String>,
     ) -> Self {
         Self {
@@ -55,7 +55,7 @@ impl Host {
             label,
             address,
             port,
-            auth_method,
+            credential,
             fingerprint,
         }
     }
@@ -66,8 +66,8 @@ impl Host {
         &self,
         store_manager: &StoreManager,
     ) -> Result<(String, Option<String>, Option<String>), ApiError> {
-        match &self.auth_method {
-            AuthMethod::Local(local_auth) => {
+        match &self.credential {
+            Credential::Local(local_auth) => {
                 let private_key_content =
                     if let Some(ref private_key_ref) = local_auth.private_key_ref {
                         let private_key = store_manager
@@ -87,7 +87,7 @@ impl Host {
                     private_key_content,
                 ))
             }
-            AuthMethod::Identity(identity_ref) => {
+            Credential::Identity(identity_ref) => {
                 let identity = if let Some(identity) =
                     store_manager.get_item::<Identity>(StoreKey::Identities, identity_ref)?
                 {

@@ -17,12 +17,12 @@ export interface IdentityAuth {
   data: string;
 }
 
-export type AuthMethod = LocalAuth | IdentityAuth;
+export type Credential = LocalAuth | IdentityAuth;
 
 export interface Host {
   id: string;
   address: string;
   port: number;
   label?: string;
-  authMethod: AuthMethod;
+  credential: Credential;
 }

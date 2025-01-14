@@ -37,6 +37,9 @@ pub enum ApiError {
 
     #[error("Api key is not set")]
     ApiKeyIsNotSet,
+
+    #[error("Session not found")]
+    SessionNotFound,
 }
 
 impl serde::Serialize for ApiError {

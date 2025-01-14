@@ -1,14 +1,14 @@
-use crate::domain::host::event::{Data, EventData, EventEmitter, StatusType};
+use super::models::Credential;
+use crate::domain::host::event::{AuthMethod, Data, EventData, EventEmitter, StatusType};
 use crate::domain::host::models::Host;
-use crate::domain::host::ssh_client::SshClient;
+use crate::domain::host::session_manager::SessionManager;
 use crate::domain::store::r#enum::StoreKey;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
 use log;
 use russh::client::Msg;
-use russh::keys::{decode_secret_key, key::PrivateKeyWithHashAlg, HashAlg};
-use russh::{client, Channel, ChannelMsg, Error};
+use russh::{Channel, ChannelMsg, Error};
 use serde_json::json;
 use std::sync::Arc;
 use tauri::{Event, Listener, State, Window};
@@ -18,8 +18,6 @@ use tokio::sync::{mpsc, Mutex};
 use tokio::task::JoinHandle;
 use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
-
-use super::models::AuthMethod;
 
 #[tauri::command]
 pub async fn list_hosts(state: State<'_, Mutex<AppData>>) -> Result<Response, ApiError> {
@@ -38,12 +36,12 @@ pub async fn add_host(
     label: String,
     address: String,
     port: u32,
-    auth_method: AuthMethod,
+    credential: Credential,
 ) -> Result<Response, ApiError> {
     log::debug!("add_host called");
     let store_manager = &state.lock().await.store_manager;
 
-    let host = Host::new(Some(label), address, port, auth_method, None);
+    let host = Host::new(Some(label), address, port, credential, None);
     let mut hosts = store_manager.get_data::<Vec<Host>>(StoreKey::Hosts)?;
 
     hosts.push(host.clone());
@@ -61,7 +59,7 @@ pub async fn update_host(
     label: String,
     address: String,
     port: u32,
-    auth_method: AuthMethod,
+    credential: Credential,
 ) -> Result<Response, ApiError> {
     log::debug!("update_host called");
 
@@ -73,7 +71,7 @@ pub async fn update_host(
         host.label = Some(label);
         host.address = address;
         host.port = port;
-        host.auth_method = auth_method;
+        host.credential = credential;
         host.clone()
     } else {
         return Err(ApiError::NotFound {
@@ -164,8 +162,6 @@ pub async fn start_terminal_stream(
         (host, credentials.0, credentials.1, credentials.2)
     };
 
-    let event_emitter = Arc::new(EventEmitter::new(window.clone(), event_id.clone()));
-
     let (tx, mut rx) = mpsc::channel::<Data>(1024);
 
     let cloned_tx = tx.clone();
@@ -177,25 +173,14 @@ pub async fn start_terminal_stream(
     let cancel_token = CancellationToken::new();
     let cloned_cancel_token = cancel_token.clone();
 
-    let config = Arc::new(client::Config {
-        ..Default::default()
-    });
+    let event_emitter = Arc::new(EventEmitter::new(window.clone(), event_id.clone()));
 
-    event_emitter
-        .emit(Data::Status(StatusType::Connecting))
-        .await?;
-
-    let ssh_client = SshClient::new(Arc::clone(&event_emitter), host.fingerprint);
-
-    let mut session = client::connect(
-        config,
-        format!("{}:{}", &host.address, &host.port),
-        ssh_client,
-    )
-    .await?;
+    let mut session_manager = SessionManager::new(Arc::clone(&event_emitter), &host);
 
     let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
         log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
+        event_emitter.emit_status(StatusType::Connecting).await?;
+        session_manager.connect(true).await?;
 
         let mut channel: Option<Channel<Msg>> = None;
 
@@ -209,7 +194,7 @@ pub async fn start_terminal_stream(
                     }
                 }, if channel.is_some() => {
                     if let Some(ChannelMsg::Data { ref data }) = maybe_msg {
-                        event_emitter.emit(Data::Out(Bytes::from(data.to_vec()))).await?;
+                        event_emitter.emit_out(Bytes::from(data.to_vec())).await?;
                     }
                 },
                 Some(data) = rx.recv() => {
@@ -225,65 +210,59 @@ pub async fn start_terminal_stream(
                                 ch.window_change(size_data.0,size_data.1,0,0).await?
                             }
                         },
-                        Data::Confirm(confirm) =>{
-                            if !confirm {
+                        Data::TrustPublicKey(trust) => {
+                            if !trust {
                                 return Err(ApiError::Russh(Error::UnknownKey));
                             }
-
-                            let mut auth_res = false;
-
-                            if let Some(ref password) = password {
-                                log::debug!("Trying authenticate password");
-                                auth_res = session.authenticate_password(&username, password).await?;
-                            } else if let Some(ref content) = private_key_content.clone() {
-                                log::debug!("Trying authenticate public key");
-
-                                let private_key = decode_secret_key(content, None)?;
-
-                                auth_res = session
-                                    .authenticate_publickey(
-                                        &username,
-                                        PrivateKeyWithHashAlg::new(
-                                            Arc::new(private_key),
-                                            Some(HashAlg::Sha512),
-                                        )?,
-                                    )
-                                    .await?;
-                            }
-
-                            if !auth_res {
-                                event_emitter
-                                    .emit(Data::Status(StatusType::AuthFailed))
-                                    .await?;
-                                return Err(ApiError::Russh(Error::NoAuthMethod));
-                            }
-
                             event_emitter
-                                .emit(Data::Status(StatusType::Connected))
+                                .emit_status(StatusType::SessionCreated)
                                 .await?;
 
-                                let new_channel = session.channel_open_session().await?;
+                        },
+                        Data::Status(status_type) => {
+                            match status_type {
+                                StatusType::SessionCreated => {
+                                    event_emitter.emit_status(StatusType::TryingToAuthenticate(AuthMethod::KeyboardInteractive)).await?;
+                                    let mut auth_res = session_manager.try_authenticate_kbd_interactive(&username, &password).await?;
 
-                                event_emitter
-                                .emit(Data::Status(StatusType::ChannelOpened))
-                                .await?;
+                                    if !auth_res {
+                                        if let Some(ref password) = password {
+                                            event_emitter.emit_status(StatusType::TryingToAuthenticate(AuthMethod::Password)).await?;
+                                            auth_res = session_manager.try_authenticate_password(&username, password).await?;
+                                        }
+                                    }
 
-                                new_channel.request_pty(true, "xterm", 0, 0, 0, 0, &[]).await?;
-                                new_channel.request_shell(true).await?;
+                                    if !auth_res {
+                                        if let Some(ref private_key_content) = private_key_content {
+                                            event_emitter.emit_status(StatusType::TryingToAuthenticate(AuthMethod::PublicKey)).await?;
+                                            auth_res = session_manager.try_authenticate_public_key(&username, private_key_content).await?;
+                                        }
+                                    }
 
+                                    if auth_res {
+                                        event_emitter.emit_status(StatusType::AuthSuccess).await?;
+                                    }
+                                    else {
+                                        event_emitter.emit_status(StatusType::AuthFailed).await?;
+                                    }
 
-                                event_emitter
-                                .emit(Data::Status(StatusType::StartStreaming))
-                                .await?;
+                                }
+                                StatusType::AuthSuccess => {
+                                    let new_channel = session_manager.channel_open_session().await?;
+                                    event_emitter.emit_status(StatusType::ChannelOpened).await?;
 
-                                channel = Some(new_channel);
-
-
+                                    new_channel.request_pty(true, "xterm", 0, 0, 0, 0, &[]).await?;
+                                    new_channel.request_shell(true).await?;
+                                    event_emitter.emit_status(StatusType::StartStreaming).await?;
+                                    channel = Some(new_channel);
+                                }
+                                _ => {}
+                            }
                         }
                         _ => {}
                     };
                 },
-                _ = cloned_cancel_token.cancelled() =>{
+                _ = cloned_cancel_token.cancelled() => {
                     window.unlisten(window_event_id);
                     return Ok(())
                 }
@@ -337,75 +316,59 @@ pub async fn start_tunnel_stream(
 
     let event_emitter = Arc::new(EventEmitter::new(window.clone(), event_id.clone()));
 
+    let session_manager = Arc::new(Mutex::new(SessionManager::new(
+        Arc::clone(&event_emitter),
+        &host,
+    )));
+
     let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
         log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
-
-        let config = Arc::new(client::Config {
-            ..Default::default()
-        });
+        event_emitter.emit_status(StatusType::Connecting).await?;
+        session_manager.lock().await.connect(true).await?;
 
         event_emitter
-            .emit(Data::Status(StatusType::Connecting))
+            .emit_status(StatusType::TryingToAuthenticate(
+                AuthMethod::KeyboardInteractive,
+            ))
             .await?;
 
-        let ssh_client = SshClient::new(Arc::clone(&event_emitter), host.fingerprint);
+        let mut auth_res = session_manager
+            .lock()
+            .await
+            .try_authenticate_kbd_interactive(&username, &password)
+            .await?;
 
-        let session = match client::connect(
-            config,
-            format!("{}:{}", &host.address, &host.port),
-            ssh_client,
-        )
-        .await
-        {
-            Ok(session) => Arc::new(Mutex::new(session)),
-            Err(_) => {
+        if !auth_res {
+            if let Some(ref password) = password {
                 event_emitter
-                    .emit(Data::Status(StatusType::ConnectionTimeout))
+                    .emit_status(StatusType::TryingToAuthenticate(AuthMethod::Password))
                     .await?;
-                return Err(ApiError::Russh(Error::ConnectionTimeout));
+                auth_res = session_manager
+                    .lock()
+                    .await
+                    .try_authenticate_password(&username, password)
+                    .await?;
             }
-        };
-        let mut auth_res = false;
-
-        if let Some(password) = password {
-            log::debug!("Trying authenticate password");
-            auth_res = session
-                .lock()
-                .await
-                .authenticate_password(username, password)
-                .await?;
-        } else if let Some(content) = private_key_content {
-            log::debug!("Trying authenticate public key");
-
-            let private_key = decode_secret_key(&content, None)?;
-
-            auth_res = session
-                .lock()
-                .await
-                .authenticate_publickey(
-                    username,
-                    PrivateKeyWithHashAlg::new(Arc::new(private_key), Some(HashAlg::Sha512))?,
-                )
-                .await?;
         }
 
         if !auth_res {
-            event_emitter
-                .emit(Data::Status(StatusType::AuthFailed))
-                .await?;
-            return Err(ApiError::Russh(Error::NoAuthMethod));
+            if let Some(ref private_key_content) = private_key_content {
+                event_emitter
+                    .emit_status(StatusType::TryingToAuthenticate(AuthMethod::PublicKey))
+                    .await?;
+                auth_res = session_manager
+                    .lock()
+                    .await
+                    .try_authenticate_public_key(&username, private_key_content)
+                    .await?;
+            }
         }
 
-        if !auth_res {
-            event_emitter
-                .emit(Data::Status(StatusType::AuthFailed))
-                .await?;
-            return Err(ApiError::Russh(Error::NoAuthMethod));
+        if auth_res {
+            event_emitter.emit_status(StatusType::AuthSuccess).await?;
+        } else {
+            event_emitter.emit_status(StatusType::AuthFailed).await?;
         }
-
-        event_emitter
-            .emit(Data::Status(StatusType::Connected))
-            .await?;
 
         let listener = TcpListener::bind(format!("{local_address}:{local_port}")).await?;
 
@@ -413,11 +376,11 @@ pub async fn start_tunnel_stream(
             tokio::select! {
                 incoming = listener.accept() => {
                     if let Ok((mut socket,_)) = incoming {
-                        let cloned_session = Arc::clone(&session);
+                        let cloned_session_manager = Arc::clone(&session_manager);
                         let cloned_destination_address = destination_address.clone();
                         let cloned_local_address = local_address.clone();
                         tokio::spawn(async move {
-                            let channel = cloned_session
+                            let channel = cloned_session_manager
                                 .lock()
                                 .await
                                 .channel_open_direct_tcpip(

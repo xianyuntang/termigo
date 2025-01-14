@@ -18,13 +18,13 @@ import AgentDialog from "../agent-dialog";
 import StatusDialog from "../status-overlay/index.ts";
 import { ERROR_STATUS } from "./constant.ts";
 import {
-  ConfirmPublicKeyEventData,
   InEventData,
-  isConfirmPublicKeyEventData,
   isOutEventData,
   isStatusEventData,
+  isTrustPublicKeyEventData,
   StatusType,
   TerminalEvent,
+  TrustPublicKeyEventData,
   WindowChangeEventData,
 } from "./interface";
 
@@ -47,7 +47,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal
+    (state) => state.setActiveTerminal,
   );
 
   const theme = useTheme();
@@ -71,7 +71,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         setAgentOpen((v) => !v);
       }
     },
-    [isTerminalActive]
+    [isTerminalActive],
   );
 
   const { refetch, isError } = useQuery({
@@ -119,7 +119,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
 
       return xterm;
     },
-    [theme.palette.background.paper]
+    [theme.palette.background.paper],
   );
 
   useEffect(() => {
@@ -161,7 +161,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         async ({ payload }) => {
           if (isOutEventData(payload)) {
             xterm.write(payload.data.out);
-          } else if (isConfirmPublicKeyEventData(payload)) {
+          } else if (isTrustPublicKeyEventData(payload)) {
             if (fingerprint) {
               await hostService.updateFingerprint(host.id, fingerprint);
             }
@@ -175,12 +175,6 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
               });
               setStatusOpen(false);
             } else if (
-              payload.data.status.type === StatusType.PublicKeyVerified
-            ) {
-              await emit(terminal, {
-                data: { confirm: true } as ConfirmPublicKeyEventData,
-              });
-            } else if (
               payload.data.status.type === StatusType.NewPublicKeyFound
             ) {
               setFingerprint(payload.data.status.data as string);
@@ -188,7 +182,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
               await futureService.stopFuture(terminal);
             }
           }
-        }
+        },
       );
     })();
 
@@ -232,7 +226,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   const handleConfirmPublicKey = async (confirm: boolean) => {
     if (confirm) {
       await emit(terminal, {
-        data: { confirm } as ConfirmPublicKeyEventData,
+        data: { trustPublicKey: confirm } as TrustPublicKeyEventData,
       });
     } else {
       await futureService.stopFuture(terminal);

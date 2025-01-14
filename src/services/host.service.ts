@@ -1,5 +1,5 @@
 import { invoker } from "../core";
-import { AuthMethod, Host, OKMessage } from "../interfaces";
+import { Credential, Host, OKMessage } from "../interfaces";
 
 class HostService {
   starTerminalStream = async (hostId: string, eventId: string) => {
@@ -12,7 +12,7 @@ class HostService {
     localAddress: string,
     localPort: number,
     destinationAddress: string,
-    destinationPort: number
+    destinationPort: number,
   ) => {
     return invoker<OKMessage>("start_tunnel_stream", {
       hostId,
@@ -31,14 +31,14 @@ class HostService {
   add = async (
     address: string,
     port: number,
-    authMethod: AuthMethod,
-    label?: string
+    credential: Credential,
+    label?: string,
   ) => {
     return invoker<Host>("add_host", {
       label,
       address,
       port,
-      authMethod,
+      credential,
     });
   };
 
@@ -50,15 +50,15 @@ class HostService {
     id: string,
     address: string,
     port: number,
-    authMethod: AuthMethod,
-    label?: string
+    credential: Credential,
+    label?: string,
   ) => {
     return invoker<Host>("update_host", {
       id,
       label,
       address,
       port,
-      authMethod,
+      credential,
     });
   };
 
