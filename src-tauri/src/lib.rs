@@ -18,12 +18,14 @@ use crate::domain::store::store_manager::StoreManager;
 use crate::infrastructure::app::AppData;
 use domain::host::commands::start_tunnel_stream;
 use domain::store::r#enum::default_settings;
+use infrastructure::updater::update;
 use tauri::Manager;
 use tokio::sync::Mutex;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(
@@ -42,6 +44,14 @@ pub fn run() {
                 store_manager: StoreManager::new(store),
                 future_manager: FutureManager::new(),
             }));
+
+            Ok(())
+        })
+        .setup(|app| {
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                update(handle).await.unwrap();
+            });
 
             Ok(())
         })
