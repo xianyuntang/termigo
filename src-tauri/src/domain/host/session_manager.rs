@@ -34,14 +34,17 @@ impl SessionManager {
             self.host.fingerprint.clone(),
             should_check_public_key,
         );
-        let session = client::connect(
+        if let Ok(session) = client::connect(
             config,
             format!("{}:{}", self.host.address, self.host.port),
             ssh_client.clone(),
         )
-        .await?;
-
-        self.session = Some(session);
+        .await
+        {
+            self.session = Some(session);
+        } else {
+            return Err(ApiError::SessionNotFound);
+        }
 
         Ok(())
     }

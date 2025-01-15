@@ -11,11 +11,13 @@ use russh::client::Msg;
 use russh::{Channel, ChannelMsg, Error};
 use serde_json::json;
 use std::sync::Arc;
+use std::time::Duration;
 use tauri::{Event, Listener, State, Window};
 use tokio::io::{self, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::{mpsc, Mutex};
 use tokio::task::JoinHandle;
+use tokio::time::sleep;
 use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
 
@@ -178,9 +180,17 @@ pub async fn start_terminal_stream(
     let mut session_manager = SessionManager::new(Arc::clone(&event_emitter), &host);
 
     let _handler: JoinHandle<Result<(), ApiError>> = tokio::spawn(async move {
+        sleep(Duration::from_millis(100)).await;
+
         log::debug!("Trying to connect to {}:{}", &host.address, &host.port);
         event_emitter.emit_status(StatusType::Connecting).await?;
-        session_manager.connect(true).await?;
+
+        if session_manager.connect(true).await.is_err() {
+            event_emitter
+                .emit_status(StatusType::ConnectionFailed)
+                .await?;
+            println!("23");
+        }
 
         let mut channel: Option<Channel<Msg>> = None;
 

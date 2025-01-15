@@ -1,17 +1,4 @@
-export enum StatusType {
-  Pending = "Pending",
-  Connecting = "Connecting",
-  Connected = "Connected",
-  ChannelOpened = "ChannelOpened",
-  StartStreaming = "StartStreaming",
-  AuthFailed = "AuthFailed",
-  PublicKeyVerified = "PublicKeyVerified",
-  AuthSuccess = "AuthSuccess",
-  NewPublicKeyFound = "NewPublicKeyFound",
-  UnknownPublicKey = "UnknownPublicKey",
-  ConnectionTimeout = "ConnectionTimeout",
-  ConnectionError = "ConnectionError",
-}
+import { StatusType } from "./constant";
 
 export interface TerminalEvent {
   data:
@@ -50,19 +37,19 @@ export interface TrustPublicKeyEventData {
 }
 
 export const isOutEventData = (
-  data: TerminalEvent,
+  data: TerminalEvent
 ): data is { data: OutEventData } => {
   return "data" in data && "out" in data.data;
 };
 
 export const isStatusEventData = (
-  data: TerminalEvent,
+  data: TerminalEvent
 ): data is { data: StatusEventData } => {
   return "data" in data && "status" in data.data;
 };
 
 export const isTrustPublicKeyEventData = (
-  data: TerminalEvent,
+  data: TerminalEvent
 ): data is { data: TrustPublicKeyEventData } => {
   return "data" in data && "trustPublicKey" in data.data;
 };

@@ -328,10 +328,7 @@ export const Sidebar = ({
           )}
         </Card>
 
-        <ButtonGroup
-          size="small"
-          sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
-        >
+        <ButtonGroup size="small" fullWidth>
           <Button
             endIcon={<DeleteIcon />}
             color="error"

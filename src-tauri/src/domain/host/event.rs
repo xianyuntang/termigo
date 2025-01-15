@@ -17,15 +17,14 @@ pub enum AuthMethod {
 pub enum StatusType {
     Pending,
     Connecting,
-    Connected,
     SessionCreated,
     TryingToAuthenticate(AuthMethod),
     AuthSuccess,
+    AuthFailed,
     ChannelOpened,
     StartStreaming,
     NewPublicKeyFound(String),
-    AuthFailed,
-    ConnectionTimeout,
+    ConnectionFailed,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

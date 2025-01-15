@@ -16,13 +16,12 @@ import { futureService, gptService, hostService } from "../../../../services";
 import { useTerminalStore } from "../../../../stores";
 import AgentDialog from "../agent-dialog";
 import StatusDialog from "../status-overlay/index.ts";
-import { ERROR_STATUS } from "./constant.ts";
+import { ERROR_STATUS, StatusType } from "./constant.ts";
 import {
   InEventData,
   isOutEventData,
   isStatusEventData,
   isTrustPublicKeyEventData,
-  StatusType,
   TerminalEvent,
   TrustPublicKeyEventData,
   WindowChangeEventData,
@@ -47,7 +46,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal,
+    (state) => state.setActiveTerminal
   );
 
   const theme = useTheme();
@@ -71,10 +70,10 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         setAgentOpen((v) => !v);
       }
     },
-    [isTerminalActive],
+    [isTerminalActive]
   );
 
-  const { refetch, isError } = useQuery({
+  const { refetch } = useQuery({
     queryKey: [terminal, host],
     queryFn: async () => {
       if (host) {
@@ -119,7 +118,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
 
       return xterm;
     },
-    [theme.palette.background.paper],
+    [theme.palette.background.paper]
   );
 
   useEffect(() => {
@@ -154,7 +153,6 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   useEffect(() => {
     if (!xterm) return;
     let unlistenOutFn: UnlistenFn | undefined;
-
     (async () => {
       unlistenOutFn = await listen<TerminalEvent>(
         terminal,
@@ -182,7 +180,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
               await futureService.stopFuture(terminal);
             }
           }
-        },
+        }
       );
     })();
 
@@ -192,12 +190,6 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
       }
     };
   }, [xterm, terminal, fingerprint, host.id]);
-
-  useEffect(() => {
-    if (isError) {
-      setStatus(StatusType.ConnectionError);
-    }
-  }, [isError]);
 
   const handleReconnect = async () => {
     if (!ref) return;

@@ -26,6 +26,8 @@ pub struct LocalAuth {
     pub password: Option<String>,
     #[serde(serialize_with = "empty_to_null")]
     pub private_key_ref: Option<String>,
+    // #[serde(serialize_with = "empty_to_null")]
+    // pub challenges
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

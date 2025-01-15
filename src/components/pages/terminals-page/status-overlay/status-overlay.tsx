@@ -3,8 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ReplayIcon from "@mui/icons-material/Replay";
 import { Box, Button, ButtonGroup, Typography } from "@mui/material";
 
-import { ERROR_STATUS } from "../terminal-view/constant.ts";
-import { StatusType } from "../terminal-view/interface.ts";
+import { ERROR_STATUS, StatusType } from "../terminal-view/constant.ts";
 
 interface StatusOverlayProps {
   fingerprint: string | null;
