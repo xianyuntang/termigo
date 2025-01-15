@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import DangerousIcon from "@mui/icons-material/Dangerous";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
-import { Box, Button, ButtonGroup, Grid2, TextField } from "@mui/material";
+import { Box, Button, ButtonGroup, TextField } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
@@ -10,6 +10,7 @@ import { z } from "zod";
 import { settingService } from "../../../services";
 import Card from "../../shared/card";
 import { ConfirmDialog } from "../../shared/confirm-dialog";
+import UpdateCard from "./update-card";
 
 const settingsSchema = z.object({
   gptApiKey: z.string(),
@@ -68,34 +69,41 @@ const SettingsPage = () => {
         justifyContent: "space-between",
       }}
     >
-      <Grid2 container>
-        <Grid2>
-          <Card title="GPT">
-            <Controller
-              name="gptApiKey"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  label="Open AI Api Key"
-                  size="small"
-                  {...field}
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                  error={!!errors.gptApiKey}
-                  helperText={errors.gptApiKey?.message}
-                  type="password"
-                />
-              )}
-            />
-          </Card>
-        </Grid2>
-      </Grid2>
-      <ButtonGroup fullWidth>
+      <Box
+        sx={(theme) => ({
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          gap: theme.spacing(1),
+        })}
+      >
+        <UpdateCard />
+        <Card title="GPT" fullWidth>
+          <Controller
+            name="gptApiKey"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                label="Open AI Api Key"
+                size="small"
+                {...field}
+                slotProps={{
+                  input: {
+                    autoCapitalize: "none",
+                    spellCheck: false,
+                    autoComplete: "off",
+                  },
+                }}
+                error={!!errors.gptApiKey}
+                helperText={errors.gptApiKey?.message}
+                type="password"
+              />
+            )}
+          />
+        </Card>
+      </Box>
+
+      <ButtonGroup fullWidth size="small">
         <Button onClick={handleSubmit(onSubmit)} endIcon={<SaveAltIcon />}>
           save
         </Button>

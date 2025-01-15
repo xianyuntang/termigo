@@ -13,12 +13,11 @@ use crate::domain::identity::command::{
 use crate::domain::private_key::command::{
     add_private_key, delete_private_key, list_private_keys, update_private_key,
 };
-use crate::domain::setting::command::{clear_data, get_settings, update_settings};
+use crate::domain::setting::command::{check_update, clear_data, get_settings, update_settings};
 use crate::domain::store::store_manager::StoreManager;
 use crate::infrastructure::app::AppData;
 use domain::host::commands::start_tunnel_stream;
 use domain::store::r#enum::default_settings;
-use infrastructure::updater::update;
 use tauri::Manager;
 use tokio::sync::Mutex;
 
@@ -44,14 +43,6 @@ pub fn run() {
                 store_manager: StoreManager::new(store),
                 future_manager: FutureManager::new(),
             }));
-
-            Ok(())
-        })
-        .setup(|app| {
-            let handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                update(handle).await.unwrap();
-            });
 
             Ok(())
         })
@@ -81,7 +72,9 @@ pub fn run() {
             get_settings,
             clear_data,
             // Future
-            stop_future
+            stop_future,
+            // Update
+            check_update,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
