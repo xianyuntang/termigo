@@ -63,6 +63,7 @@ jobs:
           releaseDraft: false
           prerelease: false
           retryAttempts: 3
+          updaterJsonKeepUniversal: true
           args: ${{ matrix.args }}
   ubuntu:
     permissions:
