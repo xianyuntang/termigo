@@ -14,9 +14,14 @@ jobs:
       matrix:
         include:
           - platform: "macos-latest"
-            args: ""
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-latest"
+            args: "--target x86_64-apple-darwin"
 
     runs-on: ${{ matrix.platform }}
+    env:
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -27,6 +32,8 @@ jobs:
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - name: install frontend dependencies
         run: npm install
@@ -38,7 +45,7 @@ jobs:
           npm version $VERSION --no-git-tag-version
 
       - name: publish
-        uses: tauri-apps/tauri-action@v0.5.18
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -56,8 +63,7 @@ jobs:
           releaseDraft: false
           prerelease: false
           retryAttempts: 3
-          updaterJsonKeepUniversal: true
-          args: ${{ matrix.args }}
+          args: "${{ matrix.args }} --bundles app"
   ubuntu:
     permissions:
       contents: write
