@@ -24,22 +24,13 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["dmg", "appimage", "nsis"],
+    "targets": "all",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "createUpdaterArtifacts": true
-  },
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkzQTFFQjcxRjIzRjU0NwpSV1JIOVNNZnR4NDZDWEV5cHNHMXpiSHladWhDVllJVTlXRm9Fb1BQYkJTMjc3OFNQTnlRcU5mNAo=",
-      "endpoints": [
-        "https://github.com/xianyuntang/termigo/releases/latest/download/latest.json"
-      ]
-    }
+    ]
   }
 }

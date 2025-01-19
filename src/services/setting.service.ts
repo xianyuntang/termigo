@@ -13,10 +13,6 @@ class SettingService {
   clearData() {
     return invoker<OKMessage>("clear_data");
   }
-
-  checkUpdate() {
-    return invoker<OKMessage>("check_update");
-  }
 }
 
 export default new SettingService();
