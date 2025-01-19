@@ -4,7 +4,6 @@ use crate::domain::store::r#enum::StoreKey;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
-use std::time::Duration;
 use tauri;
 use tauri::ipc::Channel;
 use tauri::State;
@@ -85,12 +84,13 @@ pub async fn apply_update(
                         })
                         .unwrap();
                 },
-                || {},
+                || {
+                    on_event.send(DownloadEvent::Finished).unwrap();
+                },
             )
             .await?;
-    }
 
-    on_event.send(DownloadEvent::Finished)?;
-    tokio::time::sleep(Duration::from_secs(3)).await;
-    app.restart();
+        app.restart();
+    }
+    Ok(())
 }

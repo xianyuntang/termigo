@@ -119,14 +119,14 @@ const UpdateCard = () => {
           ></LinearProgress>
         </DialogContent>
         <DialogActions>
-          <ButtonGroup fullWidth>
+          <ButtonGroup fullWidth disabled={!updateInformation?.canUpdate}>
             <Button
               color="error"
               endIcon={<SystemUpdateAltIcon />}
               onClick={handleUpdateClick}
               loading={isDownloading}
             >
-              update & restart
+              update
             </Button>
             <Button
               endIcon={<CloseIcon />}
