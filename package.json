@@ -1,6 +1,6 @@
 {
   "name": "termigo",
-  "version": "0.2.1",
+  "version": "0.1.0",
   "description": "",
   "type": "module",
   "scripts": {
@@ -17,8 +17,8 @@
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.1.0",
     "@hookform/resolvers": "^3.9.1",
-    "@mui/icons-material": "^6.3.0",
-    "@mui/material": "^6.3.0",
+    "@mui/icons-material": "^6.4.0",
+    "@mui/material": "^6.4.0",
     "@react-hook/debounce": "^4.0.0",
     "@react-hook/resize-observer": "^2.0.2",
     "@react-hook/throttle": "^2.2.0",

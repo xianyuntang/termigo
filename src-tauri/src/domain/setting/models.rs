@@ -13,3 +13,11 @@ impl Settings {
         }
     }
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateInformation {
+    pub can_update: bool,
+    pub current_version: Option<String>,
+    pub new_version: Option<String>,
+}

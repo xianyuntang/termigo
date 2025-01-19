@@ -1,9 +1,12 @@
-use crate::domain::setting::models::Settings;
+use crate::domain::setting::event::DownloadEvent;
+use crate::domain::setting::models::{Settings, UpdateInformation};
 use crate::domain::store::r#enum::StoreKey;
 use crate::infrastructure::app::AppData;
 use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
+use std::time::Duration;
 use tauri;
+use tauri::ipc::Channel;
 use tauri::State;
 use tauri_plugin_updater::UpdaterExt;
 use tokio::sync::Mutex;
@@ -46,11 +49,48 @@ pub async fn clear_data(state: State<'_, Mutex<AppData>>) -> Result<Response, Ap
 }
 
 #[tauri::command]
-pub async fn check_update(app: tauri::AppHandle) -> Result<(), ApiError> {
+pub async fn check_update(app: tauri::AppHandle) -> Result<Response, ApiError> {
+    log::debug!("check_update called");
     if let Some(update) = app.updater()?.check().await? {
-        println!("{:#?}", update.download_url);
+        Ok(Response::from_data(UpdateInformation {
+            can_update: true,
+            current_version: Some(update.current_version),
+            new_version: Some(update.version),
+        }))
     } else {
-        println!("No update available");
+        Ok(Response::from_data(UpdateInformation {
+            can_update: false,
+            current_version: None,
+            new_version: None,
+        }))
     }
-    Ok(())
+}
+
+#[tauri::command]
+pub async fn apply_update(
+    app: tauri::AppHandle,
+    on_event: Channel<DownloadEvent>,
+) -> Result<(), ApiError> {
+    log::debug!("apply_update called");
+    if let Some(update) = app.updater()?.check().await? {
+        let mut downloaded_length = 0;
+        update
+            .download_and_install(
+                |chunk_length, content_length| {
+                    downloaded_length += chunk_length;
+                    on_event
+                        .send(DownloadEvent::Progress {
+                            downloaded_length,
+                            content_length,
+                        })
+                        .unwrap();
+                },
+                || {},
+            )
+            .await?;
+    }
+
+    on_event.send(DownloadEvent::Finished)?;
+    tokio::time::sleep(Duration::from_secs(3)).await;
+    app.restart();
 }

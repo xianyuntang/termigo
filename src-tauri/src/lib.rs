@@ -13,7 +13,9 @@ use crate::domain::identity::command::{
 use crate::domain::private_key::command::{
     add_private_key, delete_private_key, list_private_keys, update_private_key,
 };
-use crate::domain::setting::command::{check_update, clear_data, get_settings, update_settings};
+use crate::domain::setting::command::{
+    apply_update, check_update, clear_data, get_settings, update_settings,
+};
 use crate::domain::store::store_manager::StoreManager;
 use crate::infrastructure::app::AppData;
 use domain::host::commands::start_tunnel_stream;
@@ -75,6 +77,7 @@ pub fn run() {
             stop_future,
             // Update
             check_update,
+            apply_update,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
