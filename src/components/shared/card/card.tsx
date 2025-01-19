@@ -1,24 +1,39 @@
-import { Card as MuiCard, CardContent, CardHeader } from "@mui/material";
+import {
+  Card as MuiCard,
+  CardActions,
+  CardContent,
+  CardHeader,
+} from "@mui/material";
 import { ReactNode } from "react";
 
 interface SidebarCardProps {
   title: string;
-  children: ReactNode;
+  fullWidth?: boolean;
+  children?: ReactNode;
+  actions?: ReactNode;
 }
 
-const Card = ({ title, children }: SidebarCardProps) => {
+const Card = ({ title, fullWidth, children, actions }: SidebarCardProps) => {
   return (
-    <MuiCard sx={{ width: "20rem" }}>
+    <MuiCard sx={{ width: fullWidth ? "100%" : "20em" }}>
       <CardHeader title={title} />
-      <CardContent
-        sx={(theme) => ({
-          display: "flex",
-          flexDirection: "column",
-          gap: theme.spacing(2),
-        })}
-      >
-        {children}
-      </CardContent>
+      {children && (
+        <CardContent
+          sx={(theme) => ({
+            display: "flex",
+            flexDirection: "column",
+            gap: theme.spacing(2),
+          })}
+        >
+          {children}
+        </CardContent>
+      )}
+
+      {actions && (
+        <CardActions sx={(theme) => ({ padding: theme.spacing(2) })}>
+          {actions}
+        </CardActions>
+      )}
     </MuiCard>
   );
 };

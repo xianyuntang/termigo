@@ -5,6 +5,7 @@ use crate::infrastructure::error::ApiError;
 use crate::infrastructure::response::Response;
 use tauri;
 use tauri::State;
+use tauri_plugin_updater::UpdaterExt;
 use tokio::sync::Mutex;
 
 #[tauri::command]
@@ -42,4 +43,14 @@ pub async fn clear_data(state: State<'_, Mutex<AppData>>) -> Result<Response, Ap
     store_manager.clear_data();
 
     Ok(Response::new_ok_message())
+}
+
+#[tauri::command]
+pub async fn check_update(app: tauri::AppHandle) -> Result<(), ApiError> {
+    if let Some(update) = app.updater()?.check().await? {
+        println!("{:#?}", update.download_url);
+    } else {
+        println!("No update available");
+    }
+    Ok(())
 }
