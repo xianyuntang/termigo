@@ -9,6 +9,9 @@ pub enum ApiError {
     Tauri(#[from] tauri::Error),
 
     #[error(transparent)]
+    TauriPluginUpdater(#[from] tauri_plugin_updater::Error),
+
+    #[error(transparent)]
     Boxed(#[from] Box<dyn std::error::Error + Send + Sync>),
 
     #[error(transparent)]
@@ -30,7 +33,7 @@ pub enum ApiError {
     RusshKey(#[from] russh::keys::Error),
 
     #[error(transparent)]
-    OpenAi(#[from] OpenAIError),
+    OpenAI(#[from] OpenAIError),
 
     #[error("The specified {item} was not found.")]
     NotFound { item: String },

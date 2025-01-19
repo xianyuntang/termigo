@@ -13,7 +13,9 @@ use crate::domain::identity::command::{
 use crate::domain::private_key::command::{
     add_private_key, delete_private_key, list_private_keys, update_private_key,
 };
-use crate::domain::setting::command::{clear_data, get_settings, update_settings};
+use crate::domain::setting::command::{
+    apply_update, check_update, clear_data, get_settings, update_settings,
+};
 use crate::domain::store::store_manager::StoreManager;
 use crate::infrastructure::app::AppData;
 use domain::host::commands::start_tunnel_stream;
@@ -24,6 +26,7 @@ use tokio::sync::Mutex;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(
@@ -71,7 +74,10 @@ pub fn run() {
             get_settings,
             clear_data,
             // Future
-            stop_future
+            stop_future,
+            // Update
+            check_update,
+            apply_update,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

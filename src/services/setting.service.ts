@@ -1,5 +1,7 @@
+import { Channel } from "@tauri-apps/api/core";
+
 import { invoker } from "../core";
-import { OKMessage } from "../interfaces";
+import { DownloadEvent, OKMessage, UpdateInformation } from "../interfaces";
 
 class SettingService {
   getSettings() {
@@ -12,6 +14,14 @@ class SettingService {
 
   clearData() {
     return invoker<OKMessage>("clear_data");
+  }
+
+  checkUpdate() {
+    return invoker<UpdateInformation>("check_update");
+  }
+
+  applyUpdate(event: string, onEvent: Channel<DownloadEvent>) {
+    return invoker<OKMessage>("apply_update", { event, onEvent });
   }
 }
 
