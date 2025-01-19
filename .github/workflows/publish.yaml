@@ -1,9 +1,10 @@
-name: "publish"
+name: 'publish'
 
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
+
 
 jobs:
   macos:
@@ -13,12 +14,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-latest"
-            args: "--target aarch64-apple-darwin"
-          - platform: "macos-latest"
-            args: "--target x86_64-apple-darwin"
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
 
     runs-on: ${{ matrix.platform }}
+    env:
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,16 +55,13 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v__VERSION__ #
-          releaseName: "Termigo v__VERSION__"
-          releaseBody: "See the assets to download this version and install."
+          releaseName: 'Termigo v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: false
-          retryAttempts: 3
-          args: "${{ matrix.args }} --bundles app"
+          args: ${{ matrix.args }}
   ubuntu:
     permissions:
       contents: write
@@ -68,8 +69,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "ubuntu-22.04"
-            args: ""
+          - platform: 'ubuntu-22.04'
+            args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -101,15 +102,12 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v__VERSION__ #
-          releaseName: "Termigo v__VERSION__"
-          releaseBody: "See the assets to download this version and install."
+          releaseName: 'Termigo v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: false
-          retryAttempts: 3
           args: ${{ matrix.args }}
   windows:
     permissions:
@@ -118,8 +116,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "windows-latest"
-            args: ""
+          - platform: 'windows-latest'
+            args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -146,14 +144,10 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v__VERSION__ #
-          releaseName: "Termigo v__VERSION__"
-          releaseBody: "See the assets to download this version and install."
+          releaseName: 'Termigo v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: false
-          updaterJsonPreferNsis: true
-          retryAttempts: 3
           args: ${{ matrix.args }}
