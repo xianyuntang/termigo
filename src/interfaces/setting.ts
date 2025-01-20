@@ -1,6 +1,6 @@
 export interface UpdateInformation {
   canUpdate: boolean;
-  newVersion: string;
+  newVersion?: string;
   currentVersion: string;
 }
 

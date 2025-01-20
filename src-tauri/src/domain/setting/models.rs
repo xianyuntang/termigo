@@ -18,6 +18,6 @@ impl Settings {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateInformation {
     pub can_update: bool,
-    pub current_version: Option<String>,
+    pub current_version: String,
     pub new_version: Option<String>,
 }
