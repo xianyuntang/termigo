@@ -19,5 +19,5 @@ impl Settings {
 pub struct UpdateInformation {
     pub can_update: bool,
     pub current_version: String,
-    pub new_version: Option<String>,
+    pub latest_version: String,
 }

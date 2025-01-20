@@ -54,13 +54,13 @@ pub async fn check_update(app: tauri::AppHandle) -> Result<Response, ApiError> {
         Ok(Response::from_data(UpdateInformation {
             can_update: true,
             current_version: app.package_info().version.to_string(),
-            new_version: Some(update.version),
+            latest_version: update.version,
         }))
     } else {
         Ok(Response::from_data(UpdateInformation {
             can_update: false,
             current_version: app.package_info().version.to_string(),
-            new_version: None,
+            latest_version: app.package_info().version.to_string(),
         }))
     }
 }
