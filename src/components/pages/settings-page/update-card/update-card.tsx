@@ -40,12 +40,12 @@ const UpdateCard = () => {
     setLoading(true);
     const response = await settingService.checkUpdate();
     setUpdateInformation(response);
+
     setDialogOpen(true);
     setLoading(false);
   };
 
   const handleUpdateClick = async () => {
-    setDownloadProgress(1);
     const event = nanoid();
     const onEvent = new Channel<DownloadEvent>();
     onEvent.onmessage = (evt) => {
@@ -119,12 +119,13 @@ const UpdateCard = () => {
           ></LinearProgress>
         </DialogContent>
         <DialogActions>
-          <ButtonGroup fullWidth disabled={!updateInformation?.canUpdate}>
+          <ButtonGroup fullWidth>
             <Button
               color="error"
               endIcon={<SystemUpdateAltIcon />}
               onClick={handleUpdateClick}
               loading={isDownloading}
+              disabled={!updateInformation?.canUpdate}
             >
               update
             </Button>
