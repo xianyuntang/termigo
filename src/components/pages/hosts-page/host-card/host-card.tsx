@@ -1,14 +1,20 @@
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import EditIcon from "@mui/icons-material/Edit";
-import TerminalIcon from "@mui/icons-material/Terminal";
+import { ArrowRight, Edit, Terminal } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  Badge,
   Card,
-  CardActions,
+  CardContent,
+  CardFooter,
   CardHeader,
-  IconButton,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Tooltip,
-} from "@mui/material";
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { Host } from "../../../../interfaces";
 
@@ -46,27 +52,61 @@ const HostCard = ({
   };
 
   return (
-    <Card sx={{ width: "15rem" }}>
-      <CardHeader title={host.label} />
-      <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
-        <Tooltip title="Edit">
-          <IconButton onClick={handleEditClick}>
-            <EditIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Port Forward">
-          <Badge badgeContent={portforwardCount}>
-            <IconButton onClick={handleTunnelClick}>
-              <ArrowForwardIcon />
-            </IconButton>
-          </Badge>
-        </Tooltip>
-        <Tooltip title="Connect">
-          <IconButton onClick={handleConnectClick}>
-            <TerminalIcon />
-          </IconButton>
-        </Tooltip>
-      </CardActions>
+    <Card className="w-60">
+      <CardHeader>
+        <CardTitle>{host.label || host.address}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">
+          {host.address}:{host.port}
+        </p>
+      </CardContent>
+      <CardFooter className="justify-end gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={handleEditClick}>
+                <Edit className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Edit</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="relative">
+                <Button variant="ghost" size="icon" onClick={handleTunnelClick}>
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+                {portforwardCount ? (
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center"
+                  >
+                    {portforwardCount}
+                  </Badge>
+                ) : null}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Port Forward</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={handleConnectClick}>
+                <Terminal className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Connect</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </CardFooter>
     </Card>
   );
 };

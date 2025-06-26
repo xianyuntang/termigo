@@ -1,21 +1,27 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import CheckIcon from "@mui/icons-material/Check";
-import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Drawer,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
+import { Check, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 import { Identity } from "../../../../interfaces";
 import { privateKeyService } from "../../../../services";
@@ -99,137 +105,126 @@ export const Sidebar = ({
   };
 
   return (
-    <Drawer
-      open={isOpen}
-      onClose={handleClose}
-      anchor="right"
-      PaperProps={{
-        sx: {
-          width: "22rem",
-        },
-      }}
-    >
-      <Box
-        sx={(theme) => ({
-          padding: theme.spacing(2),
-          display: "flex",
-          flexDirection: "column",
-          gap: theme.spacing(2),
-        })}
-      >
-        <Card title="General">
-          <Controller
-            name="label"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth>
-                <TextField
-                  {...field}
-                  label="Label"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                  error={!!errors.label}
-                  helperText={errors.label?.message}
-                />
-              </FormControl>
-            )}
-          />
-        </Card>
+    <Sheet open={isOpen} onOpenChange={handleClose}>
+      <SheetContent className="w-[352px] sm:w-[352px]">
+        <SheetHeader>
+          <SheetTitle>{identity ? "Edit Identity" : "New Identity"}</SheetTitle>
+        </SheetHeader>
 
-        <Card title="Key Information">
-          <Controller
-            name="username"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth>
-                <TextField
-                  {...field}
-                  label="Username"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                  error={!!errors.username}
-                  helperText={errors.username?.message}
-                />
-              </FormControl>
-            )}
-          />
-          <Controller
-            name="password"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth>
-                <TextField
-                  {...field}
-                  label="Password"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                />
-              </FormControl>
-            )}
-          />
+        <div className="mt-6 space-y-4">
+          <Card title="General">
+            <Controller
+              name="label"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="label">Label</Label>
+                  <Input
+                    id="label"
+                    {...field}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoComplete="off"
+                    className={cn(errors.label && "border-destructive")}
+                  />
+                  {errors.label && (
+                    <p className="text-sm text-destructive">
+                      {errors.label.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+          </Card>
 
-          <Controller
-            name="privateKeyRef"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth size="small">
-                <InputLabel id="private-key-ref-select">
-                  Private Key Ref
-                </InputLabel>
-                <Select
-                  labelId="private-key-ref-select"
-                  label="Private Key Ref"
-                  {...field}
-                >
-                  <MenuItem value="">None</MenuItem>
-                  {privateKeys?.map((privateKey) => (
-                    <MenuItem key={privateKey.id} value={privateKey.id}>
-                      {privateKey.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-          />
-        </Card>
+          <Card title="Key Information">
+            <Controller
+              name="username"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    {...field}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoComplete="off"
+                    className={cn(errors.username && "border-destructive")}
+                  />
+                  {errors.username && (
+                    <p className="text-sm text-destructive">
+                      {errors.username.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    {...field}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoComplete="off"
+                  />
+                </div>
+              )}
+            />
 
-        <ButtonGroup
-          fullWidth
-          size="small"
-          sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
-        >
-          <Button
-            endIcon={<DeleteIcon />}
-            color="error"
-            disabled={!id}
-            onClick={handleDelete}
-          >
-            delete
-          </Button>
-          <Button endIcon={<CheckIcon />} onClick={handleSubmit(onSubmit)}>
-            save
-          </Button>
-        </ButtonGroup>
-      </Box>
-    </Drawer>
+            <Controller
+              name="privateKeyRef"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="privateKeyRef">Private Key Ref</Label>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="privateKeyRef">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {privateKeys?.map((privateKey) => (
+                        <SelectItem key={privateKey.id} value={privateKey.id}>
+                          {privateKey.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            />
+          </Card>
+
+          <div className="flex gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="flex-1"
+              disabled={!watch("id")}
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={handleSubmit(onSubmit)}
+            >
+              <Check className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 

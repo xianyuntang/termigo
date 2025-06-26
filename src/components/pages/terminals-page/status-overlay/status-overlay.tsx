@@ -1,7 +1,6 @@
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
-import ReplayIcon from "@mui/icons-material/Replay";
-import { Box, Button, ButtonGroup, Typography } from "@mui/material";
+import { Plus, RefreshCw, X } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 import { ERROR_STATUS, StatusType } from "../terminal-view/constant.ts";
 
@@ -36,65 +35,61 @@ const StatusOverlay = ({
     }
   };
   return (
-    <Box
-      sx={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        display: open ? "flex" : "none",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
-      }}
+    <div
+      className={`relative w-full h-full ${open ? "flex" : "hidden"} justify-center items-center flex-col`}
     >
-      <Box sx={{ top: "35%", position: "absolute" }}>
+      <div className="absolute top-[35%]">
         {status === StatusType.NewPublicKeyFound ? (
-          <Typography>New fingerprint found!!</Typography>
+          <p className="text-lg">New fingerprint found!!</p>
         ) : (
-          <Typography>{status}</Typography>
+          <p className="text-lg">{status}</p>
         )}
-      </Box>
-      <Box sx={{ width: "50%" }}>
+      </div>
+      <div className="w-1/2">
         {status === StatusType.NewPublicKeyFound && (
-          <Typography sx={{ wordBreak: "break-all" }}>{fingerprint}</Typography>
+          <p className="break-all font-mono text-sm">{fingerprint}</p>
         )}
-      </Box>
+      </div>
 
-      <Box sx={(theme) => ({ marginTop: theme.spacing(2), width: "50%" })}>
+      <div className="mt-4 w-1/2">
         {status === StatusType.NewPublicKeyFound && (
-          <ButtonGroup fullWidth>
+          <div className="flex gap-2 w-full">
             <Button
-              color="error"
-              endIcon={<CloseIcon />}
+              variant="destructive"
+              className="flex-1"
               onClick={() => handlePublicKeyConfirm(false)}
             >
-              decline
+              <X className="w-4 h-4 mr-2" />
+              Decline
             </Button>
             <Button
-              endIcon={<AddIcon />}
+              className="flex-1"
               onClick={() => handlePublicKeyConfirm(true)}
             >
-              accept
+              <Plus className="w-4 h-4 mr-2" />
+              Accept
             </Button>
-          </ButtonGroup>
+          </div>
         )}
 
         {ERROR_STATUS.includes(status) && (
-          <ButtonGroup fullWidth>
+          <div className="flex gap-2 w-full">
             <Button
-              color="error"
-              endIcon={<CloseIcon />}
+              variant="destructive"
+              className="flex-1"
               onClick={handleCloseClick}
             >
-              close
+              <X className="w-4 h-4 mr-2" />
+              Close
             </Button>
-            <Button endIcon={<ReplayIcon />} onClick={handleReconnectClick}>
-              retry
+            <Button className="flex-1" onClick={handleReconnectClick}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
             </Button>
-          </ButtonGroup>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 

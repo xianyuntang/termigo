@@ -51,7 +51,7 @@ const UpdateCard = () => {
     onEvent.onmessage = (evt) => {
       if (isDownloadProgressEvent(evt)) {
         setDownloadProgress(
-          (evt.data.downloadedLength / evt.data.contentLength) * 100
+          (evt.data.downloadedLength / evt.data.contentLength) * 100,
         );
       }
     };
@@ -101,7 +101,9 @@ const UpdateCard = () => {
             <TableBody>
               <TableRow>
                 <TableCell className="font-bold">New Version</TableCell>
-                <TableCell>{updateInformation?.newVersion || "N/A"}</TableCell>
+                <TableCell>
+                  {updateInformation?.latestVersion || "N/A"}
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-bold">Current Version</TableCell>

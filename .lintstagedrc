@@ -1,8 +1,4 @@
 {
-  "**/*.{js,jsx,ts,tsx}": [
-    "eslint"
-  ],
-  "**/*.{json,md,html}": [
-    "prettier --check"
-  ]
+  "**/*.{js,jsx,ts,tsx}": ["eslint"],
+  "**/*.{json,md,html}": ["prettier --check"]
 }

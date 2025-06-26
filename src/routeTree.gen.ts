@@ -10,111 +10,111 @@
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as SettingsIndexImport } from './routes/settings/index'
-import { Route as PrivateKeysIndexImport } from './routes/private-keys/index'
-import { Route as IdentitiesIndexImport } from './routes/identities/index'
-import { Route as HostsIndexImport } from './routes/hosts/index'
+import { Route as rootRoute } from "./routes/__root";
+import { Route as SettingsIndexImport } from "./routes/settings/index";
+import { Route as PrivateKeysIndexImport } from "./routes/private-keys/index";
+import { Route as IdentitiesIndexImport } from "./routes/identities/index";
+import { Route as HostsIndexImport } from "./routes/hosts/index";
 
 // Create/Update Routes
 
 const SettingsIndexRoute = SettingsIndexImport.update({
-  id: '/settings/',
-  path: '/settings/',
+  id: "/settings/",
+  path: "/settings/",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const PrivateKeysIndexRoute = PrivateKeysIndexImport.update({
-  id: '/private-keys/',
-  path: '/private-keys/',
+  id: "/private-keys/",
+  path: "/private-keys/",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const IdentitiesIndexRoute = IdentitiesIndexImport.update({
-  id: '/identities/',
-  path: '/identities/',
+  id: "/identities/",
+  path: "/identities/",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const HostsIndexRoute = HostsIndexImport.update({
-  id: '/hosts/',
-  path: '/hosts/',
+  id: "/hosts/",
+  path: "/hosts/",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 // Populate the FileRoutesByPath interface
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/hosts/': {
-      id: '/hosts/'
-      path: '/hosts'
-      fullPath: '/hosts'
-      preLoaderRoute: typeof HostsIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/identities/': {
-      id: '/identities/'
-      path: '/identities'
-      fullPath: '/identities'
-      preLoaderRoute: typeof IdentitiesIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/private-keys/': {
-      id: '/private-keys/'
-      path: '/private-keys'
-      fullPath: '/private-keys'
-      preLoaderRoute: typeof PrivateKeysIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/settings/': {
-      id: '/settings/'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsIndexImport
-      parentRoute: typeof rootRoute
-    }
+    "/hosts/": {
+      id: "/hosts/";
+      path: "/hosts";
+      fullPath: "/hosts";
+      preLoaderRoute: typeof HostsIndexImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/identities/": {
+      id: "/identities/";
+      path: "/identities";
+      fullPath: "/identities";
+      preLoaderRoute: typeof IdentitiesIndexImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/private-keys/": {
+      id: "/private-keys/";
+      path: "/private-keys";
+      fullPath: "/private-keys";
+      preLoaderRoute: typeof PrivateKeysIndexImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/settings/": {
+      id: "/settings/";
+      path: "/settings";
+      fullPath: "/settings";
+      preLoaderRoute: typeof SettingsIndexImport;
+      parentRoute: typeof rootRoute;
+    };
   }
 }
 
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/hosts': typeof HostsIndexRoute
-  '/identities': typeof IdentitiesIndexRoute
-  '/private-keys': typeof PrivateKeysIndexRoute
-  '/settings': typeof SettingsIndexRoute
+  "/hosts": typeof HostsIndexRoute;
+  "/identities": typeof IdentitiesIndexRoute;
+  "/private-keys": typeof PrivateKeysIndexRoute;
+  "/settings": typeof SettingsIndexRoute;
 }
 
 export interface FileRoutesByTo {
-  '/hosts': typeof HostsIndexRoute
-  '/identities': typeof IdentitiesIndexRoute
-  '/private-keys': typeof PrivateKeysIndexRoute
-  '/settings': typeof SettingsIndexRoute
+  "/hosts": typeof HostsIndexRoute;
+  "/identities": typeof IdentitiesIndexRoute;
+  "/private-keys": typeof PrivateKeysIndexRoute;
+  "/settings": typeof SettingsIndexRoute;
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/hosts/': typeof HostsIndexRoute
-  '/identities/': typeof IdentitiesIndexRoute
-  '/private-keys/': typeof PrivateKeysIndexRoute
-  '/settings/': typeof SettingsIndexRoute
+  __root__: typeof rootRoute;
+  "/hosts/": typeof HostsIndexRoute;
+  "/identities/": typeof IdentitiesIndexRoute;
+  "/private-keys/": typeof PrivateKeysIndexRoute;
+  "/settings/": typeof SettingsIndexRoute;
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/hosts' | '/identities' | '/private-keys' | '/settings'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/hosts' | '/identities' | '/private-keys' | '/settings'
-  id: '__root__' | '/hosts/' | '/identities/' | '/private-keys/' | '/settings/'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: "/hosts" | "/identities" | "/private-keys" | "/settings";
+  fileRoutesByTo: FileRoutesByTo;
+  to: "/hosts" | "/identities" | "/private-keys" | "/settings";
+  id: "__root__" | "/hosts/" | "/identities/" | "/private-keys/" | "/settings/";
+  fileRoutesById: FileRoutesById;
 }
 
 export interface RootRouteChildren {
-  HostsIndexRoute: typeof HostsIndexRoute
-  IdentitiesIndexRoute: typeof IdentitiesIndexRoute
-  PrivateKeysIndexRoute: typeof PrivateKeysIndexRoute
-  SettingsIndexRoute: typeof SettingsIndexRoute
+  HostsIndexRoute: typeof HostsIndexRoute;
+  IdentitiesIndexRoute: typeof IdentitiesIndexRoute;
+  PrivateKeysIndexRoute: typeof PrivateKeysIndexRoute;
+  SettingsIndexRoute: typeof SettingsIndexRoute;
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -122,11 +122,11 @@ const rootRouteChildren: RootRouteChildren = {
   IdentitiesIndexRoute: IdentitiesIndexRoute,
   PrivateKeysIndexRoute: PrivateKeysIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,
-}
+};
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
 /* ROUTE_MANIFEST_START
 {

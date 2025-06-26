@@ -1,14 +1,12 @@
-import { AppBar, Toolbar } from "@mui/material";
-
 import TerminalShortcuts from "./terminal-shortcuts";
 
 const AppNavbar = () => {
   return (
-    <AppBar position="sticky">
-      <Toolbar variant="dense" sx={(theme) => ({ paddingX: theme.spacing(1) })}>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="flex h-12 items-center px-2">
         <TerminalShortcuts />
-      </Toolbar>
-    </AppBar>
+      </nav>
+    </header>
   );
 };
 

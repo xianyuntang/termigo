@@ -2,8 +2,7 @@ import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { useEffect } from "react";
 
-import { Toaster } from "@/components/ui/toaster";
-import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 import AppNavbar from "../components/app-navbar";
 import TerminalsPage from "../components/pages/terminals-page";
@@ -32,18 +31,16 @@ function RouteComponent() {
           <AppNavbar />
           <main className="flex-1 p-4 min-h-0">
             <div
-              className={cn(
-                "flex-1 overflow-hidden h-full",
+              className={`flex-1 overflow-hidden h-full ${
                 activeTerminal ? "block" : "hidden"
-              )}
+              }`}
             >
               <TerminalsPage />
             </div>
             <div
-              className={cn(
-                "flex-1 overflow-auto h-full",
+              className={`flex-1 overflow-auto h-full ${
                 activeTerminal ? "hidden" : "block"
-              )}
+              }`}
             >
               <Outlet />
             </div>
