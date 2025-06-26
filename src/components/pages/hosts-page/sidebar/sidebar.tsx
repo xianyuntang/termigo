@@ -249,7 +249,7 @@ export const Sidebar = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {identities?.map((identity) => (
                           <SelectItem key={identity.id} value={identity.id}>
                             {identity.label || identity.username}
@@ -316,7 +316,7 @@ export const Sidebar = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {privateKeys?.map((privateKey) => (
                             <SelectItem
                               key={privateKey.id}

@@ -189,7 +189,7 @@ export const Sidebar = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {privateKeys?.map((privateKey) => (
                         <SelectItem key={privateKey.id} value={privateKey.id}>
                           {privateKey.label}
