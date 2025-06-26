@@ -94,14 +94,15 @@ export const Sidebar = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
-      <SheetContent className="w-[352px] sm:w-[352px] bg-background border-l border-border">
-        <SheetHeader>
+      <SheetContent className="w-[352px] sm:w-[352px] bg-background border-l border-border p-0 flex flex-col">
+        <SheetHeader className="px-6 pt-6">
           <SheetTitle>
             {privateKey ? "Edit Private Key" : "New Private Key"}
           </SheetTitle>
         </SheetHeader>
 
-        <div className="mt-6 space-y-4">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-4">
           <Card title="General">
             <Controller
               name="label"
@@ -178,6 +179,7 @@ export const Sidebar = ({
               <Check className="w-4 h-4 mr-2" />
               Save
             </Button>
+          </div>
           </div>
         </div>
       </SheetContent>

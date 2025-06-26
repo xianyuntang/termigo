@@ -25,8 +25,12 @@ const TerminalShortcuts = () => {
     event.preventDefault();
 
     await futureService.stopFuture(terminal);
-    setActiveTerminal(null);
     removeTerminal(terminal);
+    
+    // If we're closing the active terminal, clear the active terminal
+    if (activeTerminal === terminal) {
+      setActiveTerminal(null);
+    }
   };
 
   return (
@@ -45,10 +49,13 @@ const TerminalShortcuts = () => {
             <span className="mr-2">
               {hostMapper[terminal]?.label || hostMapper[terminal]?.address}
             </span>
-            <X
-              className="h-3 w-3 opacity-0 transition-opacity hover:bg-accent rounded-sm group-hover:opacity-100"
+            <button
+              className="h-4 w-4 p-0.5 opacity-0 transition-opacity hover:bg-accent rounded-sm group-hover:opacity-100"
               onClick={(evt) => handleCloseClick(evt, terminal)}
-            />
+              type="button"
+            >
+              <X className="h-3 w-3" />
+            </button>
           </Button>
         </div>
       ))}

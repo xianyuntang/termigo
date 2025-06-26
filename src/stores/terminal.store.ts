@@ -32,6 +32,7 @@ const useTerminalStore = create<TerminalState>()(
           state.openedTerminals.findIndex((t) => t === terminal),
           1,
         );
+        delete state.hostMapper[terminal];
       });
     },
   })),
