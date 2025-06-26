@@ -1,24 +1,19 @@
-import CloseIcon from "@mui/icons-material/Close";
-import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
-import UpdateIcon from "@mui/icons-material/Update";
-import {
-  Button,
-  ButtonGroup,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  LinearProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  Typography,
-} from "@mui/material";
 import { Channel } from "@tauri-apps/api/core";
 import { error } from "@tauri-apps/plugin-log";
+import { RefreshCw, Upload, X } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 
 import {
   DownloadEvent,
@@ -56,7 +51,7 @@ const UpdateCard = () => {
     onEvent.onmessage = (evt) => {
       if (isDownloadProgressEvent(evt)) {
         setDownloadProgress(
-          (evt.data.downloadedLength / evt.data.contentLength) * 100,
+          (evt.data.downloadedLength / evt.data.contentLength) * 100
         );
       }
     };
@@ -83,77 +78,68 @@ const UpdateCard = () => {
         title="Update"
         fullWidth
         actions={
-          <ButtonGroup fullWidth size="small">
-            <Button
-              endIcon={<UpdateIcon />}
-              loadingPosition="start"
-              loading={loading}
-              onClick={handleCheckClick}
-            >
-              check
-            </Button>
-          </ButtonGroup>
+          <Button
+            size="sm"
+            onClick={handleCheckClick}
+            disabled={loading}
+            className="w-full"
+          >
+            {loading && <RefreshCw className="w-4 h-4 mr-2 animate-spin" />}
+            {!loading && <RefreshCw className="w-4 h-4 mr-2" />}
+            Check
+          </Button>
         }
-      ></Card>
-      <Dialog open={dialogOpen}>
-        <DialogTitle>Update available</DialogTitle>
+      />
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update available</DialogTitle>
+          </DialogHeader>
+
           <Table>
             <TableBody>
               <TableRow>
-                <TableCell>
-                  <Typography variant="body1" fontWeight="bold">
-                    New Version
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body1">
-                    {updateInformation?.newVersion || "N/A"}
-                  </Typography>
-                </TableCell>
+                <TableCell className="font-bold">New Version</TableCell>
+                <TableCell>{updateInformation?.newVersion || "N/A"}</TableCell>
               </TableRow>
               <TableRow>
+                <TableCell className="font-bold">Current Version</TableCell>
                 <TableCell>
-                  <Typography variant="body1" fontWeight="bold">
-                    Current Version
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body1">
-                    {updateInformation?.currentVersion || "N/A"}
-                  </Typography>
+                  {updateInformation?.currentVersion || "N/A"}
                 </TableCell>
               </TableRow>
             </TableBody>
           </Table>
+
           {isDownloading && (
-            <LinearProgress
-              variant="determinate"
-              value={downloadProgress}
-            ></LinearProgress>
+            <Progress value={downloadProgress} className="mt-4" />
           )}
-        </DialogContent>
-        <DialogActions>
-          <ButtonGroup fullWidth>
+
+          <DialogFooter className="gap-2">
             <Button
-              color="error"
-              endIcon={<SystemUpdateAltIcon />}
+              variant="destructive"
               onClick={handleUpdateClick}
-              loading={isDownloading}
-              disabled={!updateInformation?.canUpdate}
+              disabled={isDownloading || !updateInformation?.canUpdate}
             >
-              update
+              {isDownloading && (
+                <Upload className="w-4 h-4 mr-2 animate-pulse" />
+              )}
+              {!isDownloading && <Upload className="w-4 h-4 mr-2" />}
+              Update
             </Button>
             <Button
-              endIcon={<CloseIcon />}
+              variant="outline"
               onClick={handleCancelClick}
-              loading={isDownloading}
+              disabled={isDownloading}
             >
-              cancel
+              <X className="w-4 h-4 mr-2" />
+              Cancel
             </Button>
-          </ButtonGroup>
-        </DialogActions>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
+
       <UpdateFailedNotification
         open={notificationOpen}
         onClose={handleNotificationClose}

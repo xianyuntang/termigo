@@ -1,33 +1,14 @@
-import {
-  Box,
-  createTheme,
-  CssBaseline,
-  GlobalStyles,
-  ThemeProvider,
-} from "@mui/material";
 import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { useEffect } from "react";
+
+import { Toaster } from "@/components/ui/toaster";
+import { cn } from "@/lib/utils";
 
 import AppNavbar from "../components/app-navbar";
 import TerminalsPage from "../components/pages/terminals-page";
 import SideMenu from "../components/side-menu";
 import { useTerminalStore } from "../stores";
-
-const theme = createTheme({
-  palette: {
-    mode: "dark",
-  },
-  components: {
-    MuiCardHeader: {
-      styleOverrides: {
-        root: {
-          cursor: "default",
-        },
-      },
-    },
-  },
-});
 
 export const Route = createRootRoute({
   component: RouteComponent,
@@ -43,62 +24,35 @@ function RouteComponent() {
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
 
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        <CssBaseline enableColorScheme />
-        <GlobalStyles
-          styles={{
-            "*": {
-              userSelect: "none",
-            },
-          }}
-        />
-        <Box sx={{ display: "flex", height: "100vh" }}>
-          <SideMenu />
+    <div className="dark select-none">
+      <div className="flex h-screen bg-background text-foreground">
+        <SideMenu />
 
-          <Box
-            sx={{
-              display: "flex",
-              flexGrow: 1,
-              flexDirection: "column",
-              overflow: "hidden",
-            }}
-          >
-            <AppNavbar />
-            <Box
-              component="main"
-              sx={(theme) => ({
-                flexGrow: 1,
-                padding: theme.spacing(2),
-                minHeight: 0,
-              })}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <AppNavbar />
+          <main className="flex-1 p-4 min-h-0">
+            <div
+              className={cn(
+                "flex-1 overflow-hidden h-full",
+                activeTerminal ? "block" : "hidden"
+              )}
             >
-              <Box
-                sx={{
-                  flex: 1,
-                  overflow: "hidden",
-                  display: activeTerminal ? "block" : "none",
-                  height: "100%",
-                }}
-              >
-                <TerminalsPage />
-              </Box>
-              <Box
-                sx={{
-                  flex: 1,
-                  overflow: "auto",
-                  display: activeTerminal ? "none" : "block",
-                  height: "100%",
-                }}
-              >
-                <Outlet />
-              </Box>
-            </Box>
-          </Box>
+              <TerminalsPage />
+            </div>
+            <div
+              className={cn(
+                "flex-1 overflow-auto h-full",
+                activeTerminal ? "hidden" : "block"
+              )}
+            >
+              <Outlet />
+            </div>
+          </main>
+        </div>
 
-          {!import.meta.env.PROD && <TanStackRouterDevtools />}
-        </Box>
-      </ThemeProvider>
-    </>
+        {!import.meta.env.PROD && <TanStackRouterDevtools />}
+      </div>
+      <Toaster />
+    </div>
   );
 }
