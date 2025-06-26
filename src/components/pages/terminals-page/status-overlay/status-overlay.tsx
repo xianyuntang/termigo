@@ -10,7 +10,7 @@ interface StatusOverlayProps {
   status: StatusType;
   onReconnect: () => void;
   onClose: () => void;
-  onPublicKeyConfirm: (confirm: boolean) => void;
+  onPublicKeyConfirm: (_confirm: boolean) => void;
 }
 
 const StatusOverlay = ({
@@ -39,20 +39,20 @@ const StatusOverlay = ({
       className={`relative w-full h-full ${open ? "flex" : "hidden"} justify-center items-center flex-col`}
     >
       <div className="absolute top-[35%]">
-        {status === StatusType.NewPublicKeyFound ? (
+        {status === StatusType._NewPublicKeyFound ? (
           <p className="text-lg">New fingerprint found!!</p>
         ) : (
           <p className="text-lg">{status}</p>
         )}
       </div>
       <div className="w-1/2">
-        {status === StatusType.NewPublicKeyFound && (
+        {status === StatusType._NewPublicKeyFound && (
           <p className="break-all font-mono text-sm">{fingerprint}</p>
         )}
       </div>
 
       <div className="mt-4 w-1/2">
-        {status === StatusType.NewPublicKeyFound && (
+        {status === StatusType._NewPublicKeyFound && (
           <div className="flex gap-2 w-full">
             <Button
               variant="destructive"

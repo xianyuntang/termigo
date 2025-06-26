@@ -40,7 +40,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   const fitAddon = useRef<FitAddon>(new FitAddon());
   const webLinkAddon = useRef<WebLinksAddon>(new WebLinksAddon());
 
-  const [status, setStatus] = useState<StatusType>(StatusType.Pending);
+  const [status, setStatus] = useState<StatusType>(StatusType._Pending);
 
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
@@ -160,7 +160,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
             }
           } else if (isStatusEventData(payload)) {
             setStatus(payload.data.status.type);
-            if (payload.data.status.type === StatusType.StartStreaming) {
+            if (payload.data.status.type === StatusType._StartStreaming) {
               await emit(terminal, {
                 data: {
                   size: [xterm.cols, xterm.rows],
@@ -168,7 +168,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
               });
               setStatusOpen(false);
             } else if (
-              payload.data.status.type === StatusType.NewPublicKeyFound
+              payload.data.status.type === StatusType._NewPublicKeyFound
             ) {
               setFingerprint(payload.data.status.data as string);
             } else if (ERROR_STATUS.includes(payload.data.status.type)) {
@@ -189,7 +189,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   const handleReconnect = async () => {
     if (!ref) return;
     await refetch();
-    setStatus(StatusType.Pending);
+    setStatus(StatusType._Pending);
     initXterm(ref);
   };
 

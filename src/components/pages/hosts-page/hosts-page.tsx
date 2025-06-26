@@ -58,12 +58,12 @@ const HostsPage = () => {
 
   const handleSaveClick = async (form: HostSchema) => {
     if (form.id) {
-      if (form.authType === AuthType.Identity) {
+      if (form.authType === AuthType._Identity) {
         await hostService.update(
           form.id,
           form.address,
           parseInt(form.port),
-          { type: AuthType.Identity, data: form.identityRef },
+          { type: AuthType._Identity, data: form.identityRef },
           form.label,
         );
       } else {
@@ -72,7 +72,7 @@ const HostsPage = () => {
           form.address,
           parseInt(form.port),
           {
-            type: AuthType.Local,
+            type: AuthType._Local,
             data: {
               username: form.username,
               password: form.password,
@@ -83,11 +83,11 @@ const HostsPage = () => {
         );
       }
     } else {
-      if (form.authType === AuthType.Identity) {
+      if (form.authType === AuthType._Identity) {
         await hostService.add(
           form.address,
           parseInt(form.port),
-          { type: AuthType.Identity, data: form.identityRef },
+          { type: AuthType._Identity, data: form.identityRef },
           form.label,
         );
       } else {
@@ -95,7 +95,7 @@ const HostsPage = () => {
           form.address,
           parseInt(form.port),
           {
-            type: AuthType.Local,
+            type: AuthType._Local,
             data: {
               username: form.username,
               password: form.password,

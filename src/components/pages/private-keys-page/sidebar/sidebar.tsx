@@ -25,8 +25,8 @@ interface SidebarProps {
   isOpen: boolean;
   privateKey?: PrivateKey;
   onClose?: () => void;
-  onSave?: (form: PrivateKeySchema) => void;
-  onDelete?: (id?: string) => void;
+  onSave?: (_form: PrivateKeySchema) => void;
+  onDelete?: (_id?: string) => void;
 }
 
 const privateKeySchema = z.object({

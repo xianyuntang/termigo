@@ -31,8 +31,8 @@ interface SidebarProps {
   isOpen: boolean;
   host?: Host;
   onClose?: () => void;
-  onSave?: (form: HostSchema) => void;
-  onDelete?: (id?: string) => void;
+  onSave?: (_form: HostSchema) => void;
+  onDelete?: (_id?: string) => void;
 }
 
 const hostSchema = z.object({
@@ -73,7 +73,7 @@ export const Sidebar = ({
       label: "",
       address: "",
       port: "22",
-      authType: AuthType.Local,
+      authType: AuthType._Local,
       identityRef: "",
       username: "",
       password: "",
@@ -108,11 +108,11 @@ export const Sidebar = ({
     setValue("label", host?.label || "");
     setValue("address", host?.address || "");
     setValue("port", host?.port.toString() || "22");
-    if (host?.credential.type === AuthType.Local) {
+    if (host?.credential.type === AuthType._Local) {
       setValue("username", host.credential.data.username);
       setValue("password", host.credential.data.password || "");
       setValue("privateKeyRef", host.credential.data.privateKeyRef || "");
-    } else if (host?.credential.type === AuthType.Identity) {
+    } else if (host?.credential.type === AuthType._Identity) {
       setValue("identityRef", host.credential.data);
     }
   }, [host, setValue, isOpen]);
@@ -225,10 +225,10 @@ export const Sidebar = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={AuthType.Local.toString()}>
+                      <SelectItem value={AuthType._Local.toString()}>
                         Local
                       </SelectItem>
-                      <SelectItem value={AuthType.Identity.toString()}>
+                      <SelectItem value={AuthType._Identity.toString()}>
                         Identity
                       </SelectItem>
                     </SelectContent>
@@ -237,7 +237,7 @@ export const Sidebar = ({
               )}
             />
 
-            {authType === AuthType.Identity && (
+            {authType === AuthType._Identity && (
               <Controller
                 name="identityRef"
                 control={control}
@@ -261,7 +261,7 @@ export const Sidebar = ({
                 )}
               />
             )}
-            {authType === AuthType.Local && (
+            {authType === AuthType._Local && (
               <>
                 <Controller
                   name="username"

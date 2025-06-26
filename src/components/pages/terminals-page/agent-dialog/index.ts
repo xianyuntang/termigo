@@ -1,1 +1,1 @@
-export { default } from "./agent-dialog";
+export { AgentDialog as default } from "./agent-dialog";

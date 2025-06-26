@@ -11,8 +11,8 @@ export interface Portforward {
 
 interface PortforwardState {
   portforwards: Record<string, Portforward[]>;
-  addPortforward: (host: string, pfData: Portforward) => void;
-  removePortforward: (host: string, tunnel: string) => void;
+  addPortforward: (_host: string, _pfData: Portforward) => void;
+  removePortforward: (_host: string, _tunnel: string) => void;
 }
 
 const usePortforwardStore = create<PortforwardState>()(

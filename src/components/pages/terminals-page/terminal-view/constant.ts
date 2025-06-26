@@ -1,17 +1,17 @@
 export enum StatusType {
-  Pending = "Pending",
-  Connecting = "Connecting",
-  SessionCreated = "SessionCreated",
-  TryingToAuthenticate = "TryingToAuthenticate",
-  AuthSuccess = "AuthSuccess",
-  AuthFailed = "AuthFailed",
-  ChannelOpened = "ChannelOpened",
-  StartStreaming = "StartStreaming",
-  NewPublicKeyFound = "NewPublicKeyFound",
-  ConnectionFailed = "ConnectionFailed",
+  _Pending = "Pending",
+  _Connecting = "Connecting",
+  _SessionCreated = "SessionCreated",
+  _TryingToAuthenticate = "TryingToAuthenticate",
+  _AuthSuccess = "AuthSuccess",
+  _AuthFailed = "AuthFailed",
+  _ChannelOpened = "ChannelOpened",
+  _StartStreaming = "StartStreaming",
+  _NewPublicKeyFound = "NewPublicKeyFound",
+  _ConnectionFailed = "ConnectionFailed",
 }
 
 export const ERROR_STATUS = [
-  StatusType.ConnectionFailed,
-  StatusType.AuthFailed,
+  StatusType._ConnectionFailed,
+  StatusType._AuthFailed,
 ];

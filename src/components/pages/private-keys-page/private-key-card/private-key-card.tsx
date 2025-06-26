@@ -21,7 +21,7 @@ import { PrivateKey } from "../../../../interfaces";
 
 interface CardProps {
   privateKey: PrivateKey;
-  onEditClicked?: (privateKey: PrivateKey) => void;
+  onEditClicked?: (_privateKey: PrivateKey) => void;
 }
 
 const PrivateKeyCard = ({ privateKey, onEditClicked }: CardProps) => {

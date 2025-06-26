@@ -31,8 +31,8 @@ interface SidebarProps {
   isOpen: boolean;
   identity?: Identity;
   onClose?: () => void;
-  onSave?: (form: IdentitySchema) => void;
-  onDelete?: (id?: string) => void;
+  onSave?: (_form: IdentitySchema) => void;
+  onDelete?: (_id?: string) => void;
 }
 
 const identitySchema = z.object({

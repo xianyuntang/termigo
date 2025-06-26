@@ -21,8 +21,8 @@ import Card from "../../../shared/card";
 interface TunnelDialogProps {
   portforwards?: Portforward[];
   isOpen: boolean;
-  onTunnelStart?: (form: TunnelSchema) => void;
-  onTunnelStop?: (tunnel: string) => void;
+  onTunnelStart?: (_form: TunnelSchema) => void;
+  onTunnelStop?: (_tunnel: string) => void;
   onClose?: () => void;
 }
 

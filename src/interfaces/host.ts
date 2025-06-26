@@ -1,10 +1,10 @@
 export enum AuthType {
-  Local = "local",
-  Identity = "identity",
+  _Local = "local",
+  _Identity = "identity",
 }
 
 export interface LocalAuth {
-  type: AuthType.Local;
+  type: AuthType._Local;
   data: {
     username: string;
     password?: string;
@@ -13,7 +13,7 @@ export interface LocalAuth {
 }
 
 export interface IdentityAuth {
-  type: AuthType.Identity;
+  type: AuthType._Identity;
   data: string;
 }
 

@@ -21,7 +21,7 @@ import { Identity } from "../../../../interfaces";
 
 interface IdentityCardProps {
   identity: Identity;
-  onEditClicked?: (identity: Identity) => void;
+  onEditClicked?: (_identity: Identity) => void;
 }
 
 const IdentityCard = ({ identity, onEditClicked }: IdentityCardProps) => {

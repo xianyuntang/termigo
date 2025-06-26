@@ -21,9 +21,9 @@ import { Host } from "../../../../interfaces";
 
 interface CardProps {
   host: Host;
-  onEditClicked?: (host: Host) => void;
-  onConnectClicked?: (host: Host) => void;
-  onTunnelClicked?: (host: Host) => void;
+  onEditClicked?: (_host: Host) => void;
+  onConnectClicked?: (_host: Host) => void;
+  onTunnelClicked?: (_host: Host) => void;
   portforwardCount?: number;
 }
 

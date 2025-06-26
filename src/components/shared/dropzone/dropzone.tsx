@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface DropzoneProps {
   text?: string;
-  onFilesDrop: (files: File[]) => void;
+  onFilesDrop: (_files: File[]) => void;
   accept?: Record<string, string[]>;
   maxFiles?: number;
 }
