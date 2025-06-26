@@ -1,10 +1,11 @@
-import { ArrowRight, Edit, Terminal } from "lucide-react";
+import { ArrowRight, Edit, Server, Terminal } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -52,60 +53,86 @@ const HostCard = ({
   };
 
   return (
-    <Card className="w-60">
-      <CardHeader>
-        <CardTitle>{host.label || host.address}</CardTitle>
+    <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
+      <CardHeader className="space-y-1 pb-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Server className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-semibold">
+                {host.label || host.address}
+              </CardTitle>
+              <CardDescription className="text-xs">
+                {host.address}:{host.port}
+              </CardDescription>
+            </div>
+          </div>
+          {portforwardCount ? (
+            <Badge variant="secondary" className="ml-2">
+              {portforwardCount} tunnel{portforwardCount > 1 ? 's' : ''}
+            </Badge>
+          ) : null}
+        </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">
-          {host.address}:{host.port}
-        </p>
+      <CardContent className="pb-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="font-medium">Status:</span>
+            <Badge variant="outline" className="text-xs">
+              Ready
+            </Badge>
+          </div>
+        </div>
       </CardContent>
-      <CardFooter className="justify-end gap-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleEditClick}>
-                <Edit className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Edit</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="relative">
-                <Button variant="ghost" size="icon" onClick={handleTunnelClick}>
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-                {portforwardCount ? (
-                  <Badge
-                    variant="secondary"
-                    className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center"
+      <CardFooter className="bg-muted/50 border-t px-6 py-3">
+        <div className="flex w-full items-center justify-between">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleConnectClick}
+            className="gap-2"
+          >
+            <Terminal className="h-4 w-4" />
+            Connect
+          </Button>
+          <div className="flex gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleTunnelClick}
+                    className="h-8 w-8"
                   >
-                    {portforwardCount}
-                  </Badge>
-                ) : null}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Port Forward</p>
-            </TooltipContent>
-          </Tooltip>
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Port Forward</p>
+                </TooltipContent>
+              </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleConnectClick}>
-                <Terminal className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Connect</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleEditClick}
+                    className="h-8 w-8"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
       </CardFooter>
     </Card>
   );
