@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import HostsPage from "../../components/pages/hosts-page";
+import { HostsPage } from "@/features/hosts";
 
 export const Route = createFileRoute("/hosts/")({
   component: RouteComponent,

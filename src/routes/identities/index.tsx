@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import IdentitiesPage from "../../components/pages/identities-page";
+import { IdentitiesPage } from "@/features/identities";
 
 export const Route = createFileRoute("/identities/")({
   component: RouteComponent,

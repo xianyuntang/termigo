@@ -2,11 +2,11 @@ import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { useEffect } from "react";
 
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/shared/ui/sonner";
 
-import AppNavbar from "../components/app-navbar";
-import TerminalsPage from "../components/pages/terminals-page";
-import SideMenu from "../components/side-menu";
+import AppNavbar from "@/shared/layouts/AppNavbar";
+import { TerminalsPage } from "@/features/terminals";
+import SideMenu from "@/shared/layouts/SideMenu";
 import { useTerminalStore } from "../stores";
 
 export const Route = createRootRoute({

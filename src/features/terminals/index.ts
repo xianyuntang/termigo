@@ -1,0 +1,1 @@
+export { default as TerminalsPage } from './pages/terminals-page';
