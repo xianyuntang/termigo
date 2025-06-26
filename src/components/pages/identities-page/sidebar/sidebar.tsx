@@ -106,7 +106,7 @@ export const Sidebar = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
-      <SheetContent className="w-[352px] sm:w-[352px]">
+      <SheetContent className="w-[352px] sm:w-[352px] bg-background border-l border-border">
         <SheetHeader>
           <SheetTitle>{identity ? "Edit Identity" : "New Identity"}</SheetTitle>
         </SheetHeader>

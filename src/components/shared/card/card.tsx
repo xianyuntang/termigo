@@ -18,7 +18,12 @@ interface CardProps {
 
 const Card = ({ title, fullWidth, children, actions }: CardProps) => {
   return (
-    <ShadcnCard className={cn(fullWidth ? "w-full" : "w-80")}>
+    <ShadcnCard
+      className={cn(
+        fullWidth ? "w-full" : "w-80",
+        "bg-card border-border text-card-foreground",
+      )}
+    >
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>

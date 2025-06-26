@@ -94,7 +94,7 @@ export const Sidebar = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
-      <SheetContent className="w-[352px] sm:w-[352px]">
+      <SheetContent className="w-[352px] sm:w-[352px] bg-background border-l border-border">
         <SheetHeader>
           <SheetTitle>
             {privateKey ? "Edit Private Key" : "New Private Key"}
@@ -139,7 +139,7 @@ export const Sidebar = ({
                     {...field}
                     className={cn(
                       "min-h-[100px] font-mono text-xs",
-                      errors.content && "border-destructive"
+                      errors.content && "border-destructive",
                     )}
                     autoCapitalize="none"
                     spellCheck={false}

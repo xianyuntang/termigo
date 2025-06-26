@@ -4,13 +4,13 @@ import { KeyboardEvent } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
-interface AgentDialog {
+interface AgentDialogProps {
   open: boolean;
   onSubmit: (text: string) => void;
   onClose: () => void;
 }
 
-const AgentDialog = ({ open, onClose, onSubmit }: AgentDialog) => {
+const AgentDialog = ({ open, onClose, onSubmit }: AgentDialogProps) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
   const [inputText, setInputText] = useState<string>("");
 

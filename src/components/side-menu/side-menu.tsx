@@ -11,7 +11,7 @@ const SideMenu = () => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal
+    (state) => state.setActiveTerminal,
   );
 
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ const SideMenu = () => {
               variant={index === activeIndex ? "secondary" : "ghost"}
               className={cn(
                 "w-full justify-start",
-                index === activeIndex && "bg-secondary"
+                index === activeIndex && "bg-secondary",
               )}
               onClick={() => handleClick(index, item.url)}
             >

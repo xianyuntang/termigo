@@ -32,7 +32,7 @@ const PrivateKeyCard = ({ privateKey, onEditClicked }: CardProps) => {
   };
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
+    <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 bg-card border-border">
       <CardHeader className="space-y-1 pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
@@ -43,7 +43,7 @@ const PrivateKeyCard = ({ privateKey, onEditClicked }: CardProps) => {
               <CardTitle className="text-lg font-semibold">
                 {privateKey.label}
               </CardTitle>
-              <CardDescription className="text-xs">
+              <CardDescription className="text-xs text-muted-foreground">
                 SSH Private Key
               </CardDescription>
             </div>
@@ -57,20 +57,20 @@ const PrivateKeyCard = ({ privateKey, onEditClicked }: CardProps) => {
       <CardContent className="pb-4">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="font-medium">Format:</span>
-            <Badge variant="outline" className="text-xs">
+            <span className="font-medium text-muted-foreground">Format:</span>
+            <Badge variant="outline" className="text-xs border-border">
               RSA/ED25519
             </Badge>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="font-medium">Status:</span>
-            <Badge variant="outline" className="text-xs">
+            <span className="font-medium text-muted-foreground">Status:</span>
+            <Badge variant="outline" className="text-xs border-border">
               Active
             </Badge>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="bg-muted/50 border-t px-6 py-3">
+      <CardFooter className="bg-muted border-t border-border px-6 py-3">
         <div className="flex w-full items-center justify-end">
           <TooltipProvider>
             <Tooltip>

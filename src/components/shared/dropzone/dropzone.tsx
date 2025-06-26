@@ -20,7 +20,7 @@ const Dropzone = ({
     (acceptedFiles: File[]) => {
       onFilesDrop(acceptedFiles);
     },
-    [onFilesDrop]
+    [onFilesDrop],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -35,7 +35,7 @@ const Dropzone = ({
       className={cn(
         "border-2 border-dashed border-muted-foreground/25 rounded-md p-5 text-center cursor-pointer transition-colors",
         "hover:border-muted-foreground/50",
-        isDragActive && "border-primary"
+        isDragActive && "border-primary",
       )}
     >
       <input {...getInputProps()} />

@@ -7,9 +7,9 @@ interface TerminalState {
   activeTerminal: string | null;
   openedTerminals: string[];
   hostMapper: Record<string, Host>;
-  setActiveTerminal: (activeTerminal: string | null) => void;
-  addTerminal: (terminal: string, host: Host) => void;
-  removeTerminal: (terminal: string) => void;
+  setActiveTerminal: (_activeTerminal: string | null) => void;
+  addTerminal: (_terminal: string, _host: Host) => void;
+  removeTerminal: (_terminal: string) => void;
 }
 
 const useTerminalStore = create<TerminalState>()(
@@ -30,11 +30,11 @@ const useTerminalStore = create<TerminalState>()(
       set((state) => {
         state.openedTerminals.splice(
           state.openedTerminals.findIndex((t) => t === terminal),
-          1,
+          1
         );
       });
     },
-  })),
+  }))
 );
 
 export { useTerminalStore };

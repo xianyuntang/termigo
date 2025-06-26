@@ -22,13 +22,13 @@ const HostsPage = () => {
 
   const addTerminal = useTerminalStore((state) => state.addTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal
+    (state) => state.setActiveTerminal,
   );
 
   const addPortforward = usePortforwardStore((state) => state.addPortforward);
   const portforwards = usePortforwardStore((state) => state.portforwards);
   const removePortforward = usePortforwardStore(
-    (state) => state.removePortforward
+    (state) => state.removePortforward,
   );
 
   const { data, refetch } = useQuery({
@@ -64,7 +64,7 @@ const HostsPage = () => {
           form.address,
           parseInt(form.port),
           { type: AuthType.Identity, data: form.identityRef },
-          form.label
+          form.label,
         );
       } else {
         await hostService.update(
@@ -79,7 +79,7 @@ const HostsPage = () => {
               privateKeyRef: form.privateKeyRef,
             },
           },
-          form.label
+          form.label,
         );
       }
     } else {
@@ -88,7 +88,7 @@ const HostsPage = () => {
           form.address,
           parseInt(form.port),
           { type: AuthType.Identity, data: form.identityRef },
-          form.label
+          form.label,
         );
       } else {
         await hostService.add(
@@ -102,7 +102,7 @@ const HostsPage = () => {
               privateKeyRef: form.privateKeyRef,
             },
           },
-          form.label
+          form.label,
         );
       }
     }
@@ -133,7 +133,7 @@ const HostsPage = () => {
         form.localAddress,
         parseInt(form.localPort),
         form.destinationAddress,
-        parseInt(form.destinationPort)
+        parseInt(form.destinationPort),
       );
       addPortforward(selected.id, {
         tunnel,

@@ -97,7 +97,7 @@ const TunnelDialog = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={handleCloseClick}>
-      <SheetContent className="w-[352px] sm:w-[352px]">
+      <SheetContent className="w-[352px] sm:w-[352px] bg-background border-l border-border">
         <SheetHeader>
           <SheetTitle>Port Forwarding</SheetTitle>
         </SheetHeader>
@@ -119,7 +119,7 @@ const TunnelDialog = ({
                     spellCheck={false}
                     autoComplete="off"
                     className={cn(
-                      errors.destinationAddress && "border-destructive"
+                      errors.destinationAddress && "border-destructive",
                     )}
                   />
                   {errors.destinationAddress && (
@@ -143,7 +143,7 @@ const TunnelDialog = ({
                     spellCheck={false}
                     autoComplete="off"
                     className={cn(
-                      errors.destinationPort && "border-destructive"
+                      errors.destinationPort && "border-destructive",
                     )}
                   />
                   {errors.destinationPort && (
