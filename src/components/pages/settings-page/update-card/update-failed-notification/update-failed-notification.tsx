@@ -1,4 +1,6 @@
-import { Alert, Snackbar } from "@mui/material";
+import { useEffect } from "react";
+
+import { useToast } from "@/hooks/use-toast";
 
 interface UpdateNotificationProps {
   open: boolean;
@@ -9,21 +11,24 @@ export const UpdateFailedNotification = ({
   open,
   onClose,
 }: UpdateNotificationProps) => {
-  return (
-    <Snackbar
-      anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      open={open}
-      autoHideDuration={3000}
-      onClose={onClose}
-    >
-      <Alert
-        onClose={onClose}
-        severity="error"
-        variant="filled"
-        sx={{ width: "100%" }}
-      >
-        Failed to apply update
-      </Alert>
-    </Snackbar>
-  );
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (open) {
+      toast({
+        title: "Update Failed",
+        description: "Failed to apply update",
+        variant: "destructive",
+      });
+
+      // Auto close after 3 seconds
+      const timer = setTimeout(() => {
+        onClose();
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [open, onClose, toast]);
+
+  return null;
 };

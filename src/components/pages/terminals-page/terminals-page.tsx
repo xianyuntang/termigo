@@ -1,5 +1,3 @@
-import { Box } from "@mui/material";
-
 import { useTerminalStore } from "../../../stores";
 import TerminalView from "./terminal-view/terminal-view";
 
@@ -10,15 +8,12 @@ const TerminalsPage = () => {
   return (
     <>
       {openedTerminals.map((openedTerminal) => (
-        <Box
+        <div
           key={openedTerminal}
-          sx={{
-            display: openedTerminal === activeTerminal ? "block" : "none",
-            height: "100%",
-          }}
+          className={`h-full ${openedTerminal === activeTerminal ? "block" : "hidden"}`}
         >
           <TerminalView terminal={openedTerminal} />
-        </Box>
+        </div>
       ))}
     </>
   );

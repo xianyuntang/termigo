@@ -1,11 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import DangerousIcon from "@mui/icons-material/Dangerous";
-import SaveAltIcon from "@mui/icons-material/SaveAlt";
-import { Box, Button, ButtonGroup, TextField } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 import { settingService } from "../../../services";
 import Card from "../../shared/card";
@@ -60,68 +63,58 @@ const SettingsPage = () => {
   };
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
-    >
-      <Box
-        sx={(theme) => ({
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          gap: theme.spacing(1),
-        })}
-      >
+    <div className="w-full h-full flex flex-col justify-between">
+      <div className="w-full flex flex-col gap-2">
         <UpdateCard />
         <Card title="GPT" fullWidth>
-          <Controller
-            name="gptApiKey"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                label="Open AI Api Key"
-                size="small"
-                {...field}
-                slotProps={{
-                  input: {
-                    autoCapitalize: "none",
-                    spellCheck: false,
-                    autoComplete: "off",
-                  },
-                }}
-                error={!!errors.gptApiKey}
-                helperText={errors.gptApiKey?.message}
-                type="password"
-              />
+          <div className="space-y-2">
+            <Label htmlFor="gptApiKey">Open AI Api Key</Label>
+            <Controller
+              name="gptApiKey"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  id="gptApiKey"
+                  type="password"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  autoComplete="off"
+                  className={cn(errors.gptApiKey && "border-destructive")}
+                  {...field}
+                />
+              )}
+            />
+            {errors.gptApiKey && (
+              <p className="text-sm text-destructive">
+                {errors.gptApiKey.message}
+              </p>
             )}
-          />
+          </div>
         </Card>
-      </Box>
+      </div>
 
-      <ButtonGroup fullWidth size="small">
-        <Button onClick={handleSubmit(onSubmit)} endIcon={<SaveAltIcon />}>
-          save
+      <div className="flex w-full gap-2">
+        <Button onClick={handleSubmit(onSubmit)} size="sm" className="flex-1">
+          <Download className="w-4 h-4 mr-2" />
+          Save
         </Button>
         <Button
-          color="error"
+          variant="destructive"
           onClick={handleClearDataClick}
-          endIcon={<DangerousIcon />}
+          size="sm"
+          className="flex-1"
         >
-          clear data
+          <AlertTriangle className="w-4 h-4 mr-2" />
+          Clear Data
         </Button>
-      </ButtonGroup>
+      </div>
 
       <ConfirmDialog
         open={dialogOpen}
         onConfirm={handleConfirmClearData}
         onClose={handleCloseDialog}
       />
-    </Box>
+    </div>
   );
 };
 

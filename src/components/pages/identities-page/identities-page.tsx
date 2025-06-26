@@ -1,7 +1,8 @@
-import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Grid2, Toolbar } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
 
 import { Identity } from "../../../interfaces";
 import { identityService } from "../../../services";
@@ -61,19 +62,24 @@ const PrivateKeysPage = () => {
   };
 
   return (
-    <Box>
-      <Toolbar>
-        <Button endIcon={<AddIcon />} onClick={handleAddClick}>
-          add new
+    <div className="h-full">
+      <div className="p-4 border-b">
+        <Button onClick={handleAddClick} size="sm" className="gap-2">
+          <Plus className="w-4 h-4" />
+          Add New
         </Button>
-      </Toolbar>
-      <Grid2 container spacing={2} sx={{ flexGrow: 1 }}>
-        {data?.map((identity) => (
-          <Grid2 key={identity.id}>
-            <IdentityCard identity={identity} onEditClicked={handleEditClick} />
-          </Grid2>
-        ))}
-      </Grid2>
+      </div>
+      <div className="p-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {data?.map((identity) => (
+            <IdentityCard
+              key={identity.id}
+              identity={identity}
+              onEditClicked={handleEditClick}
+            />
+          ))}
+        </div>
+      </div>
 
       <Sidebar
         isOpen={isSidebarOpen}
@@ -82,7 +88,7 @@ const PrivateKeysPage = () => {
         onSave={handleSaveClick}
         onDelete={handleDeleteClick}
       />
-    </Box>
+    </div>
   );
 };
 

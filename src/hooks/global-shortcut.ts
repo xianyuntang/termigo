@@ -10,7 +10,7 @@ import { DependencyList, useEffect } from "react";
 export const useGlobalShortcut = (
   shortcuts: string,
   onPressed: () => void,
-  deps?: DependencyList
+  deps?: DependencyList,
 ) => {
   const handleEvent = useThrottleCallback((event: ShortcutEvent) => {
     if (event.state === "Pressed") {

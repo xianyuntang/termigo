@@ -1,8 +1,9 @@
-import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Grid2, Toolbar } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
 
 import { AuthType, Host } from "../../../interfaces";
 import { futureService, hostService } from "../../../services";
@@ -157,25 +158,26 @@ const HostsPage = () => {
   };
 
   return (
-    <Box>
-      <Toolbar>
-        <Button endIcon={<AddIcon />} onClick={handleAddClick}>
-          add new
+    <div>
+      <div className="mb-4">
+        <Button onClick={handleAddClick}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add New
         </Button>
-      </Toolbar>
-      <Grid2 container spacing={2} sx={{ flexGrow: 1 }}>
+      </div>
+
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {data?.map((host) => (
-          <Grid2 key={host.id}>
-            <HostCard
-              host={host}
-              onEditClicked={handleEditClick}
-              onConnectClicked={handleConnectClick}
-              onTunnelClicked={handleTunnelClick}
-              portforwardCount={portforwards[host.id]?.length || 0}
-            />
-          </Grid2>
+          <HostCard
+            key={host.id}
+            host={host}
+            onEditClicked={handleEditClick}
+            onConnectClicked={handleConnectClick}
+            onTunnelClicked={handleTunnelClick}
+            portforwardCount={portforwards[host.id]?.length || 0}
+          />
         ))}
-      </Grid2>
+      </div>
 
       <TunnelSidebar
         isOpen={isTunnelSidebarOpen}
@@ -192,7 +194,7 @@ const HostsPage = () => {
         onSave={handleSaveClick}
         onDelete={handleDeleteClick}
       />
-    </Box>
+    </div>
   );
 };
 

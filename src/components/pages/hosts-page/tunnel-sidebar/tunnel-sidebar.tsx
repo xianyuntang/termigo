@@ -1,23 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import ClearIcon from "@mui/icons-material/Clear";
-import StartIcon from "@mui/icons-material/Start";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Drawer,
-  FormControl,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  TextField,
-} from "@mui/material";
+import { ArrowRight, Play, X } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 import { Portforward } from "../../../../stores";
 import Card from "../../../shared/card";
@@ -100,161 +96,157 @@ const TunnelDialog = ({
   };
 
   return (
-    <Drawer
-      open={isOpen}
-      onClose={handleCloseClick}
-      anchor="right"
-      PaperProps={{
-        sx: {
-          width: "22rem",
-        },
-      }}
-    >
-      <Box
-        sx={(theme) => ({
-          padding: theme.spacing(2),
-          display: "flex",
-          flexDirection: "column",
-          gap: theme.spacing(2),
-        })}
-      >
-        <Card title="Port Forward">
-          <Controller
-            name="destinationAddress"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth>
-                <TextField
-                  {...field}
-                  label="Destination Address"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                  error={!!errors.destinationAddress}
-                  helperText={errors.destinationAddress?.message}
-                />
-              </FormControl>
-            )}
-          />
-          <Controller
-            name="destinationPort"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth>
-                <TextField
-                  {...field}
-                  label="Destination Port"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                  error={!!errors.destinationPort}
-                  helperText={errors.destinationPort?.message}
-                />
-              </FormControl>
-            )}
-          />
-          <Controller
-            name="localAddress"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth>
-                <TextField
-                  {...field}
-                  label="Local Address"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                  error={!!errors.localAddress}
-                  helperText={errors.localAddress?.message}
-                />
-              </FormControl>
-            )}
-          />
-          <Controller
-            name="localPort"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth>
-                <TextField
-                  {...field}
-                  label="Local Port"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                  error={!!errors.localPort}
-                  helperText={errors.localPort?.message}
-                />
-              </FormControl>
-            )}
-          />
-        </Card>
-        <ButtonGroup
-          fullWidth
-          size="small"
-          sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
-        >
-          <Button endIcon={<StartIcon />} onClick={handleSubmit(onSubmit)}>
-            start
-          </Button>
-        </ButtonGroup>
+    <Sheet open={isOpen} onOpenChange={handleCloseClick}>
+      <SheetContent className="w-[352px] sm:w-[352px]">
+        <SheetHeader>
+          <SheetTitle>Port Forwarding</SheetTitle>
+        </SheetHeader>
 
-        <Card title="Current forwarding">
-          <List dense>
-            {portforwards?.map((pf) => (
-              <ListItem key={pf.tunnel} disablePadding>
-                <ListItemButton
-                  disableRipple
-                  sx={{ display: "flex", justifyContent: "center" }}
+        <div className="mt-6 space-y-4">
+          <Card title="Port Forward">
+            <Controller
+              name="destinationAddress"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="destinationAddress">
+                    Destination Address
+                  </Label>
+                  <Input
+                    id="destinationAddress"
+                    {...field}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoComplete="off"
+                    className={cn(
+                      errors.destinationAddress && "border-destructive"
+                    )}
+                  />
+                  {errors.destinationAddress && (
+                    <p className="text-sm text-destructive">
+                      {errors.destinationAddress.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+            <Controller
+              name="destinationPort"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="destinationPort">Destination Port</Label>
+                  <Input
+                    id="destinationPort"
+                    {...field}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoComplete="off"
+                    className={cn(
+                      errors.destinationPort && "border-destructive"
+                    )}
+                  />
+                  {errors.destinationPort && (
+                    <p className="text-sm text-destructive">
+                      {errors.destinationPort.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+            <Controller
+              name="localAddress"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="localAddress">Local Address</Label>
+                  <Input
+                    id="localAddress"
+                    {...field}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoComplete="off"
+                    className={cn(errors.localAddress && "border-destructive")}
+                  />
+                  {errors.localAddress && (
+                    <p className="text-sm text-destructive">
+                      {errors.localAddress.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+            <Controller
+              name="localPort"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="localPort">Local Port</Label>
+                  <Input
+                    id="localPort"
+                    {...field}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoComplete="off"
+                    className={cn(errors.localPort && "border-destructive")}
+                  />
+                  {errors.localPort && (
+                    <p className="text-sm text-destructive">
+                      {errors.localPort.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+          </Card>
+
+          <div className="flex justify-end">
+            <Button
+              size="sm"
+              onClick={handleSubmit(onSubmit)}
+              className="gap-2"
+            >
+              <Play className="w-4 h-4" />
+              Start
+            </Button>
+          </div>
+
+          <Card title="Current forwarding">
+            <div className="space-y-1">
+              {portforwards?.map((pf) => (
+                <div
+                  key={pf.tunnel}
+                  className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50"
                 >
-                  <ListItemText>
-                    {pf.localAddress}:{pf.localPort}
-                  </ListItemText>
-                  <ListItemIcon sx={{ minWidth: "1em" }}>
-                    <ArrowForwardIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>
-                    {pf.destinationAddress}:{pf.destinationPort}
-                  </ListItemText>
-
-                  <ListItemIcon
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-mono">
+                      {pf.localAddress}:{pf.localPort}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-mono">
+                      {pf.destinationAddress}:{pf.destinationPort}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
                     onClick={() => handleStopPortforward(pf.tunnel)}
-                    sx={(theme) => ({
-                      minWidth: "1em",
-                      marginLeft: "0.5em",
-                      "&:hover": {
-                        backgroundColor: theme.palette.action.hover,
-                      },
-                    })}
                   >
-                    <ClearIcon fontSize="small" />
-                  </ListItemIcon>
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </Card>
-      </Box>
-    </Drawer>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              {(!portforwards || portforwards.length === 0) && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No active port forwards
+                </p>
+              )}
+            </div>
+          </Card>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 

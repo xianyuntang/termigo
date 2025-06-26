@@ -1,12 +1,8 @@
-import CloseIcon from "@mui/icons-material/Close";
-import {
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-} from "@mui/material";
+import { X } from "lucide-react";
 import { MouseEvent } from "react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import { futureService } from "../../../services";
 import { useTerminalStore } from "../../../stores";
@@ -14,7 +10,7 @@ import { useTerminalStore } from "../../../stores";
 const TerminalShortcuts = () => {
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal
+    (state) => state.setActiveTerminal,
   );
   const openedTerminals = useTerminalStore((state) => state.openedTerminals);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
@@ -34,54 +30,29 @@ const TerminalShortcuts = () => {
   };
 
   return (
-    <List
-      sx={(theme) => ({
-        display: "flex",
-        overflowX: "hidden",
-        gap: theme.spacing(1),
-      })}
-      dense
-      disablePadding
-    >
+    <div className="flex gap-1 overflow-x-auto">
       {openedTerminals.map((terminal) => (
-        <ListItem key={terminal} sx={{ whiteSpace: "nowrap" }} disablePadding>
-          <ListItemButton
-            sx={(theme) => ({
-              display: "flex",
-              justifyContent: "center",
-              borderRadius: theme.spacing(0.5),
-              position: "relative",
-              "&:hover .MuiListItemIcon-root": {
-                visibility: "visible",
-                opacity: 1,
-              },
-            })}
+        <div key={terminal} className="whitespace-nowrap">
+          <Button
+            variant={terminal === activeTerminal ? "secondary" : "ghost"}
+            size="sm"
+            className={cn(
+              "group relative h-8 px-3",
+              terminal === activeTerminal && "bg-secondary",
+            )}
             onClick={() => handleShortcutClick(terminal)}
-            selected={terminal === activeTerminal}
           >
-            <ListItemText
-              primary={
-                hostMapper[terminal]?.label || hostMapper[terminal]?.address
-              }
-            ></ListItemText>
-            <ListItemIcon
+            <span className="mr-2">
+              {hostMapper[terminal]?.label || hostMapper[terminal]?.address}
+            </span>
+            <X
+              className="h-3 w-3 opacity-0 transition-opacity hover:bg-accent rounded-sm group-hover:opacity-100"
               onClick={(evt) => handleCloseClick(evt, terminal)}
-              sx={(theme) => ({
-                minWidth: "1em",
-                marginLeft: "0.5em",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-                "&:hover": {
-                  backgroundColor: theme.palette.action.hover,
-                },
-              })}
-            >
-              <CloseIcon fontSize="small" />
-            </ListItemIcon>
-          </ListItemButton>
-        </ListItem>
+            />
+          </Button>
+        </div>
       ))}
-    </List>
+    </div>
   );
 };
 

@@ -1,11 +1,12 @@
+import { Button } from "@/components/ui/button";
 import {
-  Button,
-  ButtonGroup,
   Dialog,
-  DialogActions,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
-} from "@mui/material";
+} from "@/components/ui/dialog";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -15,17 +16,21 @@ interface ConfirmDialogProps {
 
 const ConfirmDialog = ({ open, onClose, onConfirm }: ConfirmDialogProps) => {
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Confirm action</DialogTitle>
-      <DialogContent>This action cannot be undone.</DialogContent>
-      <DialogActions>
-        <ButtonGroup>
-          <Button onClick={onConfirm} color="error">
-            confirm
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirm action</DialogTitle>
+          <DialogDescription>This action cannot be undone.</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
           </Button>
-          <Button onClick={onClose}>cancel</Button>
-        </ButtonGroup>
-      </DialogActions>
+          <Button variant="destructive" onClick={onConfirm}>
+            Confirm
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 };

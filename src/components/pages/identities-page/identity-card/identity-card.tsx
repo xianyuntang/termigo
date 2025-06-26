@@ -1,11 +1,19 @@
-import EditIcon from "@mui/icons-material/Edit";
+import { Edit } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardActions,
+  CardContent,
+  CardFooter,
   CardHeader,
-  IconButton,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Tooltip,
-} from "@mui/material";
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { Identity } from "../../../../interfaces";
 
@@ -22,15 +30,27 @@ const IdentityCard = ({ identity, onEditClicked }: IdentityCardProps) => {
   };
 
   return (
-    <Card sx={{ width: "15rem" }}>
-      <CardHeader title={identity.label} />
-      <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
-        <Tooltip title="Edit">
-          <IconButton onClick={handleEditClick}>
-            <EditIcon />
-          </IconButton>
-        </Tooltip>
-      </CardActions>
+    <Card className="w-60">
+      <CardHeader>
+        <CardTitle>{identity.label || identity.username}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">{identity.username}</p>
+      </CardContent>
+      <CardFooter className="justify-end gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={handleEditClick}>
+                <Edit className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Edit</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </CardFooter>
     </Card>
   );
 };

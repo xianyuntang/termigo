@@ -1,17 +1,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import CheckIcon from "@mui/icons-material/Check";
-import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Drawer,
-  FormControl,
-  TextField,
-} from "@mui/material";
+import { Check, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 import { readFile } from "../../../../core";
 import { PrivateKey } from "../../../../interfaces";
@@ -90,99 +93,95 @@ export const Sidebar = ({
   };
 
   return (
-    <Drawer
-      open={isOpen}
-      onClose={handleClose}
-      anchor="right"
-      PaperProps={{
-        sx: {
-          width: "22rem",
-        },
-      }}
-    >
-      <Box
-        sx={(theme) => ({
-          padding: theme.spacing(2),
-          display: "flex",
-          flexDirection: "column",
-          gap: theme.spacing(2),
-        })}
-      >
-        <Card title="General">
-          <Controller
-            name="label"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth>
-                <TextField
-                  {...field}
-                  label="Label"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                  error={!!errors.label}
-                  helperText={errors.label?.message}
-                />
-              </FormControl>
-            )}
-          />
-        </Card>
+    <Sheet open={isOpen} onOpenChange={handleClose}>
+      <SheetContent className="w-[352px] sm:w-[352px]">
+        <SheetHeader>
+          <SheetTitle>
+            {privateKey ? "Edit Private Key" : "New Private Key"}
+          </SheetTitle>
+        </SheetHeader>
 
-        <Card title="Key Information">
-          <Controller
-            name="content"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth>
-                <TextField
-                  {...field}
-                  multiline
-                  minRows={4}
-                  label="Content"
-                  size="small"
-                  slotProps={{
-                    input: {
-                      autoCapitalize: "none",
-                      spellCheck: false,
-                      autoComplete: "off",
-                    },
-                  }}
-                  error={!!errors.content}
-                  helperText={errors.content?.message}
-                />
-              </FormControl>
-            )}
-          />
-          <Dropzone
-            text="Drag and drop to import private key"
-            onFilesDrop={handleFilesDrop}
-          />
-        </Card>
+        <div className="mt-6 space-y-4">
+          <Card title="General">
+            <Controller
+              name="label"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="label">Label</Label>
+                  <Input
+                    id="label"
+                    {...field}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoComplete="off"
+                    className={cn(errors.label && "border-destructive")}
+                  />
+                  {errors.label && (
+                    <p className="text-sm text-destructive">
+                      {errors.label.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+          </Card>
 
-        <ButtonGroup
-          fullWidth
-          size="small"
-          sx={{ float: "right", display: "flex", justifyContent: "flex-end" }}
-        >
-          <Button
-            endIcon={<DeleteIcon />}
-            color="error"
-            disabled={!id}
-            onClick={handleDelete}
-          >
-            delete
-          </Button>
-          <Button endIcon={<CheckIcon />} onClick={handleSubmit(onSubmit)}>
-            save
-          </Button>
-        </ButtonGroup>
-      </Box>
-    </Drawer>
+          <Card title="Key Information">
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="content">Content</Label>
+                  <Textarea
+                    id="content"
+                    {...field}
+                    className={cn(
+                      "min-h-[100px] font-mono text-xs",
+                      errors.content && "border-destructive"
+                    )}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoComplete="off"
+                  />
+                  {errors.content && (
+                    <p className="text-sm text-destructive">
+                      {errors.content.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+            <Dropzone
+              text="Drag and drop to import private key"
+              onFilesDrop={handleFilesDrop}
+            />
+          </Card>
+
+          <div className="flex gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="flex-1"
+              disabled={!watch("id")}
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={handleSubmit(onSubmit)}
+            >
+              <Check className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 

@@ -1,6 +1,7 @@
-import { Box } from "@mui/material";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
+
+import { cn } from "@/lib/utils";
 
 interface DropzoneProps {
   text?: string;
@@ -29,27 +30,23 @@ const Dropzone = ({
   });
 
   return (
-    <Box
+    <div
       {...getRootProps()}
-      sx={{
-        border: "2px dashed #cccccc",
-        borderRadius: "4px",
-        padding: "20px",
-        textAlign: "center",
-        cursor: "pointer",
-        transition: "border 0.3s ease-in-out",
-        "&:hover": {
-          borderColor: "#666666",
-        },
-      }}
+      className={cn(
+        "border-2 border-dashed border-muted-foreground/25 rounded-md p-5 text-center cursor-pointer transition-colors",
+        "hover:border-muted-foreground/50",
+        isDragActive && "border-primary"
+      )}
     >
       <input {...getInputProps()} />
       {isDragActive ? (
-        <p>Drop the file here...</p>
+        <p className="text-sm text-muted-foreground">Drop the file here...</p>
       ) : (
-        <p>{text || "Drag and drop file here, or click to select file"}</p>
+        <p className="text-sm text-muted-foreground">
+          {text || "Drag and drop file here, or click to select file"}
+        </p>
       )}
-    </Box>
+    </div>
   );
 };
 

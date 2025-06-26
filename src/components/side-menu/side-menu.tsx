@@ -1,18 +1,9 @@
-import ComputerIcon from "@mui/icons-material/Computer";
-import KeyIcon from "@mui/icons-material/Key";
-import PermIdentityIcon from "@mui/icons-material/PermIdentity";
-import SettingsIcon from "@mui/icons-material/Settings";
-import {
-  Drawer,
-  drawerClasses,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-} from "@mui/material";
 import { useNavigate } from "@tanstack/react-router";
+import { Key, Monitor, Settings, User } from "lucide-react";
 import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import { useTerminalStore } from "../../stores";
 
@@ -20,16 +11,16 @@ const SideMenu = () => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal,
+    (state) => state.setActiveTerminal
   );
 
   const navigate = useNavigate();
 
   const items = [
-    { icon: <ComputerIcon />, text: "Hosts", url: "/hosts" },
-    { icon: <PermIdentityIcon />, text: "Identities", url: "/identities" },
-    { icon: <KeyIcon />, text: "Private Keys", url: "/private-keys" },
-    { icon: <SettingsIcon />, text: "Settings", url: "/settings" },
+    { icon: Monitor, text: "Hosts", url: "/hosts" },
+    { icon: User, text: "Identities", url: "/identities" },
+    { icon: Key, text: "Private Keys", url: "/private-keys" },
+    { icon: Settings, text: "Settings", url: "/settings" },
   ];
 
   const handleClick = async (index: number, url: string) => {
@@ -39,51 +30,27 @@ const SideMenu = () => {
   };
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        display: "block",
-        width: "12rem",
-        height: "100vh",
-        [`& .${drawerClasses.paper}`]: {
-          width: "12rem",
-        },
-      }}
-    >
-      <List
-        dense
-        sx={(theme) => ({
-          display: "flex",
-          flexDirection: "column",
-          flexGrow: 1,
-          padding: "8px",
-          gap: theme.spacing(1),
-        })}
-      >
-        {items.map((item, index) => (
-          <ListItem
-            key={index}
-            sx={{
-              display: "block",
-            }}
-            disablePadding
-          >
-            <ListItemButton
-              sx={(theme) => {
-                return {
-                  borderRadius: theme.spacing(0.5),
-                };
-              }}
-              selected={index === activeIndex}
+    <aside className="w-48 border-r bg-background">
+      <nav className="flex flex-col flex-1 p-2 gap-1">
+        {items.map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <Button
+              key={index}
+              variant={index === activeIndex ? "secondary" : "ghost"}
+              className={cn(
+                "w-full justify-start",
+                index === activeIndex && "bg-secondary"
+              )}
               onClick={() => handleClick(index, item.url)}
             >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Drawer>
+              <Icon className="mr-2 h-4 w-4" />
+              {item.text}
+            </Button>
+          );
+        })}
+      </nav>
+    </aside>
   );
 };
 

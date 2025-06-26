@@ -1,6 +1,8 @@
-import { Dialog, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import { KeyboardEvent } from "react";
+
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface AgentDialog {
   open: boolean;
@@ -26,22 +28,19 @@ const AgentDialog = ({ open, onClose, onSubmit }: AgentDialog) => {
     }
   };
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      PaperProps={{ sx: { width: "30em" } }}
-    >
-      <TextField
-        inputRef={setRef}
-        size="small"
-        placeholder="Describe what you want to do"
-        autoCapitalize="off"
-        autoComplete="off"
-        fullWidth
-        onChange={(e) => setInputText(e.target.value)}
-        onKeyDown={handleKeyDown}
-        value={inputText}
-      />
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="w-[480px] p-2">
+        <Input
+          ref={setRef}
+          placeholder="Describe what you want to do"
+          autoCapitalize="off"
+          autoComplete="off"
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyDown={handleKeyDown}
+          value={inputText}
+          className="w-full"
+        />
+      </DialogContent>
     </Dialog>
   );
 };

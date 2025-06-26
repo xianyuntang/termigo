@@ -1,7 +1,6 @@
 import "@xterm/xterm/css/xterm.css";
 import "./xterm.css";
 
-import { Box, useTheme } from "@mui/material";
 import { useDebounceCallback } from "@react-hook/debounce";
 import useResizeObserver from "@react-hook/resize-observer";
 import { useQuery } from "@tanstack/react-query";
@@ -46,10 +45,9 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal
+    (state) => state.setActiveTerminal,
   );
 
-  const theme = useTheme();
   const resize = useDebounceCallback(() => fitAddon.current.fit(), 100);
   const hostMapper = useTerminalStore((state) => state.hostMapper);
 
@@ -70,7 +68,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         setAgentOpen((v) => !v);
       }
     },
-    [isTerminalActive]
+    [isTerminalActive],
   );
 
   const { refetch } = useQuery({
@@ -99,27 +97,24 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
     }
   }, [agentOpen, isTerminalActive, statusOpen, xterm]);
 
-  const initXterm = useCallback(
-    (element: HTMLDivElement) => {
-      const xterm = new Xterm({
-        cursorBlink: true,
-        convertEol: true,
-        theme: {
-          background: theme.palette.background.paper,
-        },
-      });
+  const initXterm = useCallback((element: HTMLDivElement) => {
+    const xterm = new Xterm({
+      cursorBlink: true,
+      convertEol: true,
+      theme: {
+        background: "#1a1a1a",
+      },
+    });
 
-      xterm.loadAddon(fitAddon.current);
-      xterm.loadAddon(webLinkAddon.current);
+    xterm.loadAddon(fitAddon.current);
+    xterm.loadAddon(webLinkAddon.current);
 
-      xterm.open(element);
+    xterm.open(element);
 
-      setXterm(xterm);
+    setXterm(xterm);
 
-      return xterm;
-    },
-    [theme.palette.background.paper]
-  );
+    return xterm;
+  }, []);
 
   useEffect(() => {
     if (!ref) return;
@@ -180,7 +175,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
               await futureService.stopFuture(terminal);
             }
           }
-        }
+        },
       );
     })();
 
@@ -228,7 +223,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   };
 
   return (
-    <Box ref={setRef} sx={{ height: "100%" }}>
+    <div ref={setRef} className="h-full">
       <AgentDialog
         open={agentOpen}
         onSubmit={handleAgentSubmit}
@@ -242,7 +237,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         onClose={handleTerminalClose}
         onPublicKeyConfirm={handleConfirmPublicKey}
       />
-    </Box>
+    </div>
   );
 };
 
