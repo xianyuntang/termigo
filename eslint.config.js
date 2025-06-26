@@ -10,7 +10,13 @@ import tseslint from "typescript-eslint";
 export default [
   // Ignore build artifacts and generated files
   {
-    ignores: ["src-tauri/target/**", "dist/**", "build/**", "node_modules/**", "**/_*"],
+    ignores: [
+      "src-tauri/target/**",
+      "dist/**",
+      "build/**",
+      "node_modules/**",
+      "**/_*",
+    ],
   },
 
   // Basic configuration for all source files

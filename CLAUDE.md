@@ -21,7 +21,7 @@ Termigo is a modern terminal client management tool built with **Tauri** (Rust b
 
 ### Code Quality
 
-- `npm run lint` - Run ESLint linter  
+- `npm run lint` - Run ESLint linter
 - `npm run lint:fix` - Run ESLint with auto-fix
 - `npm run format` - Format code with Prettier
 - Pre-commit hooks automatically run: `npm run lint`, `npm run format`, `cargo fmt --check`, `cargo clippy`

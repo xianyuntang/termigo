@@ -30,11 +30,11 @@ const useTerminalStore = create<TerminalState>()(
       set((state) => {
         state.openedTerminals.splice(
           state.openedTerminals.findIndex((t) => t === terminal),
-          1
+          1,
         );
       });
     },
-  }))
+  })),
 );
 
 export { useTerminalStore };
