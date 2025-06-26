@@ -1,9 +1,11 @@
-import { Edit } from "lucide-react";
+import { Edit, Key, Lock } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -30,26 +32,64 @@ const PrivateKeyCard = ({ privateKey, onEditClicked }: CardProps) => {
   };
 
   return (
-    <Card className="w-60">
-      <CardHeader>
-        <CardTitle>{privateKey.label}</CardTitle>
+    <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
+      <CardHeader className="space-y-1 pb-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Key className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-semibold">
+                {privateKey.label}
+              </CardTitle>
+              <CardDescription className="text-xs">
+                SSH Private Key
+              </CardDescription>
+            </div>
+          </div>
+          <Badge variant="secondary" className="ml-2 gap-1">
+            <Lock className="h-3 w-3" />
+            Encrypted
+          </Badge>
+        </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">Private Key</p>
+      <CardContent className="pb-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="font-medium">Format:</span>
+            <Badge variant="outline" className="text-xs">
+              RSA/ED25519
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="font-medium">Status:</span>
+            <Badge variant="outline" className="text-xs">
+              Active
+            </Badge>
+          </div>
+        </div>
       </CardContent>
-      <CardFooter className="justify-end gap-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleEditClick}>
-                <Edit className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Edit</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      <CardFooter className="bg-muted/50 border-t px-6 py-3">
+        <div className="flex w-full items-center justify-end">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleEditClick}
+                  className="h-8 w-8"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit Private Key</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardFooter>
     </Card>
   );

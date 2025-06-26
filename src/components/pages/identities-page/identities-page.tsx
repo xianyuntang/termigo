@@ -62,23 +62,22 @@ const PrivateKeysPage = () => {
   };
 
   return (
-    <div className="h-full">
-      <div className="p-4 border-b">
-        <Button onClick={handleAddClick} size="sm" className="gap-2">
-          <Plus className="w-4 h-4" />
+    <div>
+      <div className="mb-4">
+        <Button onClick={handleAddClick}>
+          <Plus className="w-4 h-4 mr-2" />
           Add New
         </Button>
       </div>
-      <div className="p-4">
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {data?.map((identity) => (
-            <IdentityCard
-              key={identity.id}
-              identity={identity}
-              onEditClicked={handleEditClick}
-            />
-          ))}
-        </div>
+
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {data?.map((identity) => (
+          <IdentityCard
+            key={identity.id}
+            identity={identity}
+            onEditClicked={handleEditClick}
+          />
+        ))}
       </div>
 
       <Sidebar
