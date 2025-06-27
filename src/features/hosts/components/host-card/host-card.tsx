@@ -16,7 +16,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
-
 import { Host } from "@/types/interfaces";
 
 interface CardProps {

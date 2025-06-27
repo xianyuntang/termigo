@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-import { Host } from "../interfaces";
+import { Host } from "@/types/interfaces";
 
 interface TerminalState {
   activeTerminal: string | null;

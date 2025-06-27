@@ -16,7 +16,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
-
 import { Identity } from "@/types/interfaces";
 
 interface IdentityCardProps {

@@ -5,6 +5,9 @@ import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { AuthType, Host } from "@/features/hosts/types/host";
+import { identityService } from "@/features/identities";
+import { privateKeyService } from "@/features/private-keys";
 import { cn } from "@/lib/utils";
 import Card from "@/shared/components/card";
 import { Button } from "@/shared/ui/button";
@@ -23,10 +26,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/shared/ui/sheet";
-
-import { AuthType, Host } from "@/features/hosts/types/host";
-import { identityService } from "@/features/identities";
-import { privateKeyService } from "@/features/private-keys";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -140,222 +139,229 @@ export const Sidebar = ({
 
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-4">
-          <Card title="General">
-            <Controller
-              name="label"
-              control={control}
-              render={({ field }) => (
-                <div className="space-y-2">
-                  <Label htmlFor="label">Label</Label>
-                  <Input
-                    id="label"
-                    {...field}
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    autoComplete="off"
-                    className={cn(errors.label && "border-destructive")}
-                  />
-                  {errors.label && (
-                    <p className="text-sm text-destructive">
-                      {errors.label.message}
-                    </p>
-                  )}
-                </div>
-              )}
-            />
-          </Card>
-
-          <Card title="Connection Information">
-            <Controller
-              name="address"
-              control={control}
-              render={({ field }) => (
-                <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    {...field}
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    autoComplete="off"
-                    className={cn(errors.address && "border-destructive")}
-                  />
-                  {errors.address && (
-                    <p className="text-sm text-destructive">
-                      {errors.address.message}
-                    </p>
-                  )}
-                </div>
-              )}
-            />
-            <Controller
-              name="port"
-              control={control}
-              render={({ field }) => (
-                <div className="space-y-2">
-                  <Label htmlFor="port">Port</Label>
-                  <Input
-                    id="port"
-                    {...field}
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    autoComplete="off"
-                    className={cn(errors.port && "border-destructive")}
-                  />
-                  {errors.port && (
-                    <p className="text-sm text-destructive">
-                      {errors.port.message}
-                    </p>
-                  )}
-                </div>
-              )}
-            />
-          </Card>
-
-          <Card title="Credential">
-            <Controller
-              name="authType"
-              control={control}
-              render={({ field }) => (
-                <div className="space-y-2">
-                  <Label htmlFor="authType">Credential from</Label>
-                  <Select
-                    value={field.value.toString()}
-                    onValueChange={(value) => field.onChange(parseInt(value))}
-                  >
-                    <SelectTrigger id="authType">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={AuthType._Local.toString()}>
-                        Local
-                      </SelectItem>
-                      <SelectItem value={AuthType._Identity.toString()}>
-                        Identity
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            />
-
-            {authType === AuthType._Identity && (
+            <Card title="General">
               <Controller
-                name="identityRef"
+                name="label"
                 control={control}
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="identityRef">Identity Ref</Label>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger id="identityRef">
+                    <Label htmlFor="label">Label</Label>
+                    <Input
+                      id="label"
+                      {...field}
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      autoComplete="off"
+                      className={cn(errors.label && "border-destructive")}
+                    />
+                    {errors.label && (
+                      <p className="text-sm text-destructive">
+                        {errors.label.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              />
+            </Card>
+
+            <Card title="Connection Information">
+              <Controller
+                name="address"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input
+                      id="address"
+                      {...field}
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      autoComplete="off"
+                      className={cn(errors.address && "border-destructive")}
+                    />
+                    {errors.address && (
+                      <p className="text-sm text-destructive">
+                        {errors.address.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              />
+              <Controller
+                name="port"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label htmlFor="port">Port</Label>
+                    <Input
+                      id="port"
+                      {...field}
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      autoComplete="off"
+                      className={cn(errors.port && "border-destructive")}
+                    />
+                    {errors.port && (
+                      <p className="text-sm text-destructive">
+                        {errors.port.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              />
+            </Card>
+
+            <Card title="Credential">
+              <Controller
+                name="authType"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label htmlFor="authType">Credential from</Label>
+                    <Select
+                      value={field.value.toString()}
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                    >
+                      <SelectTrigger id="authType">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {identities?.map((identity) => (
-                          <SelectItem key={identity.id} value={identity.id}>
-                            {identity.label || identity.username}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value={AuthType._Local.toString()}>
+                          Local
+                        </SelectItem>
+                        <SelectItem value={AuthType._Identity.toString()}>
+                          Identity
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 )}
               />
-            )}
-            {authType === AuthType._Local && (
-              <>
+
+              {authType === AuthType._Identity && (
                 <Controller
-                  name="username"
+                  name="identityRef"
                   control={control}
                   render={({ field }) => (
                     <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input
-                        id="username"
-                        {...field}
-                        autoCapitalize="none"
-                        spellCheck={false}
-                        autoComplete="off"
-                        className={cn(errors.username && "border-destructive")}
-                      />
-                      {errors.username && (
-                        <p className="text-sm text-destructive">
-                          {errors.username.message}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                />
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        {...field}
-                        autoCapitalize="none"
-                        spellCheck={false}
-                        autoComplete="off"
-                      />
-                    </div>
-                  )}
-                />
-                <Controller
-                  name="privateKeyRef"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label htmlFor="privateKeyRef">Private Key Ref</Label>
+                      <Label htmlFor="identityRef">Identity Ref</Label>
                       <Select
                         value={field.value}
                         onValueChange={field.onChange}
                       >
-                        <SelectTrigger id="privateKeyRef">
+                        <SelectTrigger id="identityRef">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
-                          {privateKeys?.map((privateKey) => (
-                            <SelectItem
-                              key={privateKey.id}
-                              value={privateKey.id}
-                            >
-                              {privateKey.label}
-                            </SelectItem>
-                          ))}
+                          {identities?.map((identity) => 
+                            identity.id ? (
+                              <SelectItem key={identity.id} value={identity.id}>
+                                {identity.label || identity.username}
+                              </SelectItem>
+                            ) : null
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
                   )}
                 />
-              </>
-            )}
-          </Card>
+              )}
+              {authType === AuthType._Local && (
+                <>
+                  <Controller
+                    name="username"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="space-y-2">
+                        <Label htmlFor="username">Username</Label>
+                        <Input
+                          id="username"
+                          {...field}
+                          autoCapitalize="none"
+                          spellCheck={false}
+                          autoComplete="off"
+                          className={cn(
+                            errors.username && "border-destructive"
+                          )}
+                        />
+                        {errors.username && (
+                          <p className="text-sm text-destructive">
+                            {errors.username.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  />
+                  <Controller
+                    name="password"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          {...field}
+                          autoCapitalize="none"
+                          spellCheck={false}
+                          autoComplete="off"
+                        />
+                      </div>
+                    )}
+                  />
+                  <Controller
+                    name="privateKeyRef"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="space-y-2">
+                        <Label htmlFor="privateKeyRef">Private Key Ref</Label>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger id="privateKeyRef">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            {privateKeys?.map((privateKey) => (
+                              <SelectItem
+                                key={privateKey.id}
+                                value={privateKey.id}
+                              >
+                                {privateKey.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  />
+                </>
+              )}
+            </Card>
 
-          <div className="flex gap-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              className="flex-1"
-              disabled={!watch("id")}
-              onClick={handleDelete}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1"
-              onClick={handleSubmit(onSubmit)}
-            >
-              <Check className="w-4 h-4 mr-2" />
-              Save
-            </Button>
-          </div>
+            <div className="flex gap-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="flex-1"
+                disabled={!watch("id")}
+                onClick={handleDelete}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1"
+                onClick={handleSubmit(onSubmit)}
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+            </div>
           </div>
         </div>
       </SheetContent>

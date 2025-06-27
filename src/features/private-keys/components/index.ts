@@ -1,1 +1,2 @@
-export { default } from "./private-keys-page";
+export * from "./private-key-card";
+export * from "./sidebar";

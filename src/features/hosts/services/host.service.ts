@@ -1,5 +1,6 @@
 import { invoker } from "@/core";
-import { Credential, Host, OKMessage } from "@/types/interfaces";
+import { Credential, Host } from "@/types/interfaces";
+import { OKMessage } from "@/types/response";
 
 class HostService {
   starTerminalStream = async (hostId: string, eventId: string) => {

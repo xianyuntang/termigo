@@ -1,5 +1,6 @@
+import { OKMessage } from "@/types/response";
+
 import { invoker } from "../api/invoker";
-import { OKMessage } from "@/types/interfaces";
 
 class FutureService {
   stopFuture = (id: string) => {

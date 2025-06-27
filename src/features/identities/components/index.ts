@@ -1,1 +1,2 @@
-export { default } from "./identities-page";
+export * from "./identity-card";
+export * from "./sidebar";

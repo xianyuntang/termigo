@@ -1,5 +1,6 @@
 import { invoker } from "@/core";
-import { Identity, OKMessage } from "@/types/interfaces";
+import { Identity } from "@/types/interfaces";
+import { OKMessage } from "@/types/response";
 
 class IdentityService {
   list = async () => {

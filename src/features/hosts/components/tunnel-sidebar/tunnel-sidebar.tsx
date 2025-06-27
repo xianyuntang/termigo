@@ -15,7 +15,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/shared/ui/sheet";
-
 import { Portforward } from "@/stores/portforward.store";
 
 interface TunnelDialogProps {
@@ -119,7 +118,7 @@ const TunnelDialog = ({
                     spellCheck={false}
                     autoComplete="off"
                     className={cn(
-                      errors.destinationAddress && "border-destructive",
+                      errors.destinationAddress && "border-destructive"
                     )}
                   />
                   {errors.destinationAddress && (
@@ -143,7 +142,7 @@ const TunnelDialog = ({
                     spellCheck={false}
                     autoComplete="off"
                     className={cn(
-                      errors.destinationPort && "border-destructive",
+                      errors.destinationPort && "border-destructive"
                     )}
                   />
                   {errors.destinationPort && (

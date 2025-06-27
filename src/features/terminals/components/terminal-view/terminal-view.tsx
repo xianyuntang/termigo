@@ -10,10 +10,11 @@ import { WebLinksAddon } from "@xterm/addon-web-links";
 import { Terminal as Xterm } from "@xterm/xterm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useGlobalShortcut } from "@/hooks/global-shortcut";
 import { futureService, gptService } from "@/core/services";
 import { hostService } from "@/features/hosts";
+import { useGlobalShortcut } from "@/hooks/global-shortcut";
 import { useTerminalStore } from "@/stores";
+
 import AgentDialog from "../agent-dialog";
 import StatusDialog from "../status-overlay/index.ts";
 import { ERROR_STATUS, StatusType } from "./constant.ts";
@@ -46,7 +47,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
   const activeTerminal = useTerminalStore((state) => state.activeTerminal);
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
   const setActiveTerminal = useTerminalStore(
-    (state) => state.setActiveTerminal,
+    (state) => state.setActiveTerminal
   );
 
   const resize = useDebounceCallback(() => fitAddon.current.fit(), 100);
@@ -69,7 +70,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
         setAgentOpen((v) => !v);
       }
     },
-    [isTerminalActive],
+    [isTerminalActive]
   );
 
   const { refetch } = useQuery({
@@ -176,7 +177,7 @@ export const TerminalView = ({ terminal }: TerminalViewProps) => {
               await futureService.stopFuture(terminal);
             }
           }
-        },
+        }
       );
     })();
 

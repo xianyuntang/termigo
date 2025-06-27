@@ -1,5 +1,6 @@
 import { invoker } from "@/core";
-import { OKMessage, PrivateKey } from "@/types/interfaces";
+import { PrivateKey } from "@/types/interfaces";
+import { OKMessage } from "@/types/response";
 
 class PrivateKeyService {
   list = async () => {

@@ -1,1 +1,1 @@
-export { default } from "./settings-page";
+export * from "./update-card";
